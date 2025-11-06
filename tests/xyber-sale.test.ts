@@ -19,16 +19,23 @@ describe("XyberSale", () => {
   const multisig = anchor.web3.Keypair.generate();
   const baseMintKeypair = anchor.web3.Keypair.generate();
   const quoteMintKeypair = anchor.web3.Keypair.generate();
+  const buyer = anchor.web3.Keypair.generate();
 
   let baseMint: anchor.web3.PublicKey;
   let quoteMint: anchor.web3.PublicKey;
 
   before(async () => {
-    const requestAirdropSignature = await provider.connection.requestAirdrop(
+    const adminAirdrop = await provider.connection.requestAirdrop(
       admin.publicKey,
       5 * anchor.web3.LAMPORTS_PER_SOL
     );
-    await provider.connection.confirmTransaction(requestAirdropSignature);
+    await provider.connection.confirmTransaction(adminAirdrop);
+
+    const buyerAirdrop = await provider.connection.requestAirdrop(
+      buyer.publicKey,
+      5 * anchor.web3.LAMPORTS_PER_SOL
+    );
+    await provider.connection.confirmTransaction(buyerAirdrop);
 
     baseMint = await splToken.createMint(
       provider.connection,
@@ -176,13 +183,6 @@ describe("XyberSale", () => {
   });
 
   it("Should deposit SOL correctly", async () => {
-    const buyer = anchor.web3.Keypair.generate();
-    const requestAirdropSignature = await provider.connection.requestAirdrop(
-      buyer.publicKey,
-      5 * anchor.web3.LAMPORTS_PER_SOL
-    );
-    await provider.connection.confirmTransaction(requestAirdropSignature);
-
     const solPrice = new anchor.BN("250000000000000000000");
     const baseAllocation = new anchor.BN(100000);
     const bucketName = "public";
@@ -225,6 +225,91 @@ describe("XyberSale", () => {
     console.log("Deposit completed successfully!");
     console.log("Total allocation:", vestingConfigAccount.totalAllocation.toString());
     console.log("Bucket pool balance increase:", bucketPoolBalanceAfter - bucketPoolBalanceBefore);
+  });
+
+  it("Should deposit tokens (SPL) correctly", async () => {
+    const buyerQuoteAta = await splToken.createAssociatedTokenAccount(
+      provider.connection,
+      deployerKeypair,
+      quoteMint,
+      buyer.publicKey,
+      null,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const mintAmount = 10000000;
+    await splToken.mintTo(
+      provider.connection,
+      deployerKeypair,
+      quoteMint,
+      buyerQuoteAta,
+      deployerKeypair,
+      mintAmount,
+      [],
+      null,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const baseAllocation = new anchor.BN(100000);
+    const bucketName = "public";
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiration = new anchor.BN(now + 600);
+
+    const [bucketPool] = sdk.txBuilder.getBucketPoolPda();
+    const bucketPoolQuoteAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      bucketPool,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const buyerQuoteBalanceBefore = await provider.connection.getTokenAccountBalance(buyerQuoteAta);
+    const bucketPoolQuoteBalanceBefore = await provider.connection.getTokenAccountBalance(bucketPoolQuoteAta);
+
+    const { signature, config, roundConfig, vestingConfig, bucket } = await sdk.depositAsset({
+      buyerKeypair: buyer,
+      backendKeypair: backend,
+      round: { public: {} },
+      baseAllocation: baseAllocation,
+      expiration: expiration,
+      bucketName: bucketName,
+    });
+
+    console.log("Deposit Asset tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Config PDA:", config.toBase58());
+    console.log("Round Config PDA:", roundConfig.toBase58());
+    console.log("Vesting Config PDA:", vestingConfig.toBase58());
+    console.log("Bucket PDA:", bucket.toBase58());
+
+    const buyerQuoteBalanceAfter = await provider.connection.getTokenAccountBalance(buyerQuoteAta);
+    const bucketPoolQuoteBalanceAfter = await provider.connection.getTokenAccountBalance(bucketPoolQuoteAta);
+
+    const vestingConfigAccount = await program.account.vestingConfig.fetch(vestingConfig);
+    assert.ok(vestingConfigAccount.totalAllocation.eq(new anchor.BN(200000)));
+    assert.ok(vestingConfigAccount.tokensClaimed.eq(new anchor.BN(0)));
+    assert.ok(vestingConfigAccount.tokensBurnt.eq(new anchor.BN(0)));
+
+    assert.ok(
+      parseInt(buyerQuoteBalanceAfter.value.amount) < parseInt(buyerQuoteBalanceBefore.value.amount)
+    );
+    assert.ok(
+      parseInt(bucketPoolQuoteBalanceAfter.value.amount) > parseInt(bucketPoolQuoteBalanceBefore.value.amount)
+    );
+
+    console.log("Deposit Asset completed successfully!");
+    console.log("Total allocation:", vestingConfigAccount.totalAllocation.toString());
+    console.log(
+      "Buyer quote balance decrease:",
+      parseInt(buyerQuoteBalanceBefore.value.amount) - parseInt(buyerQuoteBalanceAfter.value.amount)
+    );
+    console.log(
+      "Bucket pool quote balance increase:",
+      parseInt(bucketPoolQuoteBalanceAfter.value.amount) - parseInt(bucketPoolQuoteBalanceBefore.value.amount)
+    );
   });
 
 });

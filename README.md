@@ -8,6 +8,7 @@ A Solana-based token sale platform built with Anchor framework.
 - **Round Management**: Setup and configure sale rounds with price and start/end times
 - **Bucket Management**: Create and configure token distribution buckets with supply tracking and vesting plans
 - **SOL Deposits**: Accept native SOL deposits with price-based token allocation
+- **SPL Token Deposits**: Accept SPL token deposits with price-based token allocation
 - **Vesting Management**: Track user allocations with vesting configuration
 - **TypeScript SDK**: Full-featured SDK for interacting with the program
 - **Test Suite**: Comprehensive test coverage
@@ -69,6 +70,19 @@ anchor run deposit-sol -- \
   --round public \
   --sol-price 250000000000000000000 \
   --base-allocation 6250000000 \
+  --expiration 1704067800
+```
+
+### Deposit Asset (SPL Tokens)
+
+Deposit SPL tokens (quote mint) to purchase tokens in a specific round.
+
+```bash
+anchor run deposit-asset -- \
+  --buyer-keypair ./keys/buyer.json \
+  --backend-keypair ./keys/backend.json \
+  --round public \
+  --base-allocation 100000000 \
   --expiration 1704067800
 ```
 

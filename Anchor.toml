@@ -26,4 +26,5 @@ initialize = "yarn run ts-node scripts/initialize.ts"
 setup-round = "yarn run ts-node scripts/setup-round.ts"
 setup-bucket = "yarn run ts-node scripts/setup-bucket.ts"
 deposit-sol = "yarn run ts-node scripts/deposit-sol.ts"
+deposit-asset = "yarn run ts-node scripts/deposit-asset.ts"
 

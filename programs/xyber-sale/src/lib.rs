@@ -29,4 +29,8 @@ pub mod xyber_sale {
     pub fn deposit_sol(ctx: Context<DepositSol>, round: data::Round, sol_price: u128, base_allocation: u64, expiration: i64) -> Result<()> {
         instructions::deposit_sol(ctx, round, sol_price, base_allocation, expiration)
     }
+
+    pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, base_allocation: u64, expiration: i64) -> Result<()> {
+        instructions::deposit_asset(ctx, round, base_allocation, expiration)
+    }
 }

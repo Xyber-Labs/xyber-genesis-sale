@@ -289,4 +289,86 @@ export class TxBuilder {
     return { depositSolTx, config, roundConfig, vestingConfig, bucket };
   }
 
+  async depositAssetIx(args: {
+    buyer: web3.PublicKey;
+    backend: web3.PublicKey;
+    round: any;
+    baseAllocation: BN;
+    expiration: BN;
+    bucketName: string;
+  }): Promise<{
+    depositAssetIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    roundConfig: web3.PublicKey;
+    vestingConfig: web3.PublicKey;
+    bucket: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [roundConfig] = this.getRoundConfigPda(args.round);
+    const [vestingConfig] = this.getVestingConfigPda(args.round, args.buyer);
+    const [bucket] = this.getBucketPda(args.bucketName);
+    const [bucketPool] = this.getBucketPoolPda();
+
+    const configAccount = await this.program.account.saleConfig.fetch(config);
+    const baseMint = configAccount.baseMint;
+    const quoteMint = configAccount.quoteMint;
+
+    const buyerQuoteAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      args.buyer,
+      false,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      bucketPool,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const depositAssetIx = await this.program.methods
+      .depositAsset(args.round, args.baseAllocation, args.expiration)
+      .accountsStrict({
+        buyer: args.buyer,
+        backend: args.backend,
+        config: config,
+        vestingConfig: vestingConfig,
+        roundConfig: roundConfig,
+        baseMint: baseMint,
+        quoteMint: quoteMint,
+        buyerQuoteAta: buyerQuoteAta,
+        bucketPool: bucketPool,
+        bucketPoolAta: bucketPoolAta,
+        bucketData: bucket,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: splToken.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .instruction();
+
+    return { depositAssetIx, config, roundConfig, vestingConfig, bucket };
+  }
+
+  async depositAssetTx(args: {
+    buyer: web3.PublicKey;
+    backend: web3.PublicKey;
+    round: any;
+    baseAllocation: BN;
+    expiration: BN;
+    bucketName: string;
+  }): Promise<{
+    depositAssetTx: web3.Transaction;
+    config: web3.PublicKey;
+    roundConfig: web3.PublicKey;
+    vestingConfig: web3.PublicKey;
+    bucket: web3.PublicKey;
+  }> {
+    const { depositAssetIx, config, roundConfig, vestingConfig, bucket } = await this.depositAssetIx(args);
+    const depositAssetTx = new web3.Transaction().add(depositAssetIx);
+    return { depositAssetTx, config, roundConfig, vestingConfig, bucket };
+  }
+
 }

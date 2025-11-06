@@ -120,6 +120,30 @@ const XyberSaleSDK = {
       return { signature, config, roundConfig, vestingConfig, bucket };
     }
 
+    async function depositAsset(args: {
+      buyerKeypair: anchor.web3.Keypair;
+      backendKeypair: anchor.web3.Keypair;
+      round: any;
+      baseAllocation: BN;
+      expiration: BN;
+      bucketName: string;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
+      const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
+        buyer: args.buyerKeypair.publicKey,
+        backend: args.backendKeypair.publicKey,
+        round: args.round,
+        baseAllocation: args.baseAllocation,
+        expiration: args.expiration,
+        bucketName: args.bucketName,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(depositAssetTx, [args.buyerKeypair, args.backendKeypair]);
+      return { signature, config, roundConfig, vestingConfig, bucket };
+    }
+
     return {
       idl,
       program,
@@ -140,6 +164,10 @@ const XyberSaleSDK = {
       depositSol,
       depositSolIx: txBuilder.depositSolIx.bind(txBuilder),
       depositSolTx: txBuilder.depositSolTx.bind(txBuilder),
+
+      depositAsset,
+      depositAssetIx: txBuilder.depositAssetIx.bind(txBuilder),
+      depositAssetTx: txBuilder.depositAssetTx.bind(txBuilder),
     };
   },
 };
