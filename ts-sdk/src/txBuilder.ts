@@ -1,14 +1,17 @@
 import { Program, web3 } from "@coral-xyz/anchor";
+import * as splToken from "@solana/spl-token";
 import { XyberSale as XyberSaleIDL } from "../idl/xyber_sale";
 import { getConstant, getConstantRaw } from "./utils";
 
 export class TxBuilder {
   private program: Program<XyberSaleIDL>;
   private seedRoot: Buffer;
+  private saleBucketSeed: Buffer;
 
   constructor(program: Program<XyberSaleIDL>) {
     this.program = program;
     this.seedRoot = Buffer.from(getConstant("seedRoot", program.idl as any));
+    this.saleBucketSeed = Buffer.from(getConstantRaw("saleBucketSeed", program.idl as any));
   }
 
   getPda(seeds: (string | Buffer | web3.PublicKey)[]): [web3.PublicKey, number] {
@@ -31,39 +34,70 @@ export class TxBuilder {
     );
   }
 
+  getConfigPda(): [web3.PublicKey, number] {
+    return this.getPda(["CONFIG"]);
+  }
+
+  getBucketPoolPda(): [web3.PublicKey, number] {
+    return this.getPda(["BUCKET_POOL", this.saleBucketSeed]);
+  }
+
   async initializeIx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
-    owner: web3.PublicKey;
+    backend: web3.PublicKey;
+    multisig: web3.PublicKey;
+    baseMint: web3.PublicKey;
+    quoteMint: web3.PublicKey;
   }): Promise<{
-    instruction: web3.TransactionInstruction;
+    initializeIx: web3.TransactionInstruction;
     config: web3.PublicKey;
+    bucketPool: web3.PublicKey;
   }> {
-    const [config] = this.getPda(["CONFIG"]);
+    const [config] = this.getConfigPda();
+    const [bucketPool] = this.getBucketPoolPda();
 
-    const instruction = await this.program.methods
-      .initialize(args.newAdmin, args.owner)
+    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
+      args.quoteMint,
+      bucketPool,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const initializeIx = await this.program.methods
+      .initialize(args.newAdmin, args.backend, args.multisig)
       .accountsStrict({
         admin: args.admin,
         config: config,
+        baseMint: args.baseMint,
+        quoteMint: args.quoteMint,
+        bucketPool: bucketPool,
+        bucketPoolAta: bucketPoolAta,
         systemProgram: web3.SystemProgram.programId,
+        tokenProgram: splToken.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .instruction();
 
-    return { instruction, config };
+    return { initializeIx, config, bucketPool };
   }
 
   async initializeTx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
-    owner: web3.PublicKey;
+    backend: web3.PublicKey;
+    multisig: web3.PublicKey;
+    baseMint: web3.PublicKey;
+    quoteMint: web3.PublicKey;
   }): Promise<{
     transaction: web3.Transaction;
     config: web3.PublicKey;
+    bucketPool: web3.PublicKey;
   }> {
-    const { instruction, config } = await this.initializeIx(args);
-    const transaction = new web3.Transaction().add(instruction);
-    return { transaction, config };
+    const { initializeIx, config, bucketPool } = await this.initializeIx(args);
+    const transaction = new web3.Transaction().add(initializeIx);
+    return { transaction, config, bucketPool };
   }
 
 }

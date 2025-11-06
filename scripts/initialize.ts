@@ -1,69 +1,50 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program, web3 } from "@coral-xyz/anchor";
-import { getKeypairFromFile } from "@solana-developers/node-helpers";
+import { web3 } from "@coral-xyz/anchor";
 import { Command } from "commander";
-import XyberSaleSDK from "@xyber-labs/xyber-sale-sdk";
-import { XyberSale } from "../target/types/xyber_sale";
-import { getExplorerUrl } from "../scripts/utils";
+import { runWithSdk, getExplorerUrl } from "./utils";
 
-const program = anchor.workspace.XyberSale as Program<XyberSale>;
-
-async function main() {
+function parseCliArgs() {
   const cli = new Command();
 
   cli
     .name("initialize")
     .description("Initialize XyberSale configuration")
     .requiredOption("--admin <PUBKEY>", "New admin public key")
-    .requiredOption("--owner <PUBKEY>", "Owner public key")
-    .option("--deployer-path <PATH>", "Path to deployer keypair file (defaults to ANCHOR_WALLET)")
+    .requiredOption("--backend <PUBKEY>", "Backend public key")
+    .requiredOption("--multisig <PUBKEY>", "Multisig public key")
+    .requiredOption("--base-mint <PUBKEY>", "Base token mint address")
+    .requiredOption("--quote-mint <PUBKEY>", "Quote token mint address")
     .parse(process.argv);
 
   const options = cli.opts();
 
-  const provider = anchor.AnchorProvider.env();
-  anchor.setProvider(provider);
-
-  const adminPubkey = new web3.PublicKey(options.admin);
-  const ownerPubkey = new web3.PublicKey(options.owner);
-
-  let deployerKeypair: web3.Keypair;
-  if (options.deployerPath) {
-    deployerKeypair = await getKeypairFromFile(options.deployerPath);
-  } else {
-    deployerKeypair = (provider.wallet as any).payer as web3.Keypair;
-  }
-
-  console.log("Deployer:", deployerKeypair.publicKey.toBase58());
-  console.log("New Admin:", adminPubkey.toBase58());
-  console.log("Owner:", ownerPubkey.toBase58());
-
-  const sdk = XyberSaleSDK.create(provider, program);
-
-  await initialize(sdk, deployerKeypair, adminPubkey, ownerPubkey, provider);
+  return {
+    admin: new web3.PublicKey(options.admin),
+    backend: new web3.PublicKey(options.backend),
+    multisig: new web3.PublicKey(options.multisig),
+    baseMint: new web3.PublicKey(options.baseMint),
+    quoteMint: new web3.PublicKey(options.quoteMint),
+  };
 }
 
-async function initialize(
-  sdk: ReturnType<typeof XyberSaleSDK.create>,
-  deployerKeypair: web3.Keypair,
-  admin: web3.PublicKey,
-  owner: web3.PublicKey,
-  provider: anchor.AnchorProvider
-) {
-  const { signature, config } = await sdk.initialize({
-    adminKeypair: deployerKeypair,
-    newAdmin: admin,
-    owner: owner,
-  });
+async function main() {
+  const options = parseCliArgs();
 
-  console.log("\nConfig PDA:", config.toBase58());
-  console.log("Transaction:", signature);
-  console.log("Explorer:", getExplorerUrl(provider, signature));
+  await runWithSdk(async ({ provider, sdk }) => {
+    const { signature, config, bucketPool } = await sdk.initialize({
+      adminKeypair: (provider.wallet as any).payer,
+      newAdmin: options.admin,
+      backend: options.backend,
+      multisig: options.multisig,
+      baseMint: options.baseMint,
+      quoteMint: options.quoteMint,
+    });
+
+    console.log("✅ Success!");
+    console.log("Transaction signature:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Config PDA:", config.toBase58());
+    console.log("Bucket Pool PDA:", bucketPool.toBase58());
+  });
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main();

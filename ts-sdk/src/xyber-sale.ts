@@ -27,19 +27,25 @@ const XyberSaleSDK = {
     async function initialize(args: {
       adminKeypair: anchor.web3.Keypair;
       newAdmin: anchor.web3.PublicKey;
-      owner: anchor.web3.PublicKey;
-    }): Promise<{ signature: string; config: anchor.web3.PublicKey }> {
-      const { transaction, config } = await txBuilder.initializeTx({
+      backend: anchor.web3.PublicKey;
+      multisig: anchor.web3.PublicKey;
+      baseMint: anchor.web3.PublicKey;
+      quoteMint: anchor.web3.PublicKey;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
+      const { transaction, config, bucketPool } = await txBuilder.initializeTx({
         admin: args.adminKeypair.publicKey,
         newAdmin: args.newAdmin,
-        owner: args.owner,
+        backend: args.backend,
+        multisig: args.multisig,
+        baseMint: args.baseMint,
+        quoteMint: args.quoteMint,
       });
 
       if (!provider.sendAndConfirm) {
         throw new Error("Provider does not support sendAndConfirm");
       }
       const signature = await provider.sendAndConfirm(transaction, [args.adminKeypair]);
-      return { signature, config };
+      return { signature, config, bucketPool };
     }
 
     return {

@@ -4,8 +4,8 @@ use anchor_lang::prelude::*;
 #[derive(Default, InitSpace)]
 pub struct SaleConfig {
     pub admin: Pubkey,
-    // pub backend: Pubkey,
-    // pub token_mint: Pubkey,
-    // pub asset_mint: Pubkey,
-    pub owner: Option<Pubkey>,
+    pub backend: Pubkey,
+    pub base_mint: Pubkey,
+    pub quote_mint: Pubkey,
+    pub multisig: Option<Pubkey>,
 }

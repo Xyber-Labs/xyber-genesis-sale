@@ -1,7 +1,7 @@
 [package]
 name = "xyber-sale"
 version = "0.1.0"
-description = "Created with Anchor"
+description = "Xyber token sale solana program"
 edition = "2021"
 
 [lib]

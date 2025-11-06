@@ -1,12 +1,12 @@
 use anchor_lang::prelude::*;
 
+use instructions::*;
+
 mod constants;
 mod data;
-pub mod errors;
+mod errors;
 mod events;
 mod instructions;
-
-use instructions::*;
 
 declare_id!("XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt");
 
@@ -14,7 +14,7 @@ declare_id!("XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt");
 pub mod xyber_sale {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, owner: Pubkey) -> Result<()> {
-        instructions::initialize(ctx, new_admin, owner)
+    pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, backend: Pubkey, multisig: Pubkey) -> Result<()> {
+        instructions::initialize(ctx, new_admin, backend, multisig)
     }
 }
