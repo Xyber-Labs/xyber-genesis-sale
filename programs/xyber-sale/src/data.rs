@@ -58,6 +58,22 @@ pub struct BucketData {
     pub vesting_plan: Vec<String>,
 }
 
+#[account]
+#[derive(Default, InitSpace)]
+pub struct VestingPeriod {
+    pub start_timestamp: u64,
+    pub claim_ratio: f64,
+    pub burn_ratio: f64,
+    pub base_period_index: Option<u8>,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct VestingPlan {
+    #[max_len(12)]
+    pub periods: Vec<VestingPeriod>,
+}
+
 #[event]
 pub struct DepositEvent {
     pub buyer: Pubkey,

@@ -7,6 +7,7 @@ mod data;
 mod errors;
 mod events;
 mod instructions;
+mod vesting_calculator;
 
 declare_id!("XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt");
 
@@ -32,5 +33,9 @@ pub mod xyber_sale {
 
     pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, base_allocation: u64, expiration: i64) -> Result<()> {
         instructions::deposit_asset(ctx, round, base_allocation, expiration)
+    }
+
+    pub fn setup_vesting_plan(ctx: Context<SetupVestingPlan>, vesting_plan_name: String, plan: data::VestingPlan) -> Result<()> {
+        instructions::setup_vesting_plan(ctx, vesting_plan_name, plan)
     }
 }

@@ -371,4 +371,61 @@ export class TxBuilder {
     return { depositAssetTx, config, roundConfig, vestingConfig, bucket };
   }
 
+  getVestingPlanPda(vestingPlanName: string): [web3.PublicKey, number] {
+    return this.getPda(["VESTING_PLAN", Buffer.from(vestingPlanName)]);
+  }
+
+  async setupVestingPlanIx(args: {
+    admin: web3.PublicKey;
+    vestingPlanName: string;
+    plan: {
+      periods: Array<{
+        startTimestamp: BN;
+        claimRatio: number;
+        burnRatio: number;
+        basePeriodIndex: number | null;
+      }>;
+    };
+  }): Promise<{
+    setupVestingPlanIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    vestingPlan: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [vestingPlan] = this.getVestingPlanPda(args.vestingPlanName);
+
+    const setupVestingPlanIx = await this.program.methods
+      .setupVestingPlan(args.vestingPlanName, args.plan)
+      .accountsStrict({
+        admin: args.admin,
+        config: config,
+        vestingPlan: vestingPlan,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { setupVestingPlanIx, config, vestingPlan };
+  }
+
+  async setupVestingPlanTx(args: {
+    admin: web3.PublicKey;
+    vestingPlanName: string;
+    plan: {
+      periods: Array<{
+        startTimestamp: BN;
+        claimRatio: number;
+        burnRatio: number;
+        basePeriodIndex: number | null;
+      }>;
+    };
+  }): Promise<{
+    setupVestingPlanTx: web3.Transaction;
+    config: web3.PublicKey;
+    vestingPlan: web3.PublicKey;
+  }> {
+    const { setupVestingPlanIx, config, vestingPlan } = await this.setupVestingPlanIx(args);
+    const setupVestingPlanTx = new web3.Transaction().add(setupVestingPlanIx);
+    return { setupVestingPlanTx, config, vestingPlan };
+  }
+
 }

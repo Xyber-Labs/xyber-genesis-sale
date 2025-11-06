@@ -6,6 +6,7 @@ A Solana-based token sale platform built with Anchor framework.
 
 - **Configuration Management**: Initialize and manage sale configuration with admin, backend, and multisig roles
 - **Round Management**: Setup and configure sale rounds with price and start/end times
+- **Vesting Plan Management**: Create vesting plans with periods defining claim/burn ratios and timestamps
 - **Bucket Management**: Create and configure token distribution buckets with supply tracking and vesting plans
 - **SOL Deposits**: Accept native SOL deposits with price-based token allocation
 - **SPL Token Deposits**: Accept SPL token deposits with price-based token allocation
@@ -47,6 +48,20 @@ anchor run setup-round -- \
   --start-time 1704067200 \
   --end-time 1704153600
 ```
+
+### Setup Vesting Plan
+
+Create a vesting plan with periods defining claim/burn ratios and release schedule.
+
+```bash
+anchor run setup-vesting-plan -- \
+  --admin-keypair ./keys/admin.json \
+  --vesting-plan-name public \
+  --period 1699000000,0.65,0.0 \
+  --period 1699003600,0.35,0.0,0
+```
+
+Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 
 ### Setup Bucket
 
@@ -90,5 +105,6 @@ anchor run deposit-asset -- \
 
 - **SaleConfig**: Configuration account with admin, backend, multisig roles and token mints
 - **RoundConfig**: Round configuration with price and start/end times
+- **VestingPlan**: Vesting plan with periods defining claim/burn ratios and release schedule
 - **BucketData**: Token distribution bucket with supply tracking and vesting plan
 - **VestingConfig**: User vesting configuration with allocation tracking

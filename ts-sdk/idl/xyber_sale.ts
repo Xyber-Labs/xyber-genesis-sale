@@ -1047,6 +1047,109 @@ export type XyberSale = {
           "type": "i64"
         }
       ]
+    },
+    {
+      "name": "setupVestingPlan",
+      "discriminator": [
+        49,
+        122,
+        114,
+        231,
+        72,
+        124,
+        208,
+        249
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vestingPlan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  86,
+                  69,
+                  83,
+                  84,
+                  73,
+                  78,
+                  71,
+                  95,
+                  80,
+                  76,
+                  65,
+                  78
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "vestingPlanName"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "vestingPlanName",
+          "type": "string"
+        },
+        {
+          "name": "plan",
+          "type": {
+            "defined": {
+              "name": "vestingPlan"
+            }
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1100,6 +1203,19 @@ export type XyberSale = {
         29,
         43,
         125
+      ]
+    },
+    {
+      "name": "vestingPlan",
+      "discriminator": [
+        220,
+        100,
+        188,
+        22,
+        177,
+        159,
+        229,
+        3
       ]
     }
   ],
@@ -1302,6 +1418,50 @@ export type XyberSale = {
           {
             "name": "tokensBurnt",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "vestingPeriod",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "startTimestamp",
+            "type": "u64"
+          },
+          {
+            "name": "claimRatio",
+            "type": "f64"
+          },
+          {
+            "name": "burnRatio",
+            "type": "f64"
+          },
+          {
+            "name": "basePeriodIndex",
+            "type": {
+              "option": "u8"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "vestingPlan",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "periods",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "vestingPeriod"
+                }
+              }
+            }
           }
         ]
       }

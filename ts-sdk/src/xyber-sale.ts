@@ -144,6 +144,31 @@ const XyberSaleSDK = {
       return { signature, config, roundConfig, vestingConfig, bucket };
     }
 
+    async function setupVestingPlan(args: {
+      adminKeypair: anchor.web3.Keypair;
+      vestingPlanName: string;
+      plan: {
+        periods: Array<{
+          startTimestamp: BN;
+          claimRatio: number;
+          burnRatio: number;
+          basePeriodIndex: number | null;
+        }>;
+      };
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; vestingPlan: anchor.web3.PublicKey }> {
+      const { setupVestingPlanTx, config, vestingPlan } = await txBuilder.setupVestingPlanTx({
+        admin: args.adminKeypair.publicKey,
+        vestingPlanName: args.vestingPlanName,
+        plan: args.plan,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(setupVestingPlanTx, [args.adminKeypair]);
+      return { signature, config, vestingPlan };
+    }
+
     return {
       idl,
       program,
@@ -168,6 +193,10 @@ const XyberSaleSDK = {
       depositAsset,
       depositAssetIx: txBuilder.depositAssetIx.bind(txBuilder),
       depositAssetTx: txBuilder.depositAssetTx.bind(txBuilder),
+
+      setupVestingPlan,
+      setupVestingPlanIx: txBuilder.setupVestingPlanIx.bind(txBuilder),
+      setupVestingPlanTx: txBuilder.setupVestingPlanTx.bind(txBuilder),
     };
   },
 };

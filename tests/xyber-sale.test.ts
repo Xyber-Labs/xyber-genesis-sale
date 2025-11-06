@@ -312,4 +312,55 @@ describe("XyberSale", () => {
     );
   });
 
+  it("Should setup vesting plan", async () => {
+    const vestingPlanName = "public";
+    const now = Math.floor(Date.now() / 1000);
+
+    const plan = {
+      periods: [
+        {
+          startTimestamp: new anchor.BN(now),
+          claimRatio: 0.65,
+          burnRatio: 0.0,
+          basePeriodIndex: null,
+        },
+        {
+          startTimestamp: new anchor.BN(now + 3600),
+          claimRatio: 0.35,
+          burnRatio: 0.0,
+          basePeriodIndex: 0,
+        },
+      ],
+    };
+
+    const { signature, config, vestingPlan } = await sdk.setupVestingPlan({
+      adminKeypair: admin,
+      vestingPlanName: vestingPlanName,
+      plan: plan,
+    });
+
+    console.log("Setup vesting plan tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Config PDA:", config.toBase58());
+    console.log("Vesting Plan PDA:", vestingPlan.toBase58());
+
+    const vestingPlanAccount = await program.account.vestingPlan.fetch(vestingPlan);
+
+    assert.equal(vestingPlanAccount.periods.length, 2);
+    assert.ok(vestingPlanAccount.periods[0].startTimestamp.eq(plan.periods[0].startTimestamp));
+    assert.equal(vestingPlanAccount.periods[0].claimRatio, plan.periods[0].claimRatio);
+    assert.equal(vestingPlanAccount.periods[0].burnRatio, plan.periods[0].burnRatio);
+    assert.equal(vestingPlanAccount.periods[0].basePeriodIndex, plan.periods[0].basePeriodIndex);
+
+    assert.ok(vestingPlanAccount.periods[1].startTimestamp.eq(plan.periods[1].startTimestamp));
+    assert.equal(vestingPlanAccount.periods[1].claimRatio, plan.periods[1].claimRatio);
+    assert.equal(vestingPlanAccount.periods[1].burnRatio, plan.periods[1].burnRatio);
+    assert.equal(vestingPlanAccount.periods[1].basePeriodIndex, plan.periods[1].basePeriodIndex);
+
+    console.log("Vesting plan configured successfully!");
+    console.log("Periods count:", vestingPlanAccount.periods.length);
+    console.log("Period 0 - claim ratio:", vestingPlanAccount.periods[0].claimRatio);
+    console.log("Period 1 - claim ratio:", vestingPlanAccount.periods[1].claimRatio);
+  });
+
 });
