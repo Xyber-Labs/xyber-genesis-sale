@@ -1,7 +1,7 @@
-import { Program, web3 } from "@coral-xyz/anchor";
+import { BN, Program, web3 } from "@coral-xyz/anchor";
 import * as splToken from "@solana/spl-token";
 import { XyberSale as XyberSaleIDL } from "../idl/xyber_sale";
-import { getConstant, getConstantRaw } from "./utils";
+import { getConstant, getConstantRaw, parseRound } from "./utils";
 
 export class TxBuilder {
   private program: Program<XyberSaleIDL>;
@@ -40,6 +40,11 @@ export class TxBuilder {
 
   getBucketPoolPda(): [web3.PublicKey, number] {
     return this.getPda(["BUCKET_POOL", this.saleBucketSeed]);
+  }
+
+  getRoundConfigPda(round: any): [web3.PublicKey, number] {
+    const roundName = parseRound(round);
+    return this.getPda(["ROUND", Buffer.from(roundName!)]);
   }
 
   async initializeIx(args: {
@@ -91,13 +96,54 @@ export class TxBuilder {
     baseMint: web3.PublicKey;
     quoteMint: web3.PublicKey;
   }): Promise<{
-    transaction: web3.Transaction;
+    initializeTx: web3.Transaction;
     config: web3.PublicKey;
     bucketPool: web3.PublicKey;
   }> {
     const { initializeIx, config, bucketPool } = await this.initializeIx(args);
-    const transaction = new web3.Transaction().add(initializeIx);
-    return { transaction, config, bucketPool };
+    const initializeTx = new web3.Transaction().add(initializeIx);
+    return { initializeTx, config, bucketPool };
+  }
+
+  async setupRoundIx(args: {
+    admin: web3.PublicKey;
+    round: any;
+    startTime: BN;
+    endTime: BN;
+  }): Promise<{
+    setupRoundIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    roundConfig: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [roundConfig] = this.getRoundConfigPda(args.round);
+
+    const setupRoundIx = await this.program.methods
+      .setupRound(args.round, args.startTime, args.endTime)
+      .accountsStrict({
+        admin: args.admin,
+        config: config,
+        roundConfig: roundConfig,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { setupRoundIx, config, roundConfig };
+  }
+
+  async setupRoundTx(args: {
+    admin: web3.PublicKey;
+    round: any;
+    startTime: BN;
+    endTime: BN;
+  }): Promise<{
+    setupRoundTx: web3.Transaction;
+    config: web3.PublicKey;
+    roundConfig: web3.PublicKey;
+  }> {
+    const { setupRoundIx, config, roundConfig } = await this.setupRoundIx(args);
+    const setupRoundTx = new web3.Transaction().add(setupRoundIx);
+    return { setupRoundTx, config, roundConfig };
   }
 
 }

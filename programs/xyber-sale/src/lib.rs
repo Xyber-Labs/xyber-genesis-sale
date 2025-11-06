@@ -17,4 +17,8 @@ pub mod xyber_sale {
     pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, backend: Pubkey, multisig: Pubkey) -> Result<()> {
         instructions::initialize(ctx, new_admin, backend, multisig)
     }
+
+    pub fn setup_round(ctx: Context<SetupRound>, round: data::Round, start_time: i64, end_time: i64) -> Result<()> {
+        instructions::setup_round(ctx, round, start_time, end_time)
+    }
 }

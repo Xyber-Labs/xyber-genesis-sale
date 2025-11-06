@@ -193,9 +193,122 @@ export type XyberSale = {
           "type": "pubkey"
         }
       ]
+    },
+    {
+      "name": "setupRound",
+      "discriminator": [
+        126,
+        152,
+        76,
+        105,
+        83,
+        79,
+        107,
+        112
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "roundConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "round",
+          "type": {
+            "defined": {
+              "name": "round"
+            }
+          }
+        },
+        {
+          "name": "startTime",
+          "type": "i64"
+        },
+        {
+          "name": "endTime",
+          "type": "i64"
+        }
+      ]
     }
   ],
   "accounts": [
+    {
+      "name": "roundConfig",
+      "discriminator": [
+        243,
+        42,
+        51,
+        251,
+        4,
+        170,
+        69,
+        234
+      ]
+    },
     {
       "name": "saleConfig",
       "discriminator": [
@@ -218,6 +331,33 @@ export type XyberSale = {
     }
   ],
   "types": [
+    {
+      "name": "round",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roundConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "startTime",
+            "type": "i64"
+          },
+          {
+            "name": "endTime",
+            "type": "i64"
+          }
+        ]
+      }
+    },
     {
       "name": "saleConfig",
       "type": {

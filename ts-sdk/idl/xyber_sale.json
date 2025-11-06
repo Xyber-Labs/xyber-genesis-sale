@@ -187,9 +187,122 @@
           "type": "pubkey"
         }
       ]
+    },
+    {
+      "name": "setup_round",
+      "discriminator": [
+        126,
+        152,
+        76,
+        105,
+        83,
+        79,
+        107,
+        112
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "round_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "round",
+          "type": {
+            "defined": {
+              "name": "Round"
+            }
+          }
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        }
+      ]
     }
   ],
   "accounts": [
+    {
+      "name": "RoundConfig",
+      "discriminator": [
+        243,
+        42,
+        51,
+        251,
+        4,
+        170,
+        69,
+        234
+      ]
+    },
     {
       "name": "SaleConfig",
       "discriminator": [
@@ -212,6 +325,33 @@
     }
   ],
   "types": [
+    {
+      "name": "Round",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoundConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          }
+        ]
+      }
+    },
     {
       "name": "SaleConfig",
       "type": {

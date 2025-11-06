@@ -28,3 +28,23 @@ export function getConstant(
   const value = getConstantRaw(name, idl);
   return new Uint8Array(value);
 }
+
+export function parseRound(round: any): string | undefined {
+  const keys = ["public"];
+  for (const key of keys) {
+    if (key in round) {
+      return key.toUpperCase();
+    }
+  }
+  return undefined;
+}
+
+export function getRound(roundName: string): any {
+  switch (roundName) {
+    case "public":
+      return { public: {} };
+    default:
+      console.error("Failed to parse round: ", roundName);
+      process.exit(1);
+  }
+}

@@ -1,5 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
+import { BN, Program } from "@coral-xyz/anchor";
 
 import type { XyberSale as XyberSaleIDL } from "../idl/xyber_sale";
 import { TxBuilder } from "./txBuilder";
@@ -32,7 +32,7 @@ const XyberSaleSDK = {
       baseMint: anchor.web3.PublicKey;
       quoteMint: anchor.web3.PublicKey;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
-      const { transaction, config, bucketPool } = await txBuilder.initializeTx({
+      const { initializeTx, config, bucketPool } = await txBuilder.initializeTx({
         admin: args.adminKeypair.publicKey,
         newAdmin: args.newAdmin,
         backend: args.backend,
@@ -44,8 +44,28 @@ const XyberSaleSDK = {
       if (!provider.sendAndConfirm) {
         throw new Error("Provider does not support sendAndConfirm");
       }
-      const signature = await provider.sendAndConfirm(transaction, [args.adminKeypair]);
+      const signature = await provider.sendAndConfirm(initializeTx, [args.adminKeypair]);
       return { signature, config, bucketPool };
+    }
+
+    async function setupRound(args: {
+      adminKeypair: anchor.web3.Keypair;
+      round: any;
+      startTime: BN;
+      endTime: BN;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey }> {
+      const { setupRoundTx, config, roundConfig } = await txBuilder.setupRoundTx({
+        admin: args.adminKeypair.publicKey,
+        round: args.round,
+        startTime: args.startTime,
+        endTime: args.endTime,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(setupRoundTx, [args.adminKeypair]);
+      return { signature, config, roundConfig };
     }
 
     return {
@@ -56,6 +76,10 @@ const XyberSaleSDK = {
       initialize,
       initializeIx: txBuilder.initializeIx.bind(txBuilder),
       initializeTx: txBuilder.initializeTx.bind(txBuilder),
+
+      setupRound,
+      setupRoundIx: txBuilder.setupRoundIx.bind(txBuilder),
+      setupRoundTx: txBuilder.setupRoundTx.bind(txBuilder),
     };
   },
 };

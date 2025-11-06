@@ -4,7 +4,7 @@ import * as splToken from "@solana/spl-token";
 
 import XyberSaleSDK from "@xyber-labs/xyber-sale-sdk";
 import { getExplorerUrl } from "../scripts/utils";
-import { checkAnchorError } from "./utils";
+import { doAndCheckError } from "./utils";
 
 describe("XyberSale", () => {
   const provider = anchor.AnchorProvider.env();
@@ -95,20 +95,46 @@ describe("XyberSale", () => {
     );
     await provider.connection.confirmTransaction(requestAirdropSignature);
 
-    try {
-      await sdk.initialize({
+    await doAndCheckError(
+      sdk.initialize({
         adminKeypair: attacker,
         newAdmin: attacker.publicKey,
         backend: attacker.publicKey,
         multisig: attacker.publicKey,
         baseMint: baseMint,
         quoteMint: quoteMint,
-      });
+      }),
+      "Invalid admin account is provided"
+    );
 
-      assert.fail("Should have failed with InvalidAdmin error");
-    } catch (error: any) {
-      checkAnchorError(error, "Invalid admin account is provided");
-      console.log("Correctly rejected unauthorized initialization attempt");
-    }
+    console.log("Correctly rejected unauthorized initialization attempt");
   });
+
+  it("Should setup round", async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const startTime = new anchor.BN(now + 60);
+    const endTime = new anchor.BN(now + 3600);
+
+    const { signature, config, roundConfig } = await sdk.setupRound({
+      adminKeypair: admin,
+      round: { public: {} },
+      startTime: startTime,
+      endTime: endTime,
+    });
+
+    console.log("Setup round tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Config PDA:", config.toBase58());
+    console.log("Round Config PDA:", roundConfig.toBase58());
+
+    const roundConfigAccount = await program.account.roundConfig.fetch(roundConfig);
+
+    assert.deepEqual(roundConfigAccount.startTime, startTime);
+    assert.deepEqual(roundConfigAccount.endTime, endTime);
+
+    console.log("Round configured successfully!");
+    console.log("Start time:", roundConfigAccount.startTime.toString());
+    console.log("End time:", roundConfigAccount.endTime.toString());
+  });
+  
 });
