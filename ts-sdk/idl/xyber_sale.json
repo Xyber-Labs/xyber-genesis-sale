@@ -1,0 +1,801 @@
+{
+  "address": "XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt",
+  "metadata": {
+    "name": "xyber_sale",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "owner",
+          "type": "pubkey"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "SaleConfig",
+      "discriminator": [
+        86,
+        47,
+        71,
+        156,
+        87,
+        152,
+        149,
+        246
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "BatchProcessed",
+      "discriminator": [
+        199,
+        28,
+        80,
+        191,
+        111,
+        11,
+        127,
+        180
+      ]
+    },
+    {
+      "name": "ClaimsOpened",
+      "discriminator": [
+        126,
+        92,
+        24,
+        148,
+        242,
+        66,
+        8,
+        28
+      ]
+    },
+    {
+      "name": "CreatorClaimed",
+      "discriminator": [
+        118,
+        206,
+        30,
+        219,
+        62,
+        164,
+        54,
+        200
+      ]
+    },
+    {
+      "name": "CreatorGranted",
+      "discriminator": [
+        139,
+        253,
+        204,
+        61,
+        77,
+        195,
+        247,
+        170
+      ]
+    },
+    {
+      "name": "DepositMade",
+      "discriminator": [
+        210,
+        201,
+        130,
+        183,
+        244,
+        203,
+        155,
+        199
+      ]
+    },
+    {
+      "name": "FundingPeriodStarted",
+      "discriminator": [
+        24,
+        17,
+        247,
+        144,
+        200,
+        76,
+        119,
+        198
+      ]
+    },
+    {
+      "name": "LaunchInitialized",
+      "discriminator": [
+        60,
+        143,
+        196,
+        55,
+        214,
+        166,
+        10,
+        63
+      ]
+    },
+    {
+      "name": "NumBlocksUpdated",
+      "discriminator": [
+        169,
+        68,
+        39,
+        54,
+        104,
+        241,
+        228,
+        223
+      ]
+    },
+    {
+      "name": "PoolCreated",
+      "discriminator": [
+        202,
+        44,
+        41,
+        88,
+        104,
+        220,
+        157,
+        82
+      ]
+    },
+    {
+      "name": "RefundClaimed",
+      "discriminator": [
+        136,
+        64,
+        242,
+        99,
+        4,
+        244,
+        208,
+        130
+      ]
+    },
+    {
+      "name": "RosterInitialized",
+      "discriminator": [
+        111,
+        28,
+        99,
+        210,
+        82,
+        158,
+        188,
+        249
+      ]
+    },
+    {
+      "name": "RosterShardFinalized",
+      "discriminator": [
+        136,
+        212,
+        55,
+        122,
+        118,
+        122,
+        150,
+        85
+      ]
+    },
+    {
+      "name": "RosterShardInitialized",
+      "discriminator": [
+        110,
+        2,
+        21,
+        250,
+        126,
+        114,
+        61,
+        90
+      ]
+    },
+    {
+      "name": "SeedSet",
+      "discriminator": [
+        9,
+        179,
+        143,
+        172,
+        250,
+        146,
+        42,
+        6
+      ]
+    },
+    {
+      "name": "SelectionFinalized",
+      "discriminator": [
+        111,
+        84,
+        253,
+        234,
+        76,
+        136,
+        103,
+        185
+      ]
+    },
+    {
+      "name": "TokensClaimed",
+      "discriminator": [
+        25,
+        128,
+        244,
+        55,
+        241,
+        136,
+        200,
+        91
+      ]
+    },
+    {
+      "name": "Withdrawn",
+      "discriminator": [
+        20,
+        89,
+        223,
+        198,
+        194,
+        124,
+        219,
+        13
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAdmin",
+      "msg": "Invalid admin account is provided"
+    }
+  ],
+  "types": [
+    {
+      "name": "BatchProcessed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "from_t",
+            "type": "u32"
+          },
+          {
+            "name": "processed",
+            "type": "u32"
+          },
+          {
+            "name": "heap_len",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimsOpened",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "opened_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatorClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "tickets_claimed",
+            "type": "u32"
+          },
+          {
+            "name": "lamports_equiv",
+            "type": "u64"
+          },
+          {
+            "name": "tokens_minted",
+            "type": "u64"
+          },
+          {
+            "name": "day_index",
+            "type": "i64"
+          },
+          {
+            "name": "remaining_tickets",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatorGranted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "locked_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "reserved_tickets",
+            "type": "u32"
+          },
+          {
+            "name": "daily_lamports_limit",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositMade",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "tickets_before",
+            "type": "u32"
+          },
+          {
+            "name": "tickets_after",
+            "type": "u32"
+          },
+          {
+            "name": "total_deposited",
+            "type": "u64"
+          },
+          {
+            "name": "total_tickets",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundingPeriodStarted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "funding_period_end",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LaunchInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project_id",
+            "type": "u64"
+          },
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "sale_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "hard_cap_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "min_raise_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "per_wallet_cap",
+            "type": "u64"
+          },
+          {
+            "name": "tau_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "sale_allocation",
+            "type": "u64"
+          },
+          {
+            "name": "lp_allocation",
+            "type": "u64"
+          },
+          {
+            "name": "num_blocks",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NumBlocksUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_num_blocks",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool_id",
+            "type": "u64"
+          },
+          {
+            "name": "project_id",
+            "type": "u64"
+          },
+          {
+            "name": "blockhash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "slot",
+            "type": "u64"
+          },
+          {
+            "name": "range_start",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "range_end",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RefundClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "refunded_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "y_approved",
+            "docs": [
+              "Number of tickets that were approved for token allocation.",
+              "If the min raise was not met, this will be 0."
+            ],
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RosterInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RosterShardFinalized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "shard_id",
+            "type": "u16"
+          },
+          {
+            "name": "total_in_shard",
+            "type": "u32"
+          },
+          {
+            "name": "shard_base",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RosterShardInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "shard_id",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SaleConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SeedSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SelectionFinalized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "k_capacity",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokensClaimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "y_approved",
+            "docs": [
+              "Number of winning tickets."
+            ],
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Withdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "launch",
+            "type": "pubkey"
+          },
+          {
+            "name": "user",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "tickets_before",
+            "type": "u32"
+          },
+          {
+            "name": "tickets_after",
+            "type": "u32"
+          },
+          {
+            "name": "total_deposited",
+            "type": "u64"
+          },
+          {
+            "name": "total_tickets",
+            "type": "u32"
+          }
+        ]
+      }
+    }
+  ],
+  "constants": [
+    {
+      "name": "DEPLOYER",
+      "type": "pubkey",
+      "value": "BMBeWpWc16LQNtqw4JxjSWTf5E9mUBhhPzuTmaVFvxrf"
+    },
+    {
+      "name": "SEED_ROOT",
+      "type": "bytes",
+      "value": "[114, 111, 111, 116]"
+    }
+  ]
+}
