@@ -14,7 +14,7 @@ impl Default for Round {
 impl Round {
     pub fn as_bytes(&self) -> &[u8] {
         match self {
-            Round::Public => b"PUBLIC",
+            Round::Public => b"public",
         }
     }
 }
@@ -32,8 +32,19 @@ pub struct SaleConfig {
 #[account]
 #[derive(Default, InitSpace)]
 pub struct RoundConfig {
+    pub price: u64,
     pub start_time: i64,
     pub end_time: i64,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct VestingConfig {
+    #[max_len(40)]
+    pub vesting_plan: Option<String>,
+    pub total_allocation: u64,
+    pub tokens_claimed: u64,
+    pub tokens_burnt: u64,
 }
 
 #[account]
@@ -45,4 +56,12 @@ pub struct BucketData {
     pub burnt_supply: u64,
     #[max_len(10, 40)]
     pub vesting_plan: Vec<String>,
+}
+
+#[event]
+pub struct DepositEvent {
+    pub buyer: Pubkey,
+    pub round: Round,
+    pub quote_amount: u64,
+    pub base_allocation: u64,
 }

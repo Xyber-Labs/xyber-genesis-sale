@@ -33,7 +33,7 @@ export function parseRound(round: any): string | undefined {
   const keys = ["public"];
   for (const key of keys) {
     if (key in round) {
-      return key.toUpperCase();
+      return key;
     }
   }
   return undefined;

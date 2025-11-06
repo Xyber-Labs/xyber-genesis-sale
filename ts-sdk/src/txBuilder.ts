@@ -51,6 +51,11 @@ export class TxBuilder {
     return this.getPda(["BUCKET", Buffer.from(bucketName)]);
   }
 
+  getVestingConfigPda(round: any, buyer: web3.PublicKey): [web3.PublicKey, number] {
+    const roundName = parseRound(round);
+    return this.getPda(["VESTING_CONFIG", Buffer.from(roundName!), buyer.toBuffer()]);
+  }
+
   async initializeIx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
@@ -112,6 +117,7 @@ export class TxBuilder {
   async setupRoundIx(args: {
     admin: web3.PublicKey;
     round: any;
+    price: BN;
     startTime: BN;
     endTime: BN;
   }): Promise<{
@@ -123,7 +129,7 @@ export class TxBuilder {
     const [roundConfig] = this.getRoundConfigPda(args.round);
 
     const setupRoundIx = await this.program.methods
-      .setupRound(args.round, args.startTime, args.endTime)
+      .setupRound(args.round, args.price, args.startTime, args.endTime)
       .accountsStrict({
         admin: args.admin,
         config: config,
@@ -138,6 +144,7 @@ export class TxBuilder {
   async setupRoundTx(args: {
     admin: web3.PublicKey;
     round: any;
+    price: BN;
     startTime: BN;
     endTime: BN;
   }): Promise<{
@@ -216,6 +223,70 @@ export class TxBuilder {
     const { setupBucketIx, config, bucket, bucketBaseAta } = await this.setupBucketIx(args);
     const setupBucketTx = new web3.Transaction().add(setupBucketIx);
     return { setupBucketTx, config, bucket, bucketBaseAta };
+  }
+
+  async depositSolIx(args: {
+    buyer: web3.PublicKey;
+    backend: web3.PublicKey;
+    round: any;
+    solPrice: BN;
+    baseAllocation: BN;
+    expiration: BN;
+    bucketName: string;
+  }): Promise<{
+    depositSolIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    roundConfig: web3.PublicKey;
+    vestingConfig: web3.PublicKey;
+    bucket: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [roundConfig] = this.getRoundConfigPda(args.round);
+    const [vestingConfig] = this.getVestingConfigPda(args.round, args.buyer);
+    const [bucket] = this.getBucketPda(args.bucketName);
+    const [bucketPool] = this.getBucketPoolPda();
+
+    const configAccount = await this.program.account.saleConfig.fetch(config);
+    const baseMint = configAccount.baseMint;
+    const quoteMint = configAccount.quoteMint;
+
+    const depositSolIx = await this.program.methods
+      .depositSol(args.round, args.solPrice, args.baseAllocation, args.expiration)
+      .accountsStrict({
+        buyer: args.buyer,
+        backend: args.backend,
+        config: config,
+        roundConfig: roundConfig,
+        vestingConfig: vestingConfig,
+        bucketData: bucket,
+        baseMint: baseMint,
+        quoteMint: quoteMint,
+        bucketPool: bucketPool,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { depositSolIx, config, roundConfig, vestingConfig, bucket };
+  }
+
+  async depositSolTx(args: {
+    buyer: web3.PublicKey;
+    backend: web3.PublicKey;
+    round: any;
+    solPrice: BN;
+    baseAllocation: BN;
+    expiration: BN;
+    bucketName: string;
+  }): Promise<{
+    depositSolTx: web3.Transaction;
+    config: web3.PublicKey;
+    roundConfig: web3.PublicKey;
+    vestingConfig: web3.PublicKey;
+    bucket: web3.PublicKey;
+  }> {
+    const { depositSolIx, config, roundConfig, vestingConfig, bucket } = await this.depositSolIx(args);
+    const depositSolTx = new web3.Transaction().add(depositSolIx);
+    return { depositSolTx, config, roundConfig, vestingConfig, bucket };
   }
 
 }

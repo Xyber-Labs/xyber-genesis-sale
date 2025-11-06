@@ -14,6 +14,240 @@ export type XyberSale = {
   },
   "instructions": [
     {
+      "name": "depositSol",
+      "discriminator": [
+        108,
+        81,
+        78,
+        117,
+        125,
+        155,
+        56,
+        200
+      ],
+      "accounts": [
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "backend",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vestingConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  86,
+                  69,
+                  83,
+                  84,
+                  73,
+                  78,
+                  71,
+                  95,
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              },
+              {
+                "kind": "account",
+                "path": "buyer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "roundConfig",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketPool",
+          "docs": [
+            "CHECK"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84,
+                  95,
+                  80,
+                  79,
+                  79,
+                  76
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  97,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "baseMint"
+        },
+        {
+          "name": "quoteMint"
+        },
+        {
+          "name": "bucketData",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "round",
+          "type": {
+            "defined": {
+              "name": "round"
+            }
+          }
+        },
+        {
+          "name": "solPrice",
+          "type": "u128"
+        },
+        {
+          "name": "baseAllocation",
+          "type": "u64"
+        },
+        {
+          "name": "expiration",
+          "type": "i64"
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "discriminator": [
         175,
@@ -450,6 +684,10 @@ export type XyberSale = {
           }
         },
         {
+          "name": "price",
+          "type": "u64"
+        },
+        {
           "name": "startTime",
           "type": "i64"
         },
@@ -499,6 +737,34 @@ export type XyberSale = {
         149,
         246
       ]
+    },
+    {
+      "name": "vestingConfig",
+      "discriminator": [
+        0,
+        138,
+        71,
+        135,
+        26,
+        29,
+        43,
+        125
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "depositEvent",
+      "discriminator": [
+        120,
+        248,
+        61,
+        83,
+        31,
+        142,
+        107,
+        144
+      ]
     }
   ],
   "errors": [
@@ -509,8 +775,38 @@ export type XyberSale = {
     },
     {
       "code": 6001,
+      "name": "invalidBackend",
+      "msg": "Invalid backend account is provided"
+    },
+    {
+      "code": 6002,
       "name": "invalidBaseMint",
       "msg": "Invalid base mint is provided"
+    },
+    {
+      "code": 6003,
+      "name": "invalidQuoteMint",
+      "msg": "Invalid quote mint is provided"
+    },
+    {
+      "code": 6004,
+      "name": "bucketSupplyExceeded",
+      "msg": "Bucket supply exceeded"
+    },
+    {
+      "code": 6005,
+      "name": "signatureExpired",
+      "msg": "Signature is expired"
+    },
+    {
+      "code": 6006,
+      "name": "roundNotStarted",
+      "msg": "Round is not started"
+    },
+    {
+      "code": 6007,
+      "name": "roundFinished",
+      "msg": "Round is finished"
     }
   ],
   "types": [
@@ -545,6 +841,34 @@ export type XyberSale = {
       }
     },
     {
+      "name": "depositEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "round",
+            "type": {
+              "defined": {
+                "name": "round"
+              }
+            }
+          },
+          {
+            "name": "quoteAmount",
+            "type": "u64"
+          },
+          {
+            "name": "baseAllocation",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "round",
       "type": {
         "kind": "enum",
@@ -560,6 +884,10 @@ export type XyberSale = {
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "price",
+            "type": "u64"
+          },
           {
             "name": "startTime",
             "type": "i64"
@@ -597,6 +925,32 @@ export type XyberSale = {
             "type": {
               "option": "pubkey"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "vestingConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vestingPlan",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "totalAllocation",
+            "type": "u64"
+          },
+          {
+            "name": "tokensClaimed",
+            "type": "u64"
+          },
+          {
+            "name": "tokensBurnt",
+            "type": "u64"
           }
         ]
       }

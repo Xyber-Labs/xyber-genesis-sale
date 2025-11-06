@@ -112,12 +112,14 @@ describe("XyberSale", () => {
 
   it("Should setup round", async () => {
     const now = Math.floor(Date.now() / 1000);
-    const startTime = new anchor.BN(now + 60);
+    const price = new anchor.BN(40000);
+    const startTime = new anchor.BN(now - 60);
     const endTime = new anchor.BN(now + 3600);
 
     const { signature, config, roundConfig } = await sdk.setupRound({
       adminKeypair: admin,
       round: { public: {} },
+      price: price,
       startTime: startTime,
       endTime: endTime,
     });
@@ -129,10 +131,12 @@ describe("XyberSale", () => {
 
     const roundConfigAccount = await program.account.roundConfig.fetch(roundConfig);
 
+    assert.ok(roundConfigAccount.price.eq(price));
     assert.deepEqual(roundConfigAccount.startTime, startTime);
     assert.deepEqual(roundConfigAccount.endTime, endTime);
 
     console.log("Round configured successfully!");
+    console.log("Price:", roundConfigAccount.price.toString());
     console.log("Start time:", roundConfigAccount.startTime.toString());
     console.log("End time:", roundConfigAccount.endTime.toString());
   });
@@ -169,6 +173,58 @@ describe("XyberSale", () => {
 
     console.log("Bucket configured successfully!");
     console.log("Bucket supply:", bucketAccount.bucketSupply.toString());
+  });
+
+  it("Should deposit SOL correctly", async () => {
+    const buyer = anchor.web3.Keypair.generate();
+    const requestAirdropSignature = await provider.connection.requestAirdrop(
+      buyer.publicKey,
+      5 * anchor.web3.LAMPORTS_PER_SOL
+    );
+    await provider.connection.confirmTransaction(requestAirdropSignature);
+
+    const solPrice = new anchor.BN("250000000000000000000");
+    const baseAllocation = new anchor.BN(100000);
+    const bucketName = "public";
+
+    const now = Math.floor(Date.now() / 1000);
+    const expiration = new anchor.BN(now + 600);
+
+    const [bucketPool] = sdk.txBuilder.getBucketPoolPda();
+    const bucketPoolBalanceBefore = await provider.connection.getBalance(bucketPool);
+    const buyerBalanceBefore = await provider.connection.getBalance(buyer.publicKey);
+
+    const { signature, config, roundConfig, vestingConfig, bucket } = await sdk.depositSol({
+      buyerKeypair: buyer,
+      backendKeypair: backend,
+      round: { public: {} },
+      solPrice: solPrice,
+      baseAllocation: baseAllocation,
+      expiration: expiration,
+      bucketName: bucketName,
+    });
+
+    console.log("Deposit SOL tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Config PDA:", config.toBase58());
+    console.log("Round Config PDA:", roundConfig.toBase58());
+    console.log("Vesting Config PDA:", vestingConfig.toBase58());
+    console.log("Bucket PDA:", bucket.toBase58());
+
+    const bucketPoolBalanceAfter = await provider.connection.getBalance(bucketPool);
+    const buyerBalanceAfter = await provider.connection.getBalance(buyer.publicKey);
+
+    const vestingConfigAccount = await program.account.vestingConfig.fetch(vestingConfig);
+    assert.ok(vestingConfigAccount.totalAllocation.eq(baseAllocation));
+    assert.ok(vestingConfigAccount.tokensClaimed.eq(new anchor.BN(0)));
+    assert.ok(vestingConfigAccount.tokensBurnt.eq(new anchor.BN(0)));
+
+    assert.ok(bucketPoolBalanceAfter > bucketPoolBalanceBefore);
+    assert.ok(buyerBalanceAfter < buyerBalanceBefore);
+
+    console.log("Deposit completed successfully!");
+    console.log("Total allocation:", vestingConfigAccount.totalAllocation.toString());
+    console.log("Bucket pool balance increase:", bucketPoolBalanceAfter - bucketPoolBalanceBefore);
   });
 
 });

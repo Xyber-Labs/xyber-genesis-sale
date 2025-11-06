@@ -8,6 +8,240 @@
   },
   "instructions": [
     {
+      "name": "deposit_sol",
+      "discriminator": [
+        108,
+        81,
+        78,
+        117,
+        125,
+        155,
+        56,
+        200
+      ],
+      "accounts": [
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "backend",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vesting_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  86,
+                  69,
+                  83,
+                  84,
+                  73,
+                  78,
+                  71,
+                  95,
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              },
+              {
+                "kind": "account",
+                "path": "buyer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "round_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  85,
+                  78,
+                  68
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucket_pool",
+          "docs": [
+            "CHECK"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84,
+                  95,
+                  80,
+                  79,
+                  79,
+                  76
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  97,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "base_mint"
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "bucket_data",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "round"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "round",
+          "type": {
+            "defined": {
+              "name": "Round"
+            }
+          }
+        },
+        {
+          "name": "sol_price",
+          "type": "u128"
+        },
+        {
+          "name": "base_allocation",
+          "type": "u64"
+        },
+        {
+          "name": "expiration",
+          "type": "i64"
+        }
+      ]
+    },
+    {
       "name": "initialize",
       "discriminator": [
         175,
@@ -444,6 +678,10 @@
           }
         },
         {
+          "name": "price",
+          "type": "u64"
+        },
+        {
           "name": "start_time",
           "type": "i64"
         },
@@ -493,6 +731,34 @@
         149,
         246
       ]
+    },
+    {
+      "name": "VestingConfig",
+      "discriminator": [
+        0,
+        138,
+        71,
+        135,
+        26,
+        29,
+        43,
+        125
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "DepositEvent",
+      "discriminator": [
+        120,
+        248,
+        61,
+        83,
+        31,
+        142,
+        107,
+        144
+      ]
     }
   ],
   "errors": [
@@ -503,8 +769,38 @@
     },
     {
       "code": 6001,
+      "name": "InvalidBackend",
+      "msg": "Invalid backend account is provided"
+    },
+    {
+      "code": 6002,
       "name": "InvalidBaseMint",
       "msg": "Invalid base mint is provided"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidQuoteMint",
+      "msg": "Invalid quote mint is provided"
+    },
+    {
+      "code": 6004,
+      "name": "BucketSupplyExceeded",
+      "msg": "Bucket supply exceeded"
+    },
+    {
+      "code": 6005,
+      "name": "SignatureExpired",
+      "msg": "Signature is expired"
+    },
+    {
+      "code": 6006,
+      "name": "RoundNotStarted",
+      "msg": "Round is not started"
+    },
+    {
+      "code": 6007,
+      "name": "RoundFinished",
+      "msg": "Round is finished"
     }
   ],
   "types": [
@@ -539,6 +835,34 @@
       }
     },
     {
+      "name": "DepositEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "round",
+            "type": {
+              "defined": {
+                "name": "Round"
+              }
+            }
+          },
+          {
+            "name": "quote_amount",
+            "type": "u64"
+          },
+          {
+            "name": "base_allocation",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "Round",
       "type": {
         "kind": "enum",
@@ -554,6 +878,10 @@
       "type": {
         "kind": "struct",
         "fields": [
+          {
+            "name": "price",
+            "type": "u64"
+          },
           {
             "name": "start_time",
             "type": "i64"
@@ -591,6 +919,32 @@
             "type": {
               "option": "pubkey"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VestingConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "vesting_plan",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "total_allocation",
+            "type": "u64"
+          },
+          {
+            "name": "tokens_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "tokens_burnt",
+            "type": "u64"
           }
         ]
       }
