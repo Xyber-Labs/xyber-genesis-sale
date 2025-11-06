@@ -47,6 +47,10 @@ export class TxBuilder {
     return this.getPda(["ROUND", Buffer.from(roundName!)]);
   }
 
+  getBucketPda(bucketName: string): [web3.PublicKey, number] {
+    return this.getPda(["BUCKET", Buffer.from(bucketName)]);
+  }
+
   async initializeIx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
@@ -144,6 +148,74 @@ export class TxBuilder {
     const { setupRoundIx, config, roundConfig } = await this.setupRoundIx(args);
     const setupRoundTx = new web3.Transaction().add(setupRoundIx);
     return { setupRoundTx, config, roundConfig };
+  }
+
+  async setupBucketIx(args: {
+    admin: web3.PublicKey;
+    bucketName: string;
+    bucketData: {
+      bucketSupply: BN;
+      registeredSupply: BN;
+      claimedSupply: BN;
+      burntSupply: BN;
+      vestingPlan: string[];
+    };
+  }): Promise<{
+    setupBucketIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    bucket: web3.PublicKey;
+    bucketBaseAta: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [bucket] = this.getBucketPda(args.bucketName);
+
+    const configAccount = await this.program.account.saleConfig.fetch(config);
+    const baseMint = configAccount.baseMint;
+
+    const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      bucket,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const setupBucketIx = await this.program.methods
+      .setupBucket(args.bucketName, args.bucketData)
+      .accountsStrict({
+        admin: args.admin,
+        config: config,
+        bucket: bucket,
+        bucketBaseAta: bucketBaseAta,
+        baseMint: baseMint,
+        tokenProgram: splToken.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { setupBucketIx, config, bucket, bucketBaseAta };
+  }
+
+  async setupBucketTx(args: {
+    admin: web3.PublicKey;
+    bucketName: string;
+    bucketData: {
+      bucketSupply: BN;
+      registeredSupply: BN;
+      claimedSupply: BN;
+      burntSupply: BN;
+      vestingPlan: string[];
+    };
+  }): Promise<{
+    setupBucketTx: web3.Transaction;
+    config: web3.PublicKey;
+    bucket: web3.PublicKey;
+    bucketBaseAta: web3.PublicKey;
+  }> {
+    const { setupBucketIx, config, bucket, bucketBaseAta } = await this.setupBucketIx(args);
+    const setupBucketTx = new web3.Transaction().add(setupBucketIx);
+    return { setupBucketTx, config, bucket, bucketBaseAta };
   }
 
 }

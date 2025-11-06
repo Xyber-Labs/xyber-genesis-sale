@@ -21,4 +21,8 @@ pub mod xyber_sale {
     pub fn setup_round(ctx: Context<SetupRound>, round: data::Round, start_time: i64, end_time: i64) -> Result<()> {
         instructions::setup_round(ctx, round, start_time, end_time)
     }
+
+    pub fn setup_bucket(ctx: Context<SetupBucket>, bucket_name: String, bucket_data: data::BucketData) -> Result<()> {
+        instructions::setup_bucket(ctx, bucket_name, bucket_data)
+    }
 }

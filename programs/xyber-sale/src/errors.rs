@@ -4,4 +4,6 @@ use anchor_lang::prelude::*;
 pub enum CustomError {
     #[msg("Invalid admin account is provided")]
     InvalidAdmin,
+    #[msg("Invalid base mint is provided")]
+    InvalidBaseMint,
 }

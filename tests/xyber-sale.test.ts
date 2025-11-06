@@ -136,5 +136,39 @@ describe("XyberSale", () => {
     console.log("Start time:", roundConfigAccount.startTime.toString());
     console.log("End time:", roundConfigAccount.endTime.toString());
   });
-  
+
+  it("Should setup bucket", async () => {
+    const bucketName = "public";
+    const bucketData = {
+      bucketSupply: new anchor.BN(1000000),
+      registeredSupply: new anchor.BN(0),
+      claimedSupply: new anchor.BN(0),
+      burntSupply: new anchor.BN(0),
+      vestingPlan: ["public"],
+    };
+
+    const { signature, config, bucket, bucketBaseAta } = await sdk.setupBucket({
+      adminKeypair: admin,
+      bucketName: bucketName,
+      bucketData: bucketData,
+    });
+
+    console.log("Setup bucket tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Config PDA:", config.toBase58());
+    console.log("Bucket PDA:", bucket.toBase58());
+    console.log("Bucket Base ATA:", bucketBaseAta.toBase58());
+
+    const bucketAccount = await program.account.bucketData.fetch(bucket);
+
+    assert.ok(bucketAccount.bucketSupply.eq(bucketData.bucketSupply));
+    assert.ok(bucketAccount.registeredSupply.eq(bucketData.registeredSupply));
+    assert.ok(bucketAccount.claimedSupply.eq(bucketData.claimedSupply));
+    assert.ok(bucketAccount.burntSupply.eq(bucketData.burntSupply));
+    assert.deepEqual(bucketAccount.vestingPlan, bucketData.vestingPlan);
+
+    console.log("Bucket configured successfully!");
+    console.log("Bucket supply:", bucketAccount.bucketSupply.toString());
+  });
+
 });

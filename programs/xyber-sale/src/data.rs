@@ -35,3 +35,14 @@ pub struct RoundConfig {
     pub start_time: i64,
     pub end_time: i64,
 }
+
+#[account]
+#[derive(Default, InitSpace)]
+pub struct BucketData {
+    pub bucket_supply: u64,
+    pub registered_supply: u64,
+    pub claimed_supply: u64,
+    pub burnt_supply: u64,
+    #[max_len(10, 40)]
+    pub vesting_plan: Vec<String>,
+}

@@ -189,6 +189,171 @@
       ]
     },
     {
+      "name": "setup_bucket",
+      "discriminator": [
+        178,
+        191,
+        41,
+        63,
+        215,
+        21,
+        237,
+        129
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "bucket_name"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucket_base_ata",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "bucket"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "base_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "base_mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "bucket_name",
+          "type": "string"
+        },
+        {
+          "name": "bucket_data",
+          "type": {
+            "defined": {
+              "name": "BucketData"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "setup_round",
       "discriminator": [
         126,
@@ -291,6 +456,19 @@
   ],
   "accounts": [
     {
+      "name": "BucketData",
+      "discriminator": [
+        60,
+        27,
+        209,
+        210,
+        232,
+        46,
+        221,
+        39
+      ]
+    },
+    {
       "name": "RoundConfig",
       "discriminator": [
         243,
@@ -322,9 +500,44 @@
       "code": 6000,
       "name": "InvalidAdmin",
       "msg": "Invalid admin account is provided"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidBaseMint",
+      "msg": "Invalid base mint is provided"
     }
   ],
   "types": [
+    {
+      "name": "BucketData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bucket_supply",
+            "type": "u64"
+          },
+          {
+            "name": "registered_supply",
+            "type": "u64"
+          },
+          {
+            "name": "claimed_supply",
+            "type": "u64"
+          },
+          {
+            "name": "burnt_supply",
+            "type": "u64"
+          },
+          {
+            "name": "vesting_plan",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "Round",
       "type": {

@@ -6,6 +6,7 @@ A Solana-based token sale platform built with Anchor framework.
 
 - **Configuration Management**: Initialize and manage sale configuration with admin, backend, and multisig roles
 - **Round Management**: Setup and configure sale rounds with start/end times
+- **Bucket Management**: Create and configure token distribution buckets with supply tracking and vesting plans
 - **TypeScript SDK**: Full-featured SDK for interacting with the program
 - **Test Suite**: Comprehensive test coverage
 
@@ -37,12 +38,19 @@ anchor run initialize -- \
 Configure the sale round with start and end times.
 
 ```bash
-anchor run setup-round -- \
-  --start-time 1762434389 \
-  --end-time 1762520789
+anchor run setup-round -- --admin-keypair <PATH> --start-time <TIMESTAMP> --end-time <TIMESTAMP>
+```
+
+### Setup Bucket
+
+Create and configure a token distribution bucket with supply tracking and vesting plan.
+
+```bash
+anchor run setup-bucket -- --admin-keypair <PATH> --bucket-name <NAME> --bucket-supply <AMOUNT>
 ```
 
 ## Program Architecture
 
 - **SaleConfig**: Configuration account with admin, backend, multisig roles and token mints
 - **RoundConfig**: Round configuration with start/end times
+- **BucketData**: Token distribution bucket with supply tracking and vesting plan

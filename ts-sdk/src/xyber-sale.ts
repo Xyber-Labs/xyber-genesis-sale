@@ -68,6 +68,30 @@ const XyberSaleSDK = {
       return { signature, config, roundConfig };
     }
 
+    async function setupBucket(args: {
+      adminKeypair: anchor.web3.Keypair;
+      bucketName: string;
+      bucketData: {
+        bucketSupply: BN;
+        registeredSupply: BN;
+        claimedSupply: BN;
+        burntSupply: BN;
+        vestingPlan: string[];
+      };
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey; bucketBaseAta: anchor.web3.PublicKey }> {
+      const { setupBucketTx, config, bucket, bucketBaseAta } = await txBuilder.setupBucketTx({
+        admin: args.adminKeypair.publicKey,
+        bucketName: args.bucketName,
+        bucketData: args.bucketData,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(setupBucketTx, [args.adminKeypair]);
+      return { signature, config, bucket, bucketBaseAta };
+    }
+
     return {
       idl,
       program,
@@ -80,6 +104,10 @@ const XyberSaleSDK = {
       setupRound,
       setupRoundIx: txBuilder.setupRoundIx.bind(txBuilder),
       setupRoundTx: txBuilder.setupRoundTx.bind(txBuilder),
+
+      setupBucket,
+      setupBucketIx: txBuilder.setupBucketIx.bind(txBuilder),
+      setupBucketTx: txBuilder.setupBucketTx.bind(txBuilder),
     };
   },
 };

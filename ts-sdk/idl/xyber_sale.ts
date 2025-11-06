@@ -195,6 +195,171 @@ export type XyberSale = {
       ]
     },
     {
+      "name": "setupBucket",
+      "discriminator": [
+        178,
+        191,
+        41,
+        63,
+        215,
+        21,
+        237,
+        129
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucket",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "bucketName"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketBaseAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "bucket"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "baseMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "baseMint",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "bucketName",
+          "type": "string"
+        },
+        {
+          "name": "bucketData",
+          "type": {
+            "defined": {
+              "name": "bucketData"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "setupRound",
       "discriminator": [
         126,
@@ -297,6 +462,19 @@ export type XyberSale = {
   ],
   "accounts": [
     {
+      "name": "bucketData",
+      "discriminator": [
+        60,
+        27,
+        209,
+        210,
+        232,
+        46,
+        221,
+        39
+      ]
+    },
+    {
       "name": "roundConfig",
       "discriminator": [
         243,
@@ -328,9 +506,44 @@ export type XyberSale = {
       "code": 6000,
       "name": "invalidAdmin",
       "msg": "Invalid admin account is provided"
+    },
+    {
+      "code": 6001,
+      "name": "invalidBaseMint",
+      "msg": "Invalid base mint is provided"
     }
   ],
   "types": [
+    {
+      "name": "bucketData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bucketSupply",
+            "type": "u64"
+          },
+          {
+            "name": "registeredSupply",
+            "type": "u64"
+          },
+          {
+            "name": "claimedSupply",
+            "type": "u64"
+          },
+          {
+            "name": "burntSupply",
+            "type": "u64"
+          },
+          {
+            "name": "vestingPlan",
+            "type": {
+              "vec": "string"
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "round",
       "type": {
