@@ -21,14 +21,15 @@ anchor deploy --provider.cluster localnet --program-name xyber-sale --program-ke
 ### 2. Airdrop SOL to Admin and Buyer
 
 ```bash
-solana airdrop 100 $(solana-keygen pubkey keys/admin.json) -u localhost
-solana airdrop 100 $(solana-keygen pubkey keys/buyer.json) -u localhost
+solana airdrop 100 $(solana address -k keys/admin.json) -u localhost
+solana airdrop 100 $(solana address -k keys/buyer.json) -u localhost
 ```
 
 ### 3. Create Token Mints
 
 ```bash
-anchor run create-mints --provider.cluster localnet
+spl-token create-token --decimals 6 keys/base-mint.json -u localhost
+spl-token create-token --decimals 6 keys/quote-mint.json -u localhost
 ```
 
 ### 4. Initialize Sale Configuration
@@ -79,6 +80,7 @@ anchor run setup-vesting-plan --provider.cluster localnet -- \
 ```
 
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
+
 - Multiple `--period` options can be specified for gradual vesting
 - `CLAIM_RATIO`: Portion of tokens to claim (0.0 to 1.0)
 - `BURN_RATIO`: Portion of tokens to burn (0.0 to 1.0)
@@ -99,11 +101,9 @@ anchor run setup-bucket --provider.cluster localnet -- \
 Mint base tokens to bucket for claim distribution:
 
 ```bash
-BASE_MINT=$(solana-keygen pubkey keys/base-mint.json)
-BUCKET_PDA=$(solana address --program-id XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt -- public SEED_ROOT BUCKET)
-BUCKET_BASE_ATA=$(spl-token address --token $BASE_MINT --owner $BUCKET_PDA -u localhost)
-
-spl-token mint $BASE_MINT 1000000 $BUCKET_BASE_ATA -u localhost
+anchor run mint-to-bucket --provider.cluster localnet -- \
+  --bucket-name public \
+  --amount 200000000
 ```
 
 ### 9. Deposit SOL to Purchase Tokens
@@ -123,13 +123,12 @@ anchor run deposit-sol --provider.cluster localnet -- \
 Create token account and mint quote tokens to buyer for testing SPL deposit:
 
 ```bash
-QUOTE_MINT=$(solana-keygen pubkey keys/quote-mint.json)
-BUYER=$(solana-keygen pubkey keys/buyer.json)
+spl-token create-account $(solana address -k keys/quote-mint.json) \
+  --owner $(solana address -k keys/buyer.json) \
+  --fee-payer ~/.config/solana/id.json \
+  -u localhost
 
-BUYER_QUOTE_ATA=$(spl-token create-account $QUOTE_MINT --owner $BUYER --fee-payer ~/.config/solana/id.json -u localhost 2>&1 | grep "Creating account" | awk '{print $3}')
-echo "Buyer Quote ATA: $BUYER_QUOTE_ATA"
-
-spl-token mint $QUOTE_MINT 10000000 $BUYER_QUOTE_ATA -u localhost
+spl-token mint $(solana address -k keys/quote-mint.json) 10000000 --recipient-owner keys/buyer.json -u localhost
 ```
 
 ### 11. Deposit Tokens (SPL) to Purchase Tokens
