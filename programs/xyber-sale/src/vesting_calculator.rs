@@ -1,5 +1,3 @@
-use anchor_lang::prelude::*;
-
 use crate::data::VestingPeriod;
 
 #[derive(Debug)]

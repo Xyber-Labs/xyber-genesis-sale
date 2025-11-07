@@ -11,6 +11,7 @@ A Solana-based token sale platform built with Anchor framework.
 - **SOL Deposits**: Accept native SOL deposits with price-based token allocation
 - **SPL Token Deposits**: Accept SPL token deposits with price-based token allocation
 - **Vesting Management**: Track user allocations with vesting configuration
+- **Token Claiming**: Claim purchased tokens according to vesting schedule with automatic burn support
 - **TypeScript SDK**: Full-featured SDK for interacting with the program
 - **Test Suite**: Comprehensive test coverage
 
@@ -71,7 +72,8 @@ Create and configure a token distribution bucket with supply tracking and vestin
 anchor run setup-bucket -- \
   --admin-keypair ./keys/admin.json \
   --bucket-name public \
-  --bucket-supply 1000000
+  --bucket-supply 1000000 \
+  --vesting-plan public
 ```
 
 ### Deposit SOL
@@ -100,6 +102,23 @@ anchor run deposit-asset -- \
   --base-allocation 100000000 \
   --expiration 1704067800
 ```
+
+### Claim Tokens
+
+Claim purchased tokens according to the vesting schedule. Tokens are released based on the vesting plan configuration.
+
+```bash
+anchor run claim -- \
+  --buyer-keypair ./keys/buyer.json \
+  --bucket-name public \
+  --vesting-plan public
+```
+
+Tokens will be:
+- **Claimed**: Transferred to buyer's token account
+- **Burned**: Automatically burned if configured in the vesting plan
+
+Multiple claims can be made as new vesting periods unlock, until all tokens are distributed.
 
 ## Program Architecture
 

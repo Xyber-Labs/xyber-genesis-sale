@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::vesting_calculator::VestingCalculator;
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
 pub enum Round {
     Public,
@@ -74,10 +76,36 @@ pub struct VestingPlan {
     pub periods: Vec<VestingPeriod>,
 }
 
+impl From<(&VestingConfig, &VestingPlan)> for VestingCalculator {
+    fn from(vesting_settings: (&VestingConfig, &VestingPlan)) -> Self {
+        let vesting_config = vesting_settings.0;
+        let vesting_plan = vesting_settings.1;
+
+        let mut config = VestingCalculator::builder()
+            .claimed(vesting_config.tokens_claimed)
+            .burnt(vesting_config.tokens_burnt)
+            .total_allocation(vesting_config.total_allocation)
+            .vesting_plan(vesting_plan.periods.clone())
+            .build();
+
+        config.recalculate_plan(vesting_plan.periods.clone());
+        config
+    }
+}
+
 #[event]
 pub struct DepositEvent {
     pub buyer: Pubkey,
     pub round: Round,
     pub quote_amount: u64,
     pub base_allocation: u64,
+}
+
+#[event]
+pub struct ClaimEvent {
+    pub buyer: Pubkey,
+    pub bucket: String,
+    pub vesting_plan: String,
+    pub claim: u64,
+    pub burn: u64,
 }

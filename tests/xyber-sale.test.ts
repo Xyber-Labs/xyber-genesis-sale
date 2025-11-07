@@ -312,23 +312,17 @@ describe("XyberSale", () => {
     );
   });
 
-  it("Should setup vesting plan", async () => {
+  it("Should setup vesting plan for public sale (100% unlock at TGE)", async () => {
     const vestingPlanName = "public";
-    const now = Math.floor(Date.now() / 1000);
+    const tgeDate = Math.floor(Date.now() / 1000);
 
     const plan = {
       periods: [
         {
-          startTimestamp: new anchor.BN(now),
-          claimRatio: 0.65,
+          startTimestamp: new anchor.BN(tgeDate),
+          claimRatio: 1.0,
           burnRatio: 0.0,
           basePeriodIndex: null,
-        },
-        {
-          startTimestamp: new anchor.BN(now + 3600),
-          claimRatio: 0.35,
-          burnRatio: 0.0,
-          basePeriodIndex: 0,
         },
       ],
     };
@@ -346,21 +340,118 @@ describe("XyberSale", () => {
 
     const vestingPlanAccount = await program.account.vestingPlan.fetch(vestingPlan);
 
-    assert.equal(vestingPlanAccount.periods.length, 2);
+    assert.equal(vestingPlanAccount.periods.length, 1);
     assert.ok(vestingPlanAccount.periods[0].startTimestamp.eq(plan.periods[0].startTimestamp));
     assert.equal(vestingPlanAccount.periods[0].claimRatio, plan.periods[0].claimRatio);
     assert.equal(vestingPlanAccount.periods[0].burnRatio, plan.periods[0].burnRatio);
     assert.equal(vestingPlanAccount.periods[0].basePeriodIndex, plan.periods[0].basePeriodIndex);
 
-    assert.ok(vestingPlanAccount.periods[1].startTimestamp.eq(plan.periods[1].startTimestamp));
-    assert.equal(vestingPlanAccount.periods[1].claimRatio, plan.periods[1].claimRatio);
-    assert.equal(vestingPlanAccount.periods[1].burnRatio, plan.periods[1].burnRatio);
-    assert.equal(vestingPlanAccount.periods[1].basePeriodIndex, plan.periods[1].basePeriodIndex);
-
-    console.log("Vesting plan configured successfully!");
+    console.log("Vesting plan configured successfully (100% unlock at TGE)!");
     console.log("Periods count:", vestingPlanAccount.periods.length);
-    console.log("Period 0 - claim ratio:", vestingPlanAccount.periods[0].claimRatio);
-    console.log("Period 1 - claim ratio:", vestingPlanAccount.periods[1].claimRatio);
+    console.log("TGE unlock ratio:", vestingPlanAccount.periods[0].claimRatio);
+  });
+
+  it("Should mint base tokens to bucket for testing claim", async () => {
+    const bucketName = "public";
+    const [bucket] = sdk.txBuilder.getBucketPda(bucketName);
+
+    const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      bucket,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const mintAmount = 1000000;
+    await splToken.mintTo(
+      provider.connection,
+      deployerKeypair,
+      baseMint,
+      bucketBaseAta,
+      deployerKeypair,
+      mintAmount,
+      [],
+      null,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const balance = await provider.connection.getTokenAccountBalance(bucketBaseAta);
+    console.log("Bucket base token balance:", balance.value.amount);
+    assert.ok(parseInt(balance.value.amount) >= mintAmount);
+  });
+
+  it("Should claim 100% tokens at TGE for public sale buyer", async () => {
+    const bucketName = "public";
+    const vestingPlanName = "public";
+
+    const [vestingConfig] = sdk.txBuilder.getVestingConfigPda(bucketName, buyer.publicKey);
+
+    const vestingConfigAccountBefore = await program.account.vestingConfig.fetch(vestingConfig);
+
+    console.log("Before claim:");
+    console.log("  Total allocation:", vestingConfigAccountBefore.totalAllocation.toString());
+    console.log("  Tokens claimed:", vestingConfigAccountBefore.tokensClaimed.toString());
+    console.log("  Vesting plan:", vestingConfigAccountBefore.vestingPlan);
+
+    assert.ok(vestingConfigAccountBefore.totalAllocation.eq(new anchor.BN(200000)));
+    assert.ok(vestingConfigAccountBefore.tokensClaimed.eq(new anchor.BN(0)));
+    assert.equal(vestingConfigAccountBefore.vestingPlan, null);
+
+    const buyerBaseAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      buyer.publicKey,
+      false,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const buyerBaseAccountInfoBefore = await provider.connection.getAccountInfo(buyerBaseAta);
+    const buyerBaseBalanceBefore = buyerBaseAccountInfoBefore
+      ? parseInt((await provider.connection.getTokenAccountBalance(buyerBaseAta)).value.amount)
+      : 0;
+
+    const { signature } = await sdk.claim({
+      buyerKeypair: buyer,
+      bucketName: bucketName,
+      vestingPlanName: vestingPlanName,
+    });
+
+    console.log("Claim tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+
+    const vestingConfigAccountAfter = await program.account.vestingConfig.fetch(vestingConfig);
+    const buyerBaseBalanceAfter = await provider.connection.getTokenAccountBalance(buyerBaseAta);
+
+    console.log("After claim:");
+    console.log("  Tokens claimed:", vestingConfigAccountAfter.tokensClaimed.toString());
+    console.log("  Vesting plan:", vestingConfigAccountAfter.vestingPlan);
+    console.log("  Buyer base balance:", buyerBaseBalanceAfter.value.amount);
+
+    const claimedAmount = vestingConfigAccountAfter.tokensClaimed.sub(vestingConfigAccountBefore.tokensClaimed);
+
+    assert.equal(vestingConfigAccountAfter.vestingPlan, vestingPlanName);
+    assert.ok(vestingConfigAccountAfter.tokensClaimed.eq(vestingConfigAccountBefore.totalAllocation));
+    assert.ok(vestingConfigAccountAfter.tokensClaimed.eq(new anchor.BN(200000)));
+    assert.equal(parseInt(buyerBaseBalanceAfter.value.amount), buyerBaseBalanceBefore + parseInt(claimedAmount.toString()));
+
+    console.log("Successfully claimed 100% of allocation (200,000 tokens) at TGE!");
+  });
+
+  it("Should fail when trying to claim again (nothing left to claim)", async () => {
+    const bucketName = "public";
+    const vestingPlanName = "public";
+
+    await doAndCheckError(
+      sdk.claim({
+        buyerKeypair: buyer,
+        bucketName: bucketName,
+        vestingPlanName: vestingPlanName,
+      }),
+      "Claim unavailable"
+    );
+
+    console.log("Correctly rejected second claim attempt!");
   });
 
 });

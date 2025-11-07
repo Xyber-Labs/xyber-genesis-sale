@@ -101,7 +101,6 @@ const XyberSaleSDK = {
       solPrice: BN;
       baseAllocation: BN;
       expiration: BN;
-      bucketName: string;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositSolTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositSolTx({
         buyer: args.buyerKeypair.publicKey,
@@ -110,7 +109,6 @@ const XyberSaleSDK = {
         solPrice: args.solPrice,
         baseAllocation: args.baseAllocation,
         expiration: args.expiration,
-        bucketName: args.bucketName,
       });
 
       if (!provider.sendAndConfirm) {
@@ -126,7 +124,6 @@ const XyberSaleSDK = {
       round: any;
       baseAllocation: BN;
       expiration: BN;
-      bucketName: string;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
         buyer: args.buyerKeypair.publicKey,
@@ -134,7 +131,6 @@ const XyberSaleSDK = {
         round: args.round,
         baseAllocation: args.baseAllocation,
         expiration: args.expiration,
-        bucketName: args.bucketName,
       });
 
       if (!provider.sendAndConfirm) {
@@ -169,6 +165,24 @@ const XyberSaleSDK = {
       return { signature, config, vestingPlan };
     }
 
+    async function claim(args: {
+      buyerKeypair: anchor.web3.Keypair;
+      bucketName: string;
+      vestingPlanName: string;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; vestingPlan: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
+      const { claimTx, config, vestingPlan, vestingConfig, bucket } = await txBuilder.claimTx({
+        buyer: args.buyerKeypair.publicKey,
+        bucketName: args.bucketName,
+        vestingPlanName: args.vestingPlanName,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(claimTx, [args.buyerKeypair]);
+      return { signature, config, vestingPlan, vestingConfig, bucket };
+    }
+
     return {
       idl,
       program,
@@ -197,6 +211,10 @@ const XyberSaleSDK = {
       setupVestingPlan,
       setupVestingPlanIx: txBuilder.setupVestingPlanIx.bind(txBuilder),
       setupVestingPlanTx: txBuilder.setupVestingPlanTx.bind(txBuilder),
+
+      claim,
+      claimIx: txBuilder.claimIx.bind(txBuilder),
+      claimTx: txBuilder.claimTx.bind(txBuilder),
     };
   },
 };

@@ -21,7 +21,6 @@ async function parseCliArgs() {
   const buyerKeypair = await getKeypairFromFile(options.buyerKeypair);
   const backendKeypair = await getKeypairFromFile(options.backendKeypair);
   const round = getRound(options.round);
-  const bucketName = options.round.toLowerCase();
 
   const now = Math.floor(Date.now() / 1000);
   const expiration = options.expiration ? new anchor.BN(options.expiration) : new anchor.BN(now + 600);
@@ -30,7 +29,6 @@ async function parseCliArgs() {
     buyerKeypair,
     backendKeypair,
     round,
-    bucketName,
     solPrice: new anchor.BN(options.solPrice),
     baseAllocation: new anchor.BN(options.baseAllocation),
     expiration,
@@ -48,7 +46,6 @@ async function main() {
       solPrice: options.solPrice,
       baseAllocation: options.baseAllocation,
       expiration: options.expiration,
-      bucketName: options.bucketName,
     });
 
     console.log("✅ Success!");

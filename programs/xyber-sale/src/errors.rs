@@ -18,4 +18,10 @@ pub enum CustomError {
     RoundNotStarted,
     #[msg("Round is finished")]
     RoundFinished,
+    #[msg("Unexpected vesting plan for bucket")]
+    UnexpectedVestingPlan,
+    #[msg("Claim unavailable")]
+    ClaimUnavailable,
+    #[msg("Allocation overflowed")]
+    AllocationOverflowed,
 }

@@ -5,6 +5,7 @@ use crate::{
     errors::CustomError,
 };
 
+pub use claim::*;
 pub use deposit_asset::*;
 pub use deposit_sol::*;
 pub use initialize::*;
@@ -12,6 +13,7 @@ pub use setup_bucket::*;
 pub use setup_round::*;
 pub use setup_vesting_plan::*;
 
+mod claim;
 mod deposit_asset;
 mod deposit_sol;
 mod initialize;

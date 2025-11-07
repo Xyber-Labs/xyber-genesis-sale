@@ -38,4 +38,8 @@ pub mod xyber_sale {
     pub fn setup_vesting_plan(ctx: Context<SetupVestingPlan>, vesting_plan_name: String, plan: data::VestingPlan) -> Result<()> {
         instructions::setup_vesting_plan(ctx, vesting_plan_name, plan)
     }
+
+    pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> Result<()> {
+        instructions::claim(ctx, bucket_name, vesting_plan)
+    }
 }
