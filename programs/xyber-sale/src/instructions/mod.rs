@@ -12,6 +12,7 @@ pub use initialize::*;
 pub use setup_bucket::*;
 pub use setup_round::*;
 pub use setup_vesting_plan::*;
+pub use withdraw::*;
 
 mod claim;
 mod deposit_asset;
@@ -20,6 +21,7 @@ mod initialize;
 mod setup_bucket;
 mod setup_round;
 mod setup_vesting_plan;
+mod withdraw;
 
 pub fn validate_round(round_config: &Account<RoundConfig>, expiration: i64) -> Result<()> {
     let now = Clock::get()?.unix_timestamp;

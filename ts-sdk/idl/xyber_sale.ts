@@ -1454,6 +1454,550 @@ export type XyberSale = {
           }
         }
       ]
+    },
+    {
+      "name": "withdrawAsset",
+      "discriminator": [
+        78,
+        193,
+        207,
+        125,
+        63,
+        193,
+        129,
+        12
+      ],
+      "accounts": [
+        {
+          "name": "multisig",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketPool",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84,
+                  95,
+                  80,
+                  79,
+                  79,
+                  76
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  97,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "quoteMint",
+          "writable": true
+        },
+        {
+          "name": "bucketPoolAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "bucketPool"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "quoteMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "withdrawOwner",
+          "writable": true
+        },
+        {
+          "name": "withdrawAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "withdrawOwner"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "quoteMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdrawSol",
+      "discriminator": [
+        145,
+        131,
+        74,
+        136,
+        65,
+        137,
+        42,
+        38
+      ],
+      "accounts": [
+        {
+          "name": "multisig",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketPool",
+          "docs": [
+            "CHECK"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84,
+                  95,
+                  80,
+                  79,
+                  79,
+                  76
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  97,
+                  108,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "addressToWithdrawTo",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "withdrawUnsoldTokens",
+      "discriminator": [
+        132,
+        251,
+        59,
+        118,
+        38,
+        162,
+        168,
+        77
+      ],
+      "accounts": [
+        {
+          "name": "multisig",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketData",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "bucketName"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketBaseAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "bucketData"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "baseMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "withdrawOwner",
+          "writable": true
+        },
+        {
+          "name": "withdrawAta",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "withdrawOwner"
+              },
+              {
+                "kind": "account",
+                "path": "tokenProgram"
+              },
+              {
+                "kind": "account",
+                "path": "baseMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "baseMint"
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "bucketName",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1606,6 +2150,16 @@ export type XyberSale = {
       "code": 6010,
       "name": "allocationOverflowed",
       "msg": "Allocation overflowed"
+    },
+    {
+      "code": 6011,
+      "name": "insufficientFunds",
+      "msg": "Insufficient funds"
+    },
+    {
+      "code": 6012,
+      "name": "insufficientBucketSupply",
+      "msg": "Insufficient bucket supply"
     }
   ],
   "types": [
@@ -1828,6 +2382,16 @@ export type XyberSale = {
     }
   ],
   "constants": [
+    {
+      "name": "bucketPoolSeed",
+      "type": "bytes",
+      "value": "[66, 85, 67, 75, 69, 84, 95, 80, 79, 79, 76]"
+    },
+    {
+      "name": "bucketSeed",
+      "type": "bytes",
+      "value": "[66, 85, 67, 75, 69, 84]"
+    },
     {
       "name": "deployer",
       "type": "pubkey",

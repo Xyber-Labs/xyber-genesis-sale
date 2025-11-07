@@ -12,6 +12,9 @@ A Solana-based token sale platform built with Anchor framework.
 - **SPL Token Deposits**: Accept SPL token deposits with price-based token allocation
 - **Vesting Management**: Track user allocations with vesting configuration
 - **Token Claiming**: Claim purchased tokens according to vesting schedule with automatic burn support
+- **Withdraw SOL**: Withdraw accumulated native SOL from bucket pool (multisig only)
+- **Withdraw Assets**: Withdraw accumulated quote tokens from bucket pool (multisig only)
+- **Withdraw Unsold Tokens**: Withdraw unsold base tokens from buckets (multisig only)
 - **TypeScript SDK**: Full-featured SDK for interacting with the program
 - **Test Suite**: Comprehensive test coverage
 
@@ -119,6 +122,38 @@ Tokens will be:
 - **Burned**: Automatically burned if configured in the vesting plan
 
 Multiple claims can be made as new vesting periods unlock, until all tokens are distributed.
+
+### Withdraw SOL (Multisig Only)
+
+Withdraw all accumulated SOL from the bucket pool, leaving only the rent-exempt minimum.
+
+```bash
+anchor run withdraw-sol -- \
+  --multisig-keypair ./keys/multisig.json \
+  --address-to-withdraw-to YOUR_WALLET_ADDRESS
+```
+
+### Withdraw Asset (Multisig Only)
+
+Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool.
+
+```bash
+anchor run withdraw-asset -- \
+  --multisig-keypair ./keys/multisig.json \
+  --withdraw-owner YOUR_WALLET_ADDRESS
+```
+
+### Withdraw Unsold Tokens (Multisig Only)
+
+Withdraw unsold base tokens from a specific bucket. Amount cannot exceed available unsold supply.
+
+```bash
+anchor run withdraw-unsold-tokens -- \
+  --multisig-keypair ./keys/multisig.json \
+  --bucket-name public \
+  --amount 50000000 \
+  --withdraw-owner YOUR_WALLET_ADDRESS
+```
 
 ## Program Architecture
 

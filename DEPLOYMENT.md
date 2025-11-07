@@ -155,6 +155,48 @@ anchor run claim --provider.cluster localnet -- \
 
 **Note:** Tokens are claimed according to the vesting schedule configured in the vesting plan.
 
+## Withdraw Operations (Admin Only)
+
+These operations can only be performed by the multisig account to withdraw accumulated funds from the sale.
+
+### 13. Withdraw SOL from Bucket Pool
+
+Withdraw all accumulated SOL (except rent reserve) from the bucket pool:
+
+```bash
+anchor run withdraw-sol --provider.cluster localnet -- \
+  --multisig-keypair ./keys/multisig.json \
+  --address-to-withdraw-to YOUR_WALLET_ADDRESS
+```
+
+**Note:** Automatically leaves rent-exempt minimum in bucket_pool.
+
+### 14. Withdraw Quote Tokens (Asset) from Bucket Pool
+
+Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool:
+
+```bash
+anchor run withdraw-asset --provider.cluster localnet -- \
+  --multisig-keypair ./keys/multisig.json \
+  --withdraw-owner YOUR_WALLET_ADDRESS
+```
+
+**Note:** Creates an associated token account for withdraw-owner if needed.
+
+### 15. Withdraw Unsold Tokens from Bucket
+
+Withdraw unsold base tokens from a specific bucket:
+
+```bash
+anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
+  --multisig-keypair ./keys/multisig.json \
+  --bucket-name public \
+  --amount 50000000 \
+  --withdraw-owner YOUR_WALLET_ADDRESS
+```
+
+**Note:** Amount must not exceed `bucket_supply - registered_supply`.
+
 ## Testing
 
 Run the complete test suite:

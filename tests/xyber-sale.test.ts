@@ -37,6 +37,12 @@ describe("XyberSale", () => {
     );
     await provider.connection.confirmTransaction(buyerAirdrop);
 
+    const multisigAirdrop = await provider.connection.requestAirdrop(
+      multisig.publicKey,
+      5 * anchor.web3.LAMPORTS_PER_SOL
+    );
+    await provider.connection.confirmTransaction(multisigAirdrop);
+
     baseMint = await splToken.createMint(
       provider.connection,
       deployerKeypair,
@@ -452,6 +458,127 @@ describe("XyberSale", () => {
     );
 
     console.log("Correctly rejected second claim attempt!");
+  });
+
+  it("Withdraw quote tokens (asset) from bucket pool", async () => {
+    const withdrawOwner = anchor.web3.Keypair.generate();
+
+    const [bucketPoolPda] = sdk.txBuilder.getBucketPoolPda();
+    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      bucketPoolPda,
+      true,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const poolBalanceBefore = await provider.connection.getTokenAccountBalance(bucketPoolAta);
+    const poolAmountBefore = BigInt(poolBalanceBefore.value.amount);
+
+    await sdk.withdrawAsset({
+      multisigKeypair: multisig,
+      withdrawOwner: withdrawOwner.publicKey,
+    });
+
+    const withdrawAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      withdrawOwner.publicKey,
+      true,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const withdrawBalance = await provider.connection.getTokenAccountBalance(withdrawAta);
+    const poolBalanceAfter = await provider.connection.getTokenAccountBalance(bucketPoolAta);
+
+    assert.equal(BigInt(withdrawBalance.value.amount), poolAmountBefore);
+    assert.equal(BigInt(poolBalanceAfter.value.amount), 0n);
+
+    console.log("Successfully withdrew all quote tokens from bucket pool!");
+    console.log(`Withdrawn: ${poolAmountBefore} tokens`);
+  });
+
+  it("Withdraw SOL from bucket pool", async () => {
+    const [bucketPoolPda] = sdk.txBuilder.getBucketPoolPda();
+
+    const balanceBefore = await provider.connection.getBalance(multisig.publicKey);
+    const poolBalanceBefore = await provider.connection.getBalance(bucketPoolPda);
+    const rentExempt = await provider.connection.getMinimumBalanceForRentExemption(0);
+
+    await sdk.withdrawSol({
+      multisigKeypair: multisig,
+      addressToWithdrawTo: multisig.publicKey,
+    });
+
+    const balanceAfter = await provider.connection.getBalance(multisig.publicKey);
+    const poolBalanceAfter = await provider.connection.getBalance(bucketPoolPda);
+
+    const expectedWithdrawn = poolBalanceBefore - rentExempt;
+    assert.ok(balanceAfter > balanceBefore);
+    assert.equal(poolBalanceAfter, rentExempt);
+
+    console.log("Successfully withdrew all SOL except rent reserve!");
+    console.log(`Pool balance: ${poolBalanceBefore} -> ${poolBalanceAfter}`);
+    console.log(`Withdrawn: ${expectedWithdrawn} lamports`);
+  });
+
+  it("Withdraw unsold tokens from bucket", async () => {
+    const bucketName = "public";
+    const withdrawAmount = new anchor.BN(500000);
+    const withdrawOwner = anchor.web3.Keypair.generate();
+
+    const [bucketPda] = sdk.txBuilder.getBucketPda(bucketName);
+    const bucketDataBefore = await program.account.bucketData.fetch(bucketPda);
+
+    const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      bucketPda,
+      true,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const poolBalanceBefore = await provider.connection.getTokenAccountBalance(bucketBaseAta);
+
+    await sdk.withdrawUnsoldTokens({
+      multisigKeypair: multisig,
+      bucketName: bucketName,
+      amount: withdrawAmount,
+      withdrawOwner: withdrawOwner.publicKey,
+    });
+
+    const withdrawAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      withdrawOwner.publicKey,
+      true,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const withdrawBalance = await provider.connection.getTokenAccountBalance(withdrawAta);
+    const poolBalanceAfter = await provider.connection.getTokenAccountBalance(bucketBaseAta);
+    const bucketDataAfter = await program.account.bucketData.fetch(bucketPda);
+
+    assert.equal(
+      bucketDataBefore.bucketSupply.sub(bucketDataAfter.bucketSupply).toNumber(),
+      withdrawAmount.toNumber()
+    );
+    assert.equal(
+      bucketDataAfter.registeredSupply.toNumber(),
+      bucketDataBefore.registeredSupply.toNumber()
+    );
+    assert.equal(
+      bucketDataAfter.burntSupply.toNumber(),
+      bucketDataBefore.burntSupply.toNumber()
+    );
+    assert.equal(
+      bucketDataAfter.claimedSupply.toNumber(),
+      bucketDataBefore.claimedSupply.toNumber()
+    );
+    assert.equal(BigInt(withdrawBalance.value.amount), BigInt(withdrawAmount.toNumber()));
+    assert.equal(
+      BigInt(poolBalanceBefore.value.amount) - BigInt(poolBalanceAfter.value.amount),
+      BigInt(withdrawAmount.toNumber())
+    );
+
+    console.log("Successfully withdrew unsold tokens from bucket!");
+    console.log(`Withdrawn: ${withdrawAmount.toNumber()} tokens`);
   });
 
 });

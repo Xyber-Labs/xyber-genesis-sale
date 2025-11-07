@@ -38,10 +38,6 @@ export class TxBuilder {
     return this.getPda(["CONFIG"]);
   }
 
-  getBucketPoolPda(): [web3.PublicKey, number] {
-    return this.getPda(["BUCKET_POOL", this.saleBucketSeed]);
-  }
-
   getRoundConfigPda(round: any): [web3.PublicKey, number] {
     const roundName = parseRound(round);
     return this.getPda(["ROUND", Buffer.from(roundName)]);
@@ -495,6 +491,177 @@ export class TxBuilder {
     const { claimIx, config, vestingPlan, vestingConfig, bucket } = await this.claimIx(args);
     const claimTx = new web3.Transaction().add(claimIx);
     return { claimTx, config, vestingPlan, vestingConfig, bucket };
+  }
+
+  getBucketPoolPda(): [web3.PublicKey, number] {
+    return web3.PublicKey.findProgramAddressSync(
+      [Buffer.from("root"), Buffer.from("BUCKET_POOL"), this.saleBucketSeed],
+      this.program.programId
+    );
+  }
+
+  async withdrawSolIx(args: {
+    multisig: web3.PublicKey;
+    addressToWithdrawTo: web3.PublicKey;
+  }): Promise<{
+    withdrawSolIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    bucketPool: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [bucketPool] = this.getBucketPoolPda();
+
+    const withdrawSolIx = await this.program.methods
+      .withdrawSol()
+      .accountsStrict({
+        multisig: args.multisig,
+        config: config,
+        bucketPool: bucketPool,
+        addressToWithdrawTo: args.addressToWithdrawTo,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { withdrawSolIx, config, bucketPool };
+  }
+
+  async withdrawSolTx(args: {
+    multisig: web3.PublicKey;
+    addressToWithdrawTo: web3.PublicKey;
+  }): Promise<{
+    withdrawSolTx: web3.Transaction;
+    config: web3.PublicKey;
+    bucketPool: web3.PublicKey;
+  }> {
+    const { withdrawSolIx, config, bucketPool } = await this.withdrawSolIx(args);
+    const withdrawSolTx = new web3.Transaction().add(withdrawSolIx);
+    return { withdrawSolTx, config, bucketPool };
+  }
+
+  async withdrawAssetIx(args: {
+    multisig: web3.PublicKey;
+    withdrawOwner: web3.PublicKey;
+  }): Promise<{
+    withdrawAssetIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    bucketPool: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [bucketPool] = this.getBucketPoolPda();
+    const configAccount = await this.program.account.saleConfig.fetch(config);
+    const quoteMint = configAccount.quoteMint;
+
+    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      bucketPool,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const withdrawAta = splToken.getAssociatedTokenAddressSync(
+      quoteMint,
+      args.withdrawOwner,
+      false,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const withdrawAssetIx = await this.program.methods
+      .withdrawAsset()
+      .accountsStrict({
+        multisig: args.multisig,
+        config: config,
+        bucketPool: bucketPool,
+        quoteMint: quoteMint,
+        bucketPoolAta: bucketPoolAta,
+        withdrawOwner: args.withdrawOwner,
+        withdrawAta: withdrawAta,
+        tokenProgram: splToken.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { withdrawAssetIx, config, bucketPool };
+  }
+
+  async withdrawAssetTx(args: {
+    multisig: web3.PublicKey;
+    withdrawOwner: web3.PublicKey;
+  }): Promise<{
+    withdrawAssetTx: web3.Transaction;
+    config: web3.PublicKey;
+    bucketPool: web3.PublicKey;
+  }> {
+    const { withdrawAssetIx, config, bucketPool } = await this.withdrawAssetIx(args);
+    const withdrawAssetTx = new web3.Transaction().add(withdrawAssetIx);
+    return { withdrawAssetTx, config, bucketPool };
+  }
+
+  async withdrawUnsoldTokensIx(args: {
+    multisig: web3.PublicKey;
+    bucketName: string;
+    amount: BN;
+    withdrawOwner: web3.PublicKey;
+  }): Promise<{
+    withdrawUnsoldTokensIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    bucket: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [bucket] = this.getBucketPda(args.bucketName);
+    const configAccount = await this.program.account.saleConfig.fetch(config);
+    const baseMint = configAccount.baseMint;
+
+    const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      bucket,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const withdrawAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      args.withdrawOwner,
+      false,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const withdrawUnsoldTokensIx = await this.program.methods
+      .withdrawUnsoldTokens(args.bucketName, args.amount)
+      .accountsStrict({
+        multisig: args.multisig,
+        config: config,
+        bucketData: bucket,
+        bucketBaseAta: bucketBaseAta,
+        withdrawOwner: args.withdrawOwner,
+        withdrawAta: withdrawAta,
+        baseMint: baseMint,
+        tokenProgram: splToken.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { withdrawUnsoldTokensIx, config, bucket };
+  }
+
+  async withdrawUnsoldTokensTx(args: {
+    multisig: web3.PublicKey;
+    bucketName: string;
+    amount: BN;
+    withdrawOwner: web3.PublicKey;
+  }): Promise<{
+    withdrawUnsoldTokensTx: web3.Transaction;
+    config: web3.PublicKey;
+    bucket: web3.PublicKey;
+  }> {
+    const { withdrawUnsoldTokensIx, config, bucket } = await this.withdrawUnsoldTokensIx(args);
+    const withdrawUnsoldTokensTx = new web3.Transaction().add(withdrawUnsoldTokensIx);
+    return { withdrawUnsoldTokensTx, config, bucket };
   }
 
 }

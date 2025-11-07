@@ -42,4 +42,16 @@ pub mod xyber_sale {
     pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> Result<()> {
         instructions::claim(ctx, bucket_name, vesting_plan)
     }
+
+    pub fn withdraw_sol(ctx: Context<WithdrawSol>) -> Result<()> {
+        instructions::withdraw_sol(ctx)
+    }
+
+    pub fn withdraw_asset(ctx: Context<WithdrawAsset>) -> Result<()> {
+        instructions::withdraw_asset(ctx)
+    }
+
+    pub fn withdraw_unsold_tokens(ctx: Context<WithdrawUnsold>, bucket_name: String, amount: u64) -> Result<()> {
+        instructions::withdraw_unsold_tokens(ctx, bucket_name, amount)
+    }
 }

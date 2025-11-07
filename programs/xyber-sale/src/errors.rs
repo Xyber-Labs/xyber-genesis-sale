@@ -24,4 +24,8 @@ pub enum CustomError {
     ClaimUnavailable,
     #[msg("Allocation overflowed")]
     AllocationOverflowed,
+    #[msg("Insufficient funds")]
+    InsufficientFunds,
+    #[msg("Insufficient bucket supply")]
+    InsufficientBucketSupply,
 }

@@ -183,6 +183,58 @@ const XyberSaleSDK = {
       return { signature, config, vestingPlan, vestingConfig, bucket };
     }
 
+    async function withdrawSol(args: {
+      multisigKeypair: anchor.web3.Keypair;
+      addressToWithdrawTo: anchor.web3.PublicKey;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
+      const { withdrawSolTx, config, bucketPool } = await txBuilder.withdrawSolTx({
+        multisig: args.multisigKeypair.publicKey,
+        addressToWithdrawTo: args.addressToWithdrawTo,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(withdrawSolTx, [args.multisigKeypair]);
+      return { signature, config, bucketPool };
+    }
+
+    async function withdrawAsset(args: {
+      multisigKeypair: anchor.web3.Keypair;
+      withdrawOwner: anchor.web3.PublicKey;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
+      const { withdrawAssetTx, config, bucketPool } = await txBuilder.withdrawAssetTx({
+        multisig: args.multisigKeypair.publicKey,
+        withdrawOwner: args.withdrawOwner,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(withdrawAssetTx, [args.multisigKeypair]);
+      return { signature, config, bucketPool };
+    }
+
+    async function withdrawUnsoldTokens(args: {
+      multisigKeypair: anchor.web3.Keypair;
+      bucketName: string;
+      amount: BN;
+      withdrawOwner: anchor.web3.PublicKey;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
+      const { withdrawUnsoldTokensTx, config, bucket } = await txBuilder.withdrawUnsoldTokensTx({
+        multisig: args.multisigKeypair.publicKey,
+        bucketName: args.bucketName,
+        amount: args.amount,
+        withdrawOwner: args.withdrawOwner,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(withdrawUnsoldTokensTx, [args.multisigKeypair]);
+      return { signature, config, bucket };
+    }
+
     return {
       idl,
       program,
@@ -215,6 +267,18 @@ const XyberSaleSDK = {
       claim,
       claimIx: txBuilder.claimIx.bind(txBuilder),
       claimTx: txBuilder.claimTx.bind(txBuilder),
+
+      withdrawSol,
+      withdrawSolIx: txBuilder.withdrawSolIx.bind(txBuilder),
+      withdrawSolTx: txBuilder.withdrawSolTx.bind(txBuilder),
+
+      withdrawAsset,
+      withdrawAssetIx: txBuilder.withdrawAssetIx.bind(txBuilder),
+      withdrawAssetTx: txBuilder.withdrawAssetTx.bind(txBuilder),
+
+      withdrawUnsoldTokens,
+      withdrawUnsoldTokensIx: txBuilder.withdrawUnsoldTokensIx.bind(txBuilder),
+      withdrawUnsoldTokensTx: txBuilder.withdrawUnsoldTokensTx.bind(txBuilder),
     };
   },
 };
