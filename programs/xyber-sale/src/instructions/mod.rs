@@ -1,24 +1,26 @@
 use anchor_lang::prelude::*;
 
-use crate::{
-    data::{BucketData, RoundConfig, VestingConfig},
-    errors::CustomError,
-};
-
 pub use claim::*;
 pub use deposit_asset::*;
 pub use deposit_sol::*;
 pub use initialize::*;
 pub use setup_bucket::*;
+pub use setup_deterministic_vesting::*;
 pub use setup_round::*;
 pub use setup_vesting_plan::*;
 pub use withdraw::*;
+
+use crate::{
+    data::{BucketData, RoundConfig, VestingConfig, VestingType},
+    errors::CustomError,
+};
 
 mod claim;
 mod deposit_asset;
 mod deposit_sol;
 mod initialize;
 mod setup_bucket;
+mod setup_deterministic_vesting;
 mod setup_round;
 mod setup_vesting_plan;
 mod withdraw;
@@ -41,19 +43,21 @@ pub fn get_order_price(price: u64, base_amount: u64, base_decimals: u32) -> u64 
         .expect("Error in get_order_price calculation")
 }
 
-pub fn update_allocation(
+pub fn update_vesting_config(
     vesting_config: &mut VestingConfig,
     bucket_data: &mut BucketData,
-    base_allocation: u64,
+    _base_allocation: u64,
+    order_price: u64,
 ) -> Result<()> {
-    vesting_config.total_allocation += base_allocation;
-    bucket_data.registered_supply += base_allocation;
-
-    require!(
-        bucket_data.bucket_supply >= bucket_data.registered_supply,
-        CustomError::BucketSupplyExceeded
-    );
-
+    bucket_data.total_deposit += order_price;
+    match vesting_config.vesting_type.as_mut() {
+        None => {
+            vesting_config.vesting_type = Some(VestingType::DepositBased {
+                deposit: order_price,
+            })
+        }
+        Some(VestingType::DepositBased { deposit }) => *deposit += order_price,
+        Some(VestingType::Deterministic { .. }) => panic!("Deterministic not supported in deposit"),
+    }
     Ok(())
 }
-

@@ -2,15 +2,22 @@ use anchor_lang::prelude::*;
 
 use crate::vesting_calculator::VestingCalculator;
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, InitSpace)]
 pub enum Round {
+    #[default]
     Public,
 }
 
-impl Default for Round {
-    fn default() -> Self {
-        Round::Public
-    }
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
+pub enum BucketVestingType {
+    Deterministic,
+    DepositBased,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
+pub enum VestingType {
+    Deterministic { allocation: u64 },
+    DepositBased { deposit: u64 },
 }
 
 impl Round {
@@ -40,11 +47,11 @@ pub struct RoundConfig {
 }
 
 #[account]
-#[derive(InitSpace)]
+#[derive(Default, InitSpace)]
 pub struct VestingConfig {
     #[max_len(40)]
     pub vesting_plan: Option<String>,
-    pub total_allocation: u64,
+    pub vesting_type: Option<VestingType>,
     pub tokens_claimed: u64,
     pub tokens_burnt: u64,
 }
@@ -52,6 +59,8 @@ pub struct VestingConfig {
 #[account]
 #[derive(Default, InitSpace)]
 pub struct BucketData {
+    pub vesting_type: Option<BucketVestingType>,
+    pub total_deposit: u64,
     pub bucket_supply: u64,
     pub registered_supply: u64,
     pub claimed_supply: u64,
@@ -72,24 +81,41 @@ pub struct VestingPeriod {
 #[account]
 #[derive(InitSpace)]
 pub struct VestingPlan {
-    #[max_len(12)]
+    #[max_len(24)]
     pub periods: Vec<VestingPeriod>,
 }
 
-impl From<(&VestingConfig, &VestingPlan)> for VestingCalculator {
-    fn from(vesting_settings: (&VestingConfig, &VestingPlan)) -> Self {
-        let vesting_config = vesting_settings.0;
-        let vesting_plan = vesting_settings.1;
+impl VestingCalculator {
+    pub(super) fn new(
+        vesting_config: &VestingConfig,
+        vesting_plan: &VestingPlan,
+        bucket_data: &BucketData,
+    ) -> Self {
+        let participant_allocation = Self::get_participant_allocation(vesting_config, bucket_data);
 
-        let mut config = VestingCalculator::builder()
+        let mut calculator = VestingCalculator::builder()
             .claimed(vesting_config.tokens_claimed)
             .burnt(vesting_config.tokens_burnt)
-            .total_allocation(vesting_config.total_allocation)
+            .total_allocation(participant_allocation)
             .vesting_plan(vesting_plan.periods.clone())
             .build();
 
-        config.recalculate_plan(vesting_plan.periods.clone());
-        config
+        calculator.recalculate_plan(vesting_plan.periods.clone());
+        calculator
+    }
+
+    pub(super) fn get_participant_allocation(
+        vesting_config: &VestingConfig,
+        bucket_data: &BucketData,
+    ) -> u64 {
+        match vesting_config.vesting_type {
+            Some(VestingType::DepositBased { deposit }) => deposit
+                .checked_mul(bucket_data.bucket_supply)
+                .and_then(|mul| mul.checked_div(bucket_data.total_deposit))
+                .expect("Overflow calculating allocation"),
+            Some(VestingType::Deterministic { allocation }) => allocation,
+            None => panic!("Vesting is not possible vesting type is not set"),
+        }
     }
 }
 

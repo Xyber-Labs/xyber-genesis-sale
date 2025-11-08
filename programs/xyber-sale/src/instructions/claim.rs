@@ -1,34 +1,44 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{burn, transfer_checked, Burn, Mint, TokenAccount, TokenInterface, TransferChecked},
+    token_interface::{
+        burn, Burn, Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked,
+    },
 };
 
 use crate::{
     constants::SEED_ROOT,
-    data::{BucketData, ClaimEvent, SaleConfig, VestingConfig, VestingPlan},
+    data::{
+        BucketData, BucketVestingType, ClaimEvent, SaleConfig, VestingConfig, VestingPlan,
+        VestingType,
+    },
     errors::CustomError,
     vesting_calculator::VestingCalculator,
 };
 
-pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> Result<()> {
+pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan_name: String) -> Result<()> {
     require!(
-        ctx.accounts.bucket_data.vesting_plan.contains(&vesting_plan),
+        ctx.accounts.bucket_data.vesting_plan.contains(&vesting_plan_name),
         CustomError::UnexpectedVestingPlan
     );
+    let bucket_data = &mut ctx.accounts.bucket_data;
+    let vesting_config = &mut ctx.accounts.vesting_config;
+    let vesting_plan_account = &ctx.accounts.vesting_plan;
 
-    let vesting_config_account = &mut ctx.accounts.vesting_config;
-
-    if let Some(ref current_vesting_plan) = vesting_config_account.vesting_plan {
-        require!(current_vesting_plan == &vesting_plan, CustomError::UnexpectedVestingPlan);
+    if let Some(ref current_name) = vesting_config.vesting_plan {
+        require!(current_name == &vesting_plan_name, CustomError::UnexpectedVestingPlan);
     }
 
-    vesting_config_account.vesting_plan.get_or_insert(vesting_plan.clone());
-    let vesting_plan_acc = &ctx.accounts.vesting_plan;
+    vesting_config.vesting_plan.get_or_insert(vesting_plan_name.clone());
 
-    let vesting_settings =
-        (&vesting_config_account.clone().into_inner(), &vesting_plan_acc.clone().into_inner());
-    let mut vesting_calculator = VestingCalculator::from(vesting_settings);
+    match (bucket_data.vesting_type, vesting_config.vesting_type) {
+        (Some(BucketVestingType::Deterministic), Some(VestingType::Deterministic { .. })) => {}
+        (Some(BucketVestingType::DepositBased), Some(VestingType::DepositBased { .. })) => {}
+        _ => panic!("Vesting types must match"),
+    }
+
+    let mut vesting_calculator =
+        VestingCalculator::new(vesting_config, vesting_plan_account, bucket_data);
 
     let unixtime = ctx.accounts.clock.unix_timestamp as u64;
     let to_claim = vesting_calculator.claim(unixtime);
@@ -36,11 +46,14 @@ pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> 
 
     require!(to_claim != 0 || to_burn != 0, CustomError::ClaimUnavailable);
 
-    vesting_config_account.tokens_claimed += to_claim;
-    vesting_config_account.tokens_burnt += to_burn;
+    vesting_config.tokens_claimed += to_claim;
+    vesting_config.tokens_burnt += to_burn;
+
+    let participant_allocation =
+        VestingCalculator::get_participant_allocation(vesting_config, bucket_data);
+
     require!(
-        vesting_config_account.tokens_claimed + vesting_config_account.tokens_burnt
-            <= vesting_config_account.total_allocation,
+        vesting_config.tokens_claimed + vesting_config.tokens_burnt <= participant_allocation,
         CustomError::AllocationOverflowed
     );
 
@@ -59,9 +72,8 @@ pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> 
             authority: ctx.accounts.bucket_data.to_account_info(),
         };
 
-        let cpi =
-            CpiContext::new(ctx.accounts.token_program.to_account_info(), transfer_accounts)
-                .with_signer(&pda_signature);
+        let cpi = CpiContext::new(ctx.accounts.token_program.to_account_info(), transfer_accounts)
+            .with_signer(&pda_signature);
         transfer_checked(cpi, to_claim, ctx.accounts.base_mint.decimals)?;
         ctx.accounts.bucket_data.claimed_supply += to_claim;
         msg!("Tokens claimed: {}", to_claim);
@@ -83,7 +95,7 @@ pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> 
     emit!(ClaimEvent {
         buyer: *ctx.accounts.buyer.key,
         bucket: bucket_name,
-        vesting_plan: vesting_config_account
+        vesting_plan: vesting_config
             .vesting_plan
             .clone()
             .expect("vesting_plan expected to be set up"),

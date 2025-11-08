@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, system_program::System};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+    token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked},
 };
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
     errors::CustomError,
 };
 
-use super::{get_order_price, update_allocation, validate_round};
+use super::{get_order_price, update_vesting_config, validate_round};
 
 #[derive(Accounts)]
 #[instruction(round: Round)]
@@ -89,16 +89,14 @@ pub fn deposit_asset(
         authority: ctx.accounts.buyer.to_account_info(),
     };
 
-    let cpi = CpiContext::new(
-        ctx.accounts.token_program.to_account_info(),
-        transfer_accounts,
-    );
+    let cpi = CpiContext::new(ctx.accounts.token_program.to_account_info(), transfer_accounts);
     transfer_checked(cpi, order_price, ctx.accounts.quote_mint.decimals)?;
 
-    update_allocation(
+    update_vesting_config(
         &mut ctx.accounts.vesting_config,
         &mut ctx.accounts.bucket_data,
         base_allocation,
+        order_price,
     )?;
 
     emit!(DepositEvent {

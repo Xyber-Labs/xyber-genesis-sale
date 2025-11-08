@@ -23,6 +23,8 @@ anchor deploy --provider.cluster localnet --program-name xyber-sale --program-ke
 ```bash
 solana airdrop 100 $(solana address -k keys/admin.json) -u localhost
 solana airdrop 100 $(solana address -k keys/buyer.json) -u localhost
+solana airdrop 100 $(solana address -k keys/multisig.json) -u localhost
+solana airdrop 100 $(solana address -k keys/participant.json) -u localhost
 ```
 
 ### 3. Create Token Mints
@@ -103,7 +105,7 @@ Mint base tokens to bucket for claim distribution:
 ```bash
 anchor run mint-to-bucket --provider.cluster localnet -- \
   --bucket-name public \
-  --amount 200000000
+  --amount 100000000000000
 ```
 
 ### 9. Deposit SOL to Purchase Tokens
@@ -196,6 +198,74 @@ anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
 ```
 
 **Note:** Amount must not exceed `bucket_supply - registered_supply`.
+
+## Deterministic Vesting Flow (Team, Advisors, Partners)
+
+This section describes how to set up deterministic vesting for participants with pre-defined token allocations (team,
+advisors, partners, etc.).
+
+### 1. Setup Bucket with Deterministic Vesting
+
+```bash
+anchor run setup-bucket --provider.cluster localnet -- \
+  --admin-keypair ./keys/admin.json \
+  --bucket-name team \
+  --bucket-supply 10000000000000 \
+  --vesting-type deterministic \
+  --vesting-plan vesting-24m
+```
+
+### 2. Setup 24-Month Linear Vesting Plan
+
+Create a vesting plan with 24 equal monthly unlocks (0% TGE):
+
+```bash
+anchor run setup-24m-vesting-plan --provider.cluster localnet -- \
+  --admin-keypair ./keys/admin.json \
+  --vesting-plan-name vesting-24m
+```
+
+**Note:** Each period unlocks 1/24 ≈ 4.17% of allocation monthly over 24 months.
+
+### 3. Setup Deterministic Vesting for Participant
+
+Assign fixed allocation to a participant:
+
+```bash
+anchor run setup-deterministic-vesting --provider.cluster localnet -- \
+  --admin-keypair ./keys/admin.json \
+  --participant $(solana address -k keys/participant.json) \
+  --bucket-name team \
+  --new-allocation 50000000000 \
+  --vesting-plan vesting-24m
+```
+
+### 4. Mint Base Tokens to Bucket
+
+```bash
+anchor run mint-to-bucket --provider.cluster localnet -- \
+  --bucket-name team \
+  --amount 10000000000000
+```
+
+### 5. Claim Tokens
+
+Participant can claim unlocked tokens according to vesting schedule:
+
+```bash
+anchor run claim --provider.cluster localnet -- \
+  --buyer-keypair ./keys/participant.json \
+  --bucket-name team \
+  --vesting-plan vesting-24m
+```
+
+**Important Notes:**
+
+- Deterministic vesting uses **fixed allocations** set by admin
+- No deposits required - allocation is predetermined
+- First claim happens immediately (month 0), subsequent claims unlock monthly
+- Can only claim unlocked portion based on elapsed time
+- Bucket vesting type (deterministic) must match user vesting type
 
 ## Testing
 

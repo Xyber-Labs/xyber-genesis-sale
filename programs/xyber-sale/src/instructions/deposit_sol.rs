@@ -11,7 +11,7 @@ use crate::{
     errors::CustomError,
 };
 
-use super::{get_order_price, update_allocation, validate_round};
+use super::{get_order_price, update_vesting_config, validate_round};
 
 #[derive(Accounts)]
 #[instruction(round: Round)]
@@ -77,10 +77,11 @@ pub fn deposit_sol(
         ],
     )?;
 
-    update_allocation(
+    update_vesting_config(
         &mut ctx.accounts.vesting_config,
         &mut ctx.accounts.bucket_data,
         base_allocation,
+        order_price,
     )?;
 
     emit!(DepositEvent {

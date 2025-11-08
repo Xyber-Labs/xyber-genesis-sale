@@ -74,6 +74,8 @@ const XyberSaleSDK = {
       adminKeypair: anchor.web3.Keypair;
       bucketName: string;
       bucketData: {
+        vestingType: { deterministic: {} } | { depositBased: {} } | null;
+        totalDeposit: BN;
         bucketSupply: BN;
         registeredSupply: BN;
         claimedSupply: BN;
@@ -163,6 +165,32 @@ const XyberSaleSDK = {
       }
       const signature = await provider.sendAndConfirm(setupVestingPlanTx, [args.adminKeypair]);
       return { signature, config, vestingPlan };
+    }
+
+    async function setupDeterministicVesting(args: {
+      adminKeypair: anchor.web3.Keypair;
+      participant: anchor.web3.PublicKey;
+      bucketName: string;
+      newAllocation: BN;
+      vestingPlan: string | null;
+      tokensClaimed: BN;
+      tokensBurnt: BN;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey }> {
+      const { setupDeterministicVestingTx, config, bucket, vestingConfig } = await txBuilder.setupDeterministicVestingTx({
+        admin: args.adminKeypair.publicKey,
+        participant: args.participant,
+        bucketName: args.bucketName,
+        newAllocation: args.newAllocation,
+        vestingPlan: args.vestingPlan,
+        tokensClaimed: args.tokensClaimed,
+        tokensBurnt: args.tokensBurnt,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(setupDeterministicVestingTx, [args.adminKeypair]);
+      return { signature, config, bucket, vestingConfig };
     }
 
     async function claim(args: {
@@ -263,6 +291,10 @@ const XyberSaleSDK = {
       setupVestingPlan,
       setupVestingPlanIx: txBuilder.setupVestingPlanIx.bind(txBuilder),
       setupVestingPlanTx: txBuilder.setupVestingPlanTx.bind(txBuilder),
+
+      setupDeterministicVesting,
+      setupDeterministicVestingIx: txBuilder.setupDeterministicVestingIx.bind(txBuilder),
+      setupDeterministicVestingTx: txBuilder.setupDeterministicVestingTx.bind(txBuilder),
 
       claim,
       claimIx: txBuilder.claimIx.bind(txBuilder),
