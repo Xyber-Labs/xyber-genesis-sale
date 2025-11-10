@@ -90,11 +90,14 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 
 ### 7. Setup Token Bucket
 
+For **public sale** (deposit-based/pro rata):
+
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
   --admin-keypair ./keys/admin.json \
   --bucket-name public \
   --bucket-supply 100000000000000 \
+  --vesting-type deposit-based \
   --vesting-plan public
 ```
 
@@ -168,7 +171,7 @@ Withdraw all accumulated SOL (except rent reserve) from the bucket pool:
 ```bash
 anchor run withdraw-sol --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
-  --address-to-withdraw-to YOUR_WALLET_ADDRESS
+  --address-to-withdraw-to $(solana address)
 ```
 
 **Note:** Automatically leaves rent-exempt minimum in bucket_pool.
@@ -180,24 +183,10 @@ Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool:
 ```bash
 anchor run withdraw-asset --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
-  --withdraw-owner YOUR_WALLET_ADDRESS
+  --withdraw-owner $(solana address)
 ```
 
 **Note:** Creates an associated token account for withdraw-owner if needed.
-
-### 15. Withdraw Unsold Tokens from Bucket
-
-Withdraw unsold base tokens from a specific bucket:
-
-```bash
-anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
-  --multisig-keypair ./keys/multisig.json \
-  --bucket-name public \
-  --amount 50000000 \
-  --withdraw-owner YOUR_WALLET_ADDRESS
-```
-
-**Note:** Amount must not exceed `bucket_supply - registered_supply`.
 
 ## Deterministic Vesting Flow (Team, Advisors, Partners)
 
@@ -266,6 +255,23 @@ anchor run claim --provider.cluster localnet -- \
 - First claim happens immediately (month 0), subsequent claims unlock monthly
 - Can only claim unlocked portion based on elapsed time
 - Bucket vesting type (deterministic) must match user vesting type
+
+### 6. Withdraw Tokens from Bucket
+
+Withdraw base tokens from a **deterministic** bucket:
+
+```bash
+anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
+  --multisig-keypair ./keys/multisig.json \
+  --bucket-name team \
+  --amount 50000000 \
+  --withdraw-owner $(solana address)
+```
+
+**Note:**
+- Only available for **deterministic** buckets (not deposit-based)
+- For deposit-based buckets, entire supply is distributed proportionally
+- Amount must not exceed `bucket_supply - registered_supply`
 
 ## Testing
 

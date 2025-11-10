@@ -110,8 +110,8 @@ impl VestingCalculator {
     ) -> u64 {
         match vesting_config.vesting_type {
             Some(VestingType::DepositBased { deposit }) => deposit
-                .checked_mul(bucket_data.bucket_supply)
-                .and_then(|mul| mul.checked_div(bucket_data.total_deposit))
+                .checked_div(bucket_data.total_deposit)
+                .and_then(|mul| mul.checked_mul(bucket_data.bucket_supply))
                 .expect("Overflow calculating allocation"),
             Some(VestingType::Deterministic { allocation }) => allocation,
             None => panic!("Vesting is not possible vesting type is not set"),

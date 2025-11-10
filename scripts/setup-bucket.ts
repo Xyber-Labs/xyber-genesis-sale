@@ -31,9 +31,6 @@ async function parseCliArgs() {
     vestingType = { deterministic: {} };
   } else if (options.vestingType === "deposit-based") {
     vestingType = { depositBased: {} };
-    if (!options.totalDeposit || options.totalDeposit === "0") {
-      throw new Error("--total-deposit is required and must be non-zero when --vesting-type is deposit-based");
-    }
   } else {
     throw new Error(`Invalid vesting type: ${options.vestingType}. Use "deterministic" or "deposit-based"`);
   }
