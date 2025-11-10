@@ -154,7 +154,7 @@ export class TxBuilder {
     admin: web3.PublicKey;
     bucketName: string;
     bucketData: {
-      vestingType: { deterministic: {} } | { depositBased: {} } | null;
+      vestingType: { deterministic: {} } | { priceless: {} } | null;
       totalDeposit: BN;
       bucketSupply: BN;
       registeredSupply: BN;
@@ -203,7 +203,7 @@ export class TxBuilder {
     admin: web3.PublicKey;
     bucketName: string;
     bucketData: {
-      vestingType: { deterministic: {} } | { depositBased: {} } | null;
+      vestingType: { deterministic: {} } | { priceless: {} } | null;
       totalDeposit: BN;
       bucketSupply: BN;
       registeredSupply: BN;

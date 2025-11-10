@@ -2366,7 +2366,7 @@ export type XyberSale = {
             "name": "deterministic"
           },
           {
-            "name": "depositBased"
+            "name": "priceless"
           }
         ]
       }
@@ -2571,7 +2571,7 @@ export type XyberSale = {
             ]
           },
           {
-            "name": "depositBased",
+            "name": "priceless",
             "fields": [
               {
                 "name": "deposit",

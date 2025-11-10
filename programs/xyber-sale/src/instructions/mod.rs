@@ -42,11 +42,11 @@ pub fn update_allocation(
     bucket_data.total_deposit += payment_amount;
     match vesting_config.vesting_type.as_mut() {
         None => {
-            vesting_config.vesting_type = Some(VestingType::DepositBased {
+            vesting_config.vesting_type = Some(VestingType::Priceless {
                 deposit: payment_amount,
             })
         }
-        Some(VestingType::DepositBased { deposit }) => *deposit += payment_amount,
+        Some(VestingType::Priceless { deposit }) => *deposit += payment_amount,
         Some(VestingType::Deterministic { .. }) => panic!("Deterministic not supported in deposit"),
     }
     Ok(())

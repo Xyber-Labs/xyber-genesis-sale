@@ -11,13 +11,13 @@ pub enum Round {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
 pub enum BucketVestingType {
     Deterministic,
-    DepositBased,
+    Priceless,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
 pub enum VestingType {
     Deterministic { allocation: u64 },
-    DepositBased { deposit: u64 },
+    Priceless { deposit: u64 },
 }
 
 impl Round {
@@ -108,7 +108,7 @@ impl VestingCalculator {
         bucket_data: &BucketData,
     ) -> u64 {
         match vesting_config.vesting_type {
-            Some(VestingType::DepositBased { deposit }) => deposit
+            Some(VestingType::Priceless { deposit }) => deposit
                 .checked_div(bucket_data.total_deposit)
                 .and_then(|mul| mul.checked_mul(bucket_data.bucket_supply))
                 .expect("Overflow calculating allocation"),

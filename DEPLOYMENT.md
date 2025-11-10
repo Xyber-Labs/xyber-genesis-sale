@@ -16,6 +16,7 @@ This document contains the complete deployment flow for the Xyber Sale program.
 ```bash
 anchor build
 anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json 
+anchor idl init --provider.cluster localnet --filepath target/idl/xyber_sale.json XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt
 ```
 
 ### 2. Airdrop SOL to Admin and Buyer
@@ -89,14 +90,14 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 
 ### 7. Setup Token Bucket
 
-For **public sale** (deposit-based/pro rata):
+For **public sale** (priceless):
 
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
   --admin-keypair ./keys/admin.json \
   --bucket-name public \
   --bucket-supply 100000000000000 \
-  --vesting-type deposit-based \
+  --vesting-type priceless \
   --vesting-plan public
 ```
 
@@ -268,8 +269,9 @@ anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
 ```
 
 **Note:**
-- Only available for **deterministic** buckets (not deposit-based)
-- For deposit-based buckets, entire supply is distributed proportionally
+
+- Only available for **deterministic** buckets (not priceless)
+- For priceless buckets, entire supply is distributed proportionally
 - Amount must not exceed `bucket_supply - registered_supply`
 
 ## Testing

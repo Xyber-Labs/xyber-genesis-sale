@@ -26,8 +26,8 @@ pub fn setup_deterministic_vesting(
 
     let old_allocation = match vesting_config.vesting_type {
         Some(VestingType::Deterministic { allocation }) => allocation,
-        Some(VestingType::DepositBased { .. }) => {
-            panic!("DepositBased vesting cannot be modified via setup_deterministic_vesting")
+        Some(VestingType::Priceless { .. }) => {
+            panic!("Priceless vesting cannot be modified via setup_deterministic_vesting")
         }
         None => 0,
     };

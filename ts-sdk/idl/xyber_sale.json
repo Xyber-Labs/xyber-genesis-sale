@@ -2360,7 +2360,7 @@
             "name": "Deterministic"
           },
           {
-            "name": "DepositBased"
+            "name": "Priceless"
           }
         ]
       }
@@ -2565,7 +2565,7 @@
             ]
           },
           {
-            "name": "DepositBased",
+            "name": "Priceless",
             "fields": [
               {
                 "name": "deposit",

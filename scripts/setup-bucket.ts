@@ -10,8 +10,8 @@ async function parseCliArgs() {
     .requiredOption("--admin-keypair <PATH>", "Path to admin keypair file")
     .requiredOption("--bucket-name <NAME>", "Bucket name")
     .requiredOption("--bucket-supply <AMOUNT>", "Total bucket supply")
-    .requiredOption("--vesting-type <TYPE>", "Vesting type: deterministic or deposit-based")
-    .option("--total-deposit <AMOUNT>", "Total deposit (required for deposit-based)")
+    .requiredOption("--vesting-type <TYPE>", "Vesting type: deterministic or priceless")
+    .option("--total-deposit <AMOUNT>", "Total deposit (required for priceless)")
     .option("--registered-supply <AMOUNT>", "Registered supply", "0")
     .option("--claimed-supply <AMOUNT>", "Claimed supply", "0")
     .option("--burnt-supply <AMOUNT>", "Burnt supply", "0")
@@ -29,10 +29,10 @@ async function parseCliArgs() {
   let vestingType;
   if (options.vestingType === "deterministic") {
     vestingType = { deterministic: {} };
-  } else if (options.vestingType === "deposit-based") {
-    vestingType = { depositBased: {} };
+  } else if (options.vestingType === "priceless") {
+    vestingType = { priceless: {} };
   } else {
-    throw new Error(`Invalid vesting type: ${options.vestingType}. Use "deterministic" or "deposit-based"`);
+    throw new Error(`Invalid vesting type: ${options.vestingType}. Use "deterministic" or "priceless"`);
   }
 
   return {

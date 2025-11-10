@@ -72,7 +72,7 @@ const XyberSaleSDK = {
       adminKeypair: anchor.web3.Keypair;
       bucketName: string;
       bucketData: {
-        vestingType: { deterministic: {} } | { depositBased: {} } | null;
+        vestingType: { deterministic: {} } | { priceless: {} } | null;
         totalDeposit: BN;
         bucketSupply: BN;
         registeredSupply: BN;

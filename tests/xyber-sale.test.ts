@@ -157,10 +157,10 @@ describe("XyberSale", () => {
     console.log("End time:", roundConfigAccount.endTime.toString());
   });
 
-  it("Should setup pro rata bucket", async () => {
+  it("Should setup priceless bucket", async () => {
     const bucketName = "public";
     const bucketData = {
-      vestingType: { depositBased: {} },
+      vestingType: { priceless: {} },
       totalDeposit: new anchor.BN(0),
       bucketSupply: new anchor.BN(1000000),
       registeredSupply: new anchor.BN(0),
@@ -228,11 +228,11 @@ describe("XyberSale", () => {
     const expectedDeposit = paymentAmount;
 
     console.log("Expected deposit:", expectedDeposit.toString());
-    console.log("Actual deposit:", vestingConfigAccount.vestingType?.depositBased?.deposit?.toString());
+    console.log("Actual deposit:", vestingConfigAccount.vestingType?.priceless?.deposit?.toString());
 
     assert.ok(vestingConfigAccount.vestingType !== undefined);
-    assert.ok(vestingConfigAccount.vestingType.depositBased !== undefined);
-    assert.ok(vestingConfigAccount.vestingType.depositBased.deposit.eq(expectedDeposit));
+    assert.ok(vestingConfigAccount.vestingType.priceless !== undefined);
+    assert.ok(vestingConfigAccount.vestingType.priceless.deposit.eq(expectedDeposit));
     assert.ok(vestingConfigAccount.tokensClaimed.eq(new anchor.BN(0)));
     assert.ok(vestingConfigAccount.tokensBurnt.eq(new anchor.BN(0)));
 
@@ -241,7 +241,7 @@ describe("XyberSale", () => {
 
     console.log("Deposit completed successfully!");
     console.log("Expected deposit:", expectedDeposit.toString());
-    console.log("Actual deposit:", vestingConfigAccount.vestingType.depositBased.deposit.toString());
+    console.log("Actual deposit:", vestingConfigAccount.vestingType.priceless.deposit.toString());
     console.log("Bucket pool balance increase:", bucketPoolBalanceAfter - bucketPoolBalanceBefore);
   });
 
@@ -310,8 +310,8 @@ describe("XyberSale", () => {
     const expectedTotalDeposit = expectedSingleDeposit.mul(new anchor.BN(2));
 
     assert.ok(vestingConfigAccount.vestingType !== undefined);
-    assert.ok(vestingConfigAccount.vestingType.depositBased !== undefined);
-    assert.ok(vestingConfigAccount.vestingType.depositBased.deposit.eq(expectedTotalDeposit));
+    assert.ok(vestingConfigAccount.vestingType.priceless !== undefined);
+    assert.ok(vestingConfigAccount.vestingType.priceless.deposit.eq(expectedTotalDeposit));
     assert.ok(vestingConfigAccount.tokensClaimed.eq(new anchor.BN(0)));
     assert.ok(vestingConfigAccount.tokensBurnt.eq(new anchor.BN(0)));
 
@@ -324,7 +324,7 @@ describe("XyberSale", () => {
 
     console.log("Deposit Asset completed successfully!");
     console.log("Expected total deposit:", expectedTotalDeposit.toString());
-    console.log("Actual total deposit:", vestingConfigAccount.vestingType.depositBased.deposit.toString());
+    console.log("Actual total deposit:", vestingConfigAccount.vestingType.priceless.deposit.toString());
     console.log(
       "Buyer quote balance decrease:",
       parseInt(buyerQuoteBalanceBefore.value.amount) - parseInt(buyerQuoteBalanceAfter.value.amount)
@@ -420,8 +420,8 @@ describe("XyberSale", () => {
     const expectedTotalDeposit = new anchor.BN(8000);
 
     assert.ok(vestingConfigAccountBefore.vestingType !== undefined);
-    assert.ok(vestingConfigAccountBefore.vestingType.depositBased !== undefined);
-    assert.ok(vestingConfigAccountBefore.vestingType.depositBased.deposit.eq(expectedTotalDeposit));
+    assert.ok(vestingConfigAccountBefore.vestingType.priceless !== undefined);
+    assert.ok(vestingConfigAccountBefore.vestingType.priceless.deposit.eq(expectedTotalDeposit));
     assert.ok(vestingConfigAccountBefore.tokensClaimed.eq(new anchor.BN(0)));
     assert.equal(vestingConfigAccountBefore.vestingPlan, null);
 

@@ -33,7 +33,7 @@ pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan_name: String
 
     match (bucket_data.vesting_type, vesting_config.vesting_type) {
         (Some(BucketVestingType::Deterministic), Some(VestingType::Deterministic { .. })) => {}
-        (Some(BucketVestingType::DepositBased), Some(VestingType::DepositBased { .. })) => {}
+        (Some(BucketVestingType::Priceless), Some(VestingType::Priceless { .. })) => {}
         _ => panic!("Vesting types must match"),
     }
 
