@@ -10,7 +10,7 @@ use crate::{
     errors::CustomError,
 };
 
-use super::{get_order_price, update_vesting_config, validate_round};
+use super::{update_allocation, validate_round};
 
 #[derive(Accounts)]
 #[instruction(round: Round)]
@@ -73,14 +73,11 @@ pub struct DepositAsset<'info> {
 pub fn deposit_asset(
     ctx: Context<DepositAsset>,
     _round: Round,
-    base_allocation: u64,
+    payment_amount: u64,
     expiration: i64,
 ) -> Result<()> {
     let round_config = &ctx.accounts.round_config;
     validate_round(round_config, expiration)?;
-
-    let base_decimals = ctx.accounts.base_mint.decimals as u32;
-    let order_price = get_order_price(round_config.price, base_allocation, base_decimals);
 
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.buyer_quote_ata.to_account_info(),
@@ -90,20 +87,19 @@ pub fn deposit_asset(
     };
 
     let cpi = CpiContext::new(ctx.accounts.token_program.to_account_info(), transfer_accounts);
-    transfer_checked(cpi, order_price, ctx.accounts.quote_mint.decimals)?;
+    transfer_checked(cpi, payment_amount, ctx.accounts.quote_mint.decimals)?;
 
-    update_vesting_config(
+    update_allocation(
         &mut ctx.accounts.vesting_config,
         &mut ctx.accounts.bucket_data,
-        base_allocation,
-        order_price,
+        payment_amount,
     )?;
 
     emit!(DepositEvent {
         buyer: ctx.accounts.buyer.key(),
         round: _round,
-        quote_amount: order_price,
-        base_allocation,
+        quote_amount: payment_amount,
+        base_allocation: 0,
     });
 
     Ok(())

@@ -51,14 +51,12 @@ const XyberSaleSDK = {
     async function setupRound(args: {
       adminKeypair: anchor.web3.Keypair;
       round: any;
-      price: BN;
       startTime: BN;
       endTime: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey }> {
       const { setupRoundTx, config, roundConfig } = await txBuilder.setupRoundTx({
         admin: args.adminKeypair.publicKey,
         round: args.round,
-        price: args.price,
         startTime: args.startTime,
         endTime: args.endTime,
       });
@@ -101,7 +99,7 @@ const XyberSaleSDK = {
       backendKeypair: anchor.web3.Keypair;
       round: any;
       solPrice: BN;
-      baseAllocation: BN;
+      paymentAmount: BN;
       expiration: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositSolTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositSolTx({
@@ -109,7 +107,7 @@ const XyberSaleSDK = {
         backend: args.backendKeypair.publicKey,
         round: args.round,
         solPrice: args.solPrice,
-        baseAllocation: args.baseAllocation,
+        paymentAmount: args.paymentAmount,
         expiration: args.expiration,
       });
 
@@ -124,14 +122,14 @@ const XyberSaleSDK = {
       buyerKeypair: anchor.web3.Keypair;
       backendKeypair: anchor.web3.Keypair;
       round: any;
-      baseAllocation: BN;
+      paymentAmount: BN;
       expiration: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
         buyer: args.buyerKeypair.publicKey,
         backend: args.backendKeypair.publicKey,
         round: args.round,
-        baseAllocation: args.baseAllocation,
+        paymentAmount: args.paymentAmount,
         expiration: args.expiration,
       });
 

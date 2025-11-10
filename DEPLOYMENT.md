@@ -50,7 +50,6 @@ anchor run initialize --provider.cluster localnet -- \
 ```bash
 anchor run setup-round --provider.cluster localnet -- \
   --admin-keypair ./keys/admin.json \
-  --price 40000 \
   --start-time $(date +%s) \
   --end-time $(date -d "+30 days" +%s)
 ```
@@ -119,7 +118,7 @@ anchor run deposit-sol --provider.cluster localnet -- \
   --backend-keypair ./keys/backend.json \
   --round public \
   --sol-price 250000000000000000000 \
-  --base-allocation 100000000 \
+  --payment-amount 4000000 \
   --expiration $(date -d "+10 minutes" +%s)
 ```
 
@@ -143,7 +142,7 @@ anchor run deposit-asset --provider.cluster localnet -- \
   --buyer-keypair ./keys/buyer.json \
   --backend-keypair ./keys/backend.json \
   --round public \
-  --base-allocation 100000000 \
+  --payment-amount 4000000 \
   --expiration $(date -d "+10 minutes" +%s)
 ```
 

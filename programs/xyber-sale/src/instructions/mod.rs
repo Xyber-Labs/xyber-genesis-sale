@@ -34,29 +34,19 @@ pub fn validate_round(round_config: &Account<RoundConfig>, expiration: i64) -> R
     Ok(())
 }
 
-pub fn get_order_price(price: u64, base_amount: u64, base_decimals: u32) -> u64 {
-    let adjustment_value = 10_u64.pow(base_decimals);
-
-    price
-        .checked_mul(base_amount)
-        .and_then(|v| v.checked_div(adjustment_value))
-        .expect("Error in get_order_price calculation")
-}
-
-pub fn update_vesting_config(
+pub fn update_allocation(
     vesting_config: &mut VestingConfig,
     bucket_data: &mut BucketData,
-    _base_allocation: u64,
-    order_price: u64,
+    payment_amount: u64,
 ) -> Result<()> {
-    bucket_data.total_deposit += order_price;
+    bucket_data.total_deposit += payment_amount;
     match vesting_config.vesting_type.as_mut() {
         None => {
             vesting_config.vesting_type = Some(VestingType::DepositBased {
-                deposit: order_price,
+                deposit: payment_amount,
             })
         }
-        Some(VestingType::DepositBased { deposit }) => *deposit += order_price,
+        Some(VestingType::DepositBased { deposit }) => *deposit += payment_amount,
         Some(VestingType::Deterministic { .. }) => panic!("Deterministic not supported in deposit"),
     }
     Ok(())

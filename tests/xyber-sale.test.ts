@@ -132,14 +132,12 @@ describe("XyberSale", () => {
 
   it("Should setup round", async () => {
     const now = Math.floor(Date.now() / 1000);
-    const price = new anchor.BN(40000);
     const startTime = new anchor.BN(now - 60);
     const endTime = new anchor.BN(now + 3600);
 
     const { signature, config, roundConfig } = await sdk.setupRound({
       adminKeypair: admin,
       round: { public: {} },
-      price: price,
       startTime: startTime,
       endTime: endTime,
     });
@@ -151,12 +149,10 @@ describe("XyberSale", () => {
 
     const roundConfigAccount = await program.account.roundConfig.fetch(roundConfig);
 
-    assert.ok(roundConfigAccount.price.eq(price));
     assert.deepEqual(roundConfigAccount.startTime, startTime);
     assert.deepEqual(roundConfigAccount.endTime, endTime);
 
     console.log("Round configured successfully!");
-    console.log("Price:", roundConfigAccount.price.toString());
     console.log("Start time:", roundConfigAccount.startTime.toString());
     console.log("End time:", roundConfigAccount.endTime.toString());
   });
@@ -199,8 +195,7 @@ describe("XyberSale", () => {
 
   it("Should deposit SOL correctly", async () => {
     const solPrice = new anchor.BN("250000000000000000000");
-    const baseAllocation = new anchor.BN(100000);
-    const bucketName = "public";
+    const paymentAmount = new anchor.BN(4000);
 
     const now = Math.floor(Date.now() / 1000);
     const expiration = new anchor.BN(now + 600);
@@ -214,9 +209,8 @@ describe("XyberSale", () => {
       backendKeypair: backend,
       round: { public: {} },
       solPrice: solPrice,
-      baseAllocation: baseAllocation,
+      paymentAmount: paymentAmount,
       expiration: expiration,
-      bucketName: bucketName,
     });
 
     console.log("Deposit SOL tx:", signature);
@@ -231,9 +225,7 @@ describe("XyberSale", () => {
 
     const vestingConfigAccount = await program.account.vestingConfig.fetch(vestingConfig);
 
-    const roundConfigAccount = await program.account.roundConfig.fetch(roundConfig);
-    const baseDecimals = 6;
-    const expectedDeposit = roundConfigAccount.price.mul(baseAllocation).div(new anchor.BN(10 ** baseDecimals));
+    const expectedDeposit = paymentAmount;
 
     console.log("Expected deposit:", expectedDeposit.toString());
     console.log("Actual deposit:", vestingConfigAccount.vestingType?.depositBased?.deposit?.toString());
@@ -277,8 +269,7 @@ describe("XyberSale", () => {
       splToken.TOKEN_PROGRAM_ID
     );
 
-    const baseAllocation = new anchor.BN(100000);
-    const bucketName = "public";
+    const paymentAmount = new anchor.BN(4000);
 
     const now = Math.floor(Date.now() / 1000);
     const expiration = new anchor.BN(now + 600);
@@ -299,9 +290,8 @@ describe("XyberSale", () => {
       buyerKeypair: buyer,
       backendKeypair: backend,
       round: { public: {} },
-      baseAllocation: baseAllocation,
+      paymentAmount: paymentAmount,
       expiration: expiration,
-      bucketName: bucketName,
     });
 
     console.log("Deposit Asset tx:", signature);
@@ -316,9 +306,7 @@ describe("XyberSale", () => {
 
     const vestingConfigAccount = await program.account.vestingConfig.fetch(vestingConfig);
 
-    const roundConfigAccount = await program.account.roundConfig.fetch(roundConfig);
-    const baseDecimals = 6;
-    const expectedSingleDeposit = roundConfigAccount.price.mul(baseAllocation).div(new anchor.BN(10 ** baseDecimals));
+    const expectedSingleDeposit = paymentAmount;
     const expectedTotalDeposit = expectedSingleDeposit.mul(new anchor.BN(2));
 
     assert.ok(vestingConfigAccount.vestingType !== undefined);

@@ -659,7 +659,7 @@ export type XyberSale = {
           }
         },
         {
-          "name": "baseAllocation",
+          "name": "paymentAmount",
           "type": "u64"
         },
         {
@@ -893,7 +893,7 @@ export type XyberSale = {
           "type": "u128"
         },
         {
-          "name": "baseAllocation",
+          "name": "paymentAmount",
           "type": "u64"
         },
         {
@@ -1491,10 +1491,6 @@ export type XyberSale = {
               "name": "round"
             }
           }
-        },
-        {
-          "name": "price",
-          "type": "u64"
         },
         {
           "name": "startTime",
@@ -2447,10 +2443,6 @@ export type XyberSale = {
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "price",
-            "type": "u64"
-          },
           {
             "name": "startTime",
             "type": "i64"

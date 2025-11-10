@@ -112,7 +112,6 @@ export class TxBuilder {
   async setupRoundIx(args: {
     admin: web3.PublicKey;
     round: any;
-    price: BN;
     startTime: BN;
     endTime: BN;
   }): Promise<{
@@ -124,7 +123,7 @@ export class TxBuilder {
     const [roundConfig] = this.getRoundConfigPda(args.round);
 
     const setupRoundIx = await this.program.methods
-      .setupRound(args.round, args.price, args.startTime, args.endTime)
+      .setupRound(args.round, args.startTime, args.endTime)
       .accountsStrict({
         admin: args.admin,
         config: config,
@@ -139,7 +138,6 @@ export class TxBuilder {
   async setupRoundTx(args: {
     admin: web3.PublicKey;
     round: any;
-    price: BN;
     startTime: BN;
     endTime: BN;
   }): Promise<{
@@ -229,7 +227,7 @@ export class TxBuilder {
     backend: web3.PublicKey;
     round: any;
     solPrice: BN;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositSolIx: web3.TransactionInstruction;
@@ -250,7 +248,7 @@ export class TxBuilder {
     const quoteMint = configAccount.quoteMint;
 
     const depositSolIx = await this.program.methods
-      .depositSol(args.round, args.solPrice, args.baseAllocation, args.expiration)
+      .depositSol(args.round, args.solPrice, args.paymentAmount, args.expiration)
       .accountsStrict({
         buyer: args.buyer,
         backend: args.backend,
@@ -273,7 +271,7 @@ export class TxBuilder {
     backend: web3.PublicKey;
     round: any;
     solPrice: BN;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositSolTx: web3.Transaction;
@@ -291,7 +289,7 @@ export class TxBuilder {
     buyer: web3.PublicKey;
     backend: web3.PublicKey;
     round: any;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositAssetIx: web3.TransactionInstruction;
@@ -328,7 +326,7 @@ export class TxBuilder {
     );
 
     const depositAssetIx = await this.program.methods
-      .depositAsset(args.round, args.baseAllocation, args.expiration)
+      .depositAsset(args.round, args.paymentAmount, args.expiration)
       .accountsStrict({
         buyer: args.buyer,
         backend: args.backend,
@@ -354,7 +352,7 @@ export class TxBuilder {
     buyer: web3.PublicKey;
     backend: web3.PublicKey;
     round: any;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositAssetTx: web3.Transaction;

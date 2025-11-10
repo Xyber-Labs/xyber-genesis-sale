@@ -41,7 +41,6 @@ pub struct SaleConfig {
 #[account]
 #[derive(Default, InitSpace)]
 pub struct RoundConfig {
-    pub price: u64,
     pub start_time: i64,
     pub end_time: i64,
 }
