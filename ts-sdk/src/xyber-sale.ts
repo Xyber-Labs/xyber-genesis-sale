@@ -51,14 +51,12 @@ const XyberSaleSDK = {
     async function setupRound(args: {
       adminKeypair: anchor.web3.Keypair;
       round: any;
-      price: BN;
       startTime: BN;
       endTime: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey }> {
       const { setupRoundTx, config, roundConfig } = await txBuilder.setupRoundTx({
         admin: args.adminKeypair.publicKey,
         round: args.round,
-        price: args.price,
         startTime: args.startTime,
         endTime: args.endTime,
       });
@@ -74,6 +72,8 @@ const XyberSaleSDK = {
       adminKeypair: anchor.web3.Keypair;
       bucketName: string;
       bucketData: {
+        vestingType: { deterministic: {} } | { priceless: {} } | null;
+        totalDeposit: BN;
         bucketSupply: BN;
         registeredSupply: BN;
         claimedSupply: BN;
@@ -99,7 +99,7 @@ const XyberSaleSDK = {
       backendKeypair: anchor.web3.Keypair;
       round: any;
       solPrice: BN;
-      baseAllocation: BN;
+      paymentAmount: BN;
       expiration: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositSolTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositSolTx({
@@ -107,7 +107,7 @@ const XyberSaleSDK = {
         backend: args.backendKeypair.publicKey,
         round: args.round,
         solPrice: args.solPrice,
-        baseAllocation: args.baseAllocation,
+        paymentAmount: args.paymentAmount,
         expiration: args.expiration,
       });
 
@@ -122,14 +122,14 @@ const XyberSaleSDK = {
       buyerKeypair: anchor.web3.Keypair;
       backendKeypair: anchor.web3.Keypair;
       round: any;
-      baseAllocation: BN;
+      paymentAmount: BN;
       expiration: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
         buyer: args.buyerKeypair.publicKey,
         backend: args.backendKeypair.publicKey,
         round: args.round,
-        baseAllocation: args.baseAllocation,
+        paymentAmount: args.paymentAmount,
         expiration: args.expiration,
       });
 
@@ -163,6 +163,32 @@ const XyberSaleSDK = {
       }
       const signature = await provider.sendAndConfirm(setupVestingPlanTx, [args.adminKeypair]);
       return { signature, config, vestingPlan };
+    }
+
+    async function setupDeterministicVesting(args: {
+      adminKeypair: anchor.web3.Keypair;
+      participant: anchor.web3.PublicKey;
+      bucketName: string;
+      newAllocation: BN;
+      vestingPlan: string | null;
+      tokensClaimed: BN;
+      tokensBurnt: BN;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey }> {
+      const { setupDeterministicVestingTx, config, bucket, vestingConfig } = await txBuilder.setupDeterministicVestingTx({
+        admin: args.adminKeypair.publicKey,
+        participant: args.participant,
+        bucketName: args.bucketName,
+        newAllocation: args.newAllocation,
+        vestingPlan: args.vestingPlan,
+        tokensClaimed: args.tokensClaimed,
+        tokensBurnt: args.tokensBurnt,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(setupDeterministicVestingTx, [args.adminKeypair]);
+      return { signature, config, bucket, vestingConfig };
     }
 
     async function claim(args: {
@@ -263,6 +289,10 @@ const XyberSaleSDK = {
       setupVestingPlan,
       setupVestingPlanIx: txBuilder.setupVestingPlanIx.bind(txBuilder),
       setupVestingPlanTx: txBuilder.setupVestingPlanTx.bind(txBuilder),
+
+      setupDeterministicVesting,
+      setupDeterministicVestingIx: txBuilder.setupDeterministicVestingIx.bind(txBuilder),
+      setupDeterministicVestingTx: txBuilder.setupDeterministicVestingTx.bind(txBuilder),
 
       claim,
       claimIx: txBuilder.claimIx.bind(txBuilder),

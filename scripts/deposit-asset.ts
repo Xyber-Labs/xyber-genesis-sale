@@ -11,7 +11,7 @@ async function parseCliArgs() {
     .requiredOption("--buyer-keypair <PATH>", "Path to buyer keypair file")
     .requiredOption("--backend-keypair <PATH>", "Path to backend keypair file")
     .requiredOption("--round <ROUND>", "Round name (e.g., 'public')")
-    .requiredOption("--base-allocation <AMOUNT>", "Base token allocation amount")
+    .requiredOption("--payment-amount <AMOUNT>", "Payment amount in quote token")
     .option("--expiration <UNIX_TIMESTAMP>", "Signature expiration time (Unix timestamp, default: now + 10 minutes)")
     .parse(process.argv);
 
@@ -28,7 +28,7 @@ async function parseCliArgs() {
     buyerKeypair,
     backendKeypair,
     round,
-    baseAllocation: new anchor.BN(options.baseAllocation),
+    paymentAmount: new anchor.BN(options.paymentAmount),
     expiration,
   };
 }
@@ -41,7 +41,7 @@ async function main() {
       buyerKeypair: options.buyerKeypair,
       backendKeypair: options.backendKeypair,
       round: options.round,
-      baseAllocation: options.baseAllocation,
+      paymentAmount: options.paymentAmount,
       expiration: options.expiration,
     });
 
@@ -51,7 +51,7 @@ async function main() {
     console.log("Round Config PDA:", roundConfig.toBase58());
     console.log("Vesting Config PDA:", vestingConfig.toBase58());
     console.log("Bucket PDA:", bucket.toBase58());
-    console.log("Base Allocation:", options.baseAllocation.toString());
+    console.log("Payment Amount:", options.paymentAmount.toString());
   });
 }
 

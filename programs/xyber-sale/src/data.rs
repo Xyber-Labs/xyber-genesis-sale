@@ -1,16 +1,21 @@
 use anchor_lang::prelude::*;
 
-use crate::vesting_calculator::VestingCalculator;
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, PartialEq, Eq, InitSpace)]
 pub enum Round {
+    #[default]
     Public,
 }
 
-impl Default for Round {
-    fn default() -> Self {
-        Round::Public
-    }
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
+pub enum BucketVestingType {
+    Deterministic,
+    Priceless,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
+pub enum VestingType {
+    Deterministic { allocation: u64 },
+    Priceless { deposit: u64 },
 }
 
 impl Round {
@@ -34,17 +39,16 @@ pub struct SaleConfig {
 #[account]
 #[derive(Default, InitSpace)]
 pub struct RoundConfig {
-    pub price: u64,
     pub start_time: i64,
     pub end_time: i64,
 }
 
 #[account]
-#[derive(InitSpace)]
+#[derive(Default, InitSpace)]
 pub struct VestingConfig {
     #[max_len(40)]
     pub vesting_plan: Option<String>,
-    pub total_allocation: u64,
+    pub vesting_type: Option<VestingType>,
     pub tokens_claimed: u64,
     pub tokens_burnt: u64,
 }
@@ -52,6 +56,8 @@ pub struct VestingConfig {
 #[account]
 #[derive(Default, InitSpace)]
 pub struct BucketData {
+    pub vesting_type: Option<BucketVestingType>,
+    pub total_deposit: u64,
     pub bucket_supply: u64,
     pub registered_supply: u64,
     pub claimed_supply: u64,
@@ -72,25 +78,8 @@ pub struct VestingPeriod {
 #[account]
 #[derive(InitSpace)]
 pub struct VestingPlan {
-    #[max_len(12)]
+    #[max_len(24)]
     pub periods: Vec<VestingPeriod>,
-}
-
-impl From<(&VestingConfig, &VestingPlan)> for VestingCalculator {
-    fn from(vesting_settings: (&VestingConfig, &VestingPlan)) -> Self {
-        let vesting_config = vesting_settings.0;
-        let vesting_plan = vesting_settings.1;
-
-        let mut config = VestingCalculator::builder()
-            .claimed(vesting_config.tokens_claimed)
-            .burnt(vesting_config.tokens_burnt)
-            .total_allocation(vesting_config.total_allocation)
-            .vesting_plan(vesting_plan.periods.clone())
-            .build();
-
-        config.recalculate_plan(vesting_plan.periods.clone());
-        config
-    }
 }
 
 #[event]
@@ -98,7 +87,6 @@ pub struct DepositEvent {
     pub buyer: Pubkey,
     pub round: Round,
     pub quote_amount: u64,
-    pub base_allocation: u64,
 }
 
 #[event]

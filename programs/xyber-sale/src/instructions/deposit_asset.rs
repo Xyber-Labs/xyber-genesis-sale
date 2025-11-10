@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, system_program::System};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+    token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked},
 };
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
     errors::CustomError,
 };
 
-use super::{get_order_price, update_allocation, validate_round};
+use super::{update_allocation, validate_round};
 
 #[derive(Accounts)]
 #[instruction(round: Round)]
@@ -73,14 +73,11 @@ pub struct DepositAsset<'info> {
 pub fn deposit_asset(
     ctx: Context<DepositAsset>,
     _round: Round,
-    base_allocation: u64,
+    payment_amount: u64,
     expiration: i64,
 ) -> Result<()> {
     let round_config = &ctx.accounts.round_config;
     validate_round(round_config, expiration)?;
-
-    let base_decimals = ctx.accounts.base_mint.decimals as u32;
-    let order_price = get_order_price(round_config.price, base_allocation, base_decimals);
 
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.buyer_quote_ata.to_account_info(),
@@ -89,23 +86,19 @@ pub fn deposit_asset(
         authority: ctx.accounts.buyer.to_account_info(),
     };
 
-    let cpi = CpiContext::new(
-        ctx.accounts.token_program.to_account_info(),
-        transfer_accounts,
-    );
-    transfer_checked(cpi, order_price, ctx.accounts.quote_mint.decimals)?;
+    let cpi = CpiContext::new(ctx.accounts.token_program.to_account_info(), transfer_accounts);
+    transfer_checked(cpi, payment_amount, ctx.accounts.quote_mint.decimals)?;
 
     update_allocation(
         &mut ctx.accounts.vesting_config,
         &mut ctx.accounts.bucket_data,
-        base_allocation,
+        payment_amount,
     )?;
 
     emit!(DepositEvent {
         buyer: ctx.accounts.buyer.key(),
         round: _round,
-        quote_amount: order_price,
-        base_allocation,
+        quote_amount: payment_amount,
     });
 
     Ok(())

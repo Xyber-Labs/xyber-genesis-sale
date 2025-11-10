@@ -16,6 +16,7 @@ This document contains the complete deployment flow for the Xyber Sale program.
 ```bash
 anchor build
 anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json 
+anchor idl init --provider.cluster localnet --filepath target/idl/xyber_sale.json XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt
 ```
 
 ### 2. Airdrop SOL to Admin and Buyer
@@ -23,6 +24,8 @@ anchor deploy --provider.cluster localnet --program-name xyber-sale --program-ke
 ```bash
 solana airdrop 100 $(solana address -k keys/admin.json) -u localhost
 solana airdrop 100 $(solana address -k keys/buyer.json) -u localhost
+solana airdrop 100 $(solana address -k keys/multisig.json) -u localhost
+solana airdrop 100 $(solana address -k keys/participant.json) -u localhost
 ```
 
 ### 3. Create Token Mints
@@ -48,7 +51,6 @@ anchor run initialize --provider.cluster localnet -- \
 ```bash
 anchor run setup-round --provider.cluster localnet -- \
   --admin-keypair ./keys/admin.json \
-  --price 40000 \
   --start-time $(date +%s) \
   --end-time $(date -d "+30 days" +%s)
 ```
@@ -66,19 +68,6 @@ anchor run setup-vesting-plan --provider.cluster localnet -- \
   --period ${TGE_DATE},1.0,0.0
 ```
 
-For **other buckets** with gradual vesting (example: 30% at TGE, 70% after 3 months):
-
-```bash
-TGE_DATE=$(date +%s)
-VESTING_DATE=$(date -d "+90 days" +%s)
-
-anchor run setup-vesting-plan --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
-  --vesting-plan-name team \
-  --period ${TGE_DATE},0.3,0.0 \
-  --period ${VESTING_DATE},0.7,0.0,0
-```
-
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 
 - Multiple `--period` options can be specified for gradual vesting
@@ -88,11 +77,14 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 
 ### 7. Setup Token Bucket
 
+For **public sale** (priceless):
+
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
   --admin-keypair ./keys/admin.json \
   --bucket-name public \
   --bucket-supply 100000000000000 \
+  --vesting-type priceless \
   --vesting-plan public
 ```
 
@@ -103,7 +95,7 @@ Mint base tokens to bucket for claim distribution:
 ```bash
 anchor run mint-to-bucket --provider.cluster localnet -- \
   --bucket-name public \
-  --amount 200000000
+  --amount 100000000000000
 ```
 
 ### 9. Deposit SOL to Purchase Tokens
@@ -114,7 +106,7 @@ anchor run deposit-sol --provider.cluster localnet -- \
   --backend-keypair ./keys/backend.json \
   --round public \
   --sol-price 250000000000000000000 \
-  --base-allocation 100000000 \
+  --payment-amount 4000000 \
   --expiration $(date -d "+10 minutes" +%s)
 ```
 
@@ -138,7 +130,7 @@ anchor run deposit-asset --provider.cluster localnet -- \
   --buyer-keypair ./keys/buyer.json \
   --backend-keypair ./keys/backend.json \
   --round public \
-  --base-allocation 100000000 \
+  --payment-amount 4000000 \
   --expiration $(date -d "+10 minutes" +%s)
 ```
 
@@ -166,7 +158,7 @@ Withdraw all accumulated SOL (except rent reserve) from the bucket pool:
 ```bash
 anchor run withdraw-sol --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
-  --address-to-withdraw-to YOUR_WALLET_ADDRESS
+  --address-to-withdraw-to $(solana address)
 ```
 
 **Note:** Automatically leaves rent-exempt minimum in bucket_pool.
@@ -178,24 +170,96 @@ Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool:
 ```bash
 anchor run withdraw-asset --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
-  --withdraw-owner YOUR_WALLET_ADDRESS
+  --withdraw-owner $(solana address)
 ```
 
 **Note:** Creates an associated token account for withdraw-owner if needed.
 
-### 15. Withdraw Unsold Tokens from Bucket
+## Deterministic Vesting Flow (Team, Advisors, Partners)
 
-Withdraw unsold base tokens from a specific bucket:
+This section describes how to set up deterministic vesting for participants with pre-defined token allocations (team,
+advisors, partners, etc.).
+
+### 1. Setup Bucket with Deterministic Vesting
+
+```bash
+anchor run setup-bucket --provider.cluster localnet -- \
+  --admin-keypair ./keys/admin.json \
+  --bucket-name team \
+  --bucket-supply 10000000000000 \
+  --vesting-type deterministic \
+  --vesting-plan vesting-24m
+```
+
+### 2. Setup 24-Month Linear Vesting Plan
+
+Create a vesting plan with 24 equal monthly unlocks (0% TGE):
+
+```bash
+anchor run setup-24m-vesting-plan --provider.cluster localnet -- \
+  --admin-keypair ./keys/admin.json \
+  --vesting-plan-name vesting-24m
+```
+
+**Note:** Each period unlocks 1/24 ≈ 4.17% of allocation monthly over 24 months.
+
+### 3. Setup Deterministic Vesting for Participant
+
+Assign fixed allocation to a participant:
+
+```bash
+anchor run setup-deterministic-vesting --provider.cluster localnet -- \
+  --admin-keypair ./keys/admin.json \
+  --participant $(solana address -k keys/participant.json) \
+  --bucket-name team \
+  --new-allocation 50000000000 \
+  --vesting-plan vesting-24m
+```
+
+### 4. Mint Base Tokens to Bucket
+
+```bash
+anchor run mint-to-bucket --provider.cluster localnet -- \
+  --bucket-name team \
+  --amount 10000000000000
+```
+
+### 5. Claim Tokens
+
+Participant can claim unlocked tokens according to vesting schedule:
+
+```bash
+anchor run claim --provider.cluster localnet -- \
+  --buyer-keypair ./keys/participant.json \
+  --bucket-name team \
+  --vesting-plan vesting-24m
+```
+
+**Important Notes:**
+
+- Deterministic vesting uses **fixed allocations** set by admin
+- No deposits required - allocation is predetermined
+- First claim happens immediately (month 0), subsequent claims unlock monthly
+- Can only claim unlocked portion based on elapsed time
+- Bucket vesting type (deterministic) must match user vesting type
+
+### 6. Withdraw Tokens from Bucket
+
+Withdraw base tokens from a **deterministic** bucket:
 
 ```bash
 anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
-  --bucket-name public \
+  --bucket-name team \
   --amount 50000000 \
-  --withdraw-owner YOUR_WALLET_ADDRESS
+  --withdraw-owner $(solana address)
 ```
 
-**Note:** Amount must not exceed `bucket_supply - registered_supply`.
+**Note:**
+
+- Only available for **deterministic** buckets (not priceless)
+- For priceless buckets, entire supply is distributed proportionally
+- Amount must not exceed `bucket_supply - registered_supply`
 
 ## Testing
 

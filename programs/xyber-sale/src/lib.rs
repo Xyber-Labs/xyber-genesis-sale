@@ -19,24 +19,35 @@ pub mod xyber_sale {
         instructions::initialize(ctx, new_admin, backend, multisig)
     }
 
-    pub fn setup_round(ctx: Context<SetupRound>, round: data::Round, price: u64, start_time: i64, end_time: i64) -> Result<()> {
-        instructions::setup_round(ctx, round, price, start_time, end_time)
+    pub fn setup_round(ctx: Context<SetupRound>, round: data::Round, start_time: i64, end_time: i64) -> Result<()> {
+        instructions::setup_round(ctx, round, start_time, end_time)
     }
 
     pub fn setup_bucket(ctx: Context<SetupBucket>, bucket_name: String, bucket_data: data::BucketData) -> Result<()> {
         instructions::setup_bucket(ctx, bucket_name, bucket_data)
     }
 
-    pub fn deposit_sol(ctx: Context<DepositSol>, round: data::Round, sol_price: u128, base_allocation: u64, expiration: i64) -> Result<()> {
-        instructions::deposit_sol(ctx, round, sol_price, base_allocation, expiration)
+    pub fn deposit_sol(ctx: Context<DepositSol>, round: data::Round, sol_price: u128, payment_amount: u64, expiration: i64) -> Result<()> {
+        instructions::deposit_sol(ctx, round, sol_price, payment_amount, expiration)
     }
 
-    pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, base_allocation: u64, expiration: i64) -> Result<()> {
-        instructions::deposit_asset(ctx, round, base_allocation, expiration)
+    pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, payment_amount: u64, expiration: i64) -> Result<()> {
+        instructions::deposit_asset(ctx, round, payment_amount, expiration)
     }
 
     pub fn setup_vesting_plan(ctx: Context<SetupVestingPlan>, vesting_plan_name: String, plan: data::VestingPlan) -> Result<()> {
         instructions::setup_vesting_plan(ctx, vesting_plan_name, plan)
+    }
+
+    pub fn setup_deterministic_vesting(
+        ctx: Context<SetupDeterministicVesting>,
+        bucket_name: String,
+        new_allocation: u64,
+        vesting_plan: Option<String>,
+        tokens_claimed: u64,
+        tokens_burnt: u64,
+    ) -> Result<()> {
+        instructions::setup_deterministic_vesting(ctx, bucket_name, new_allocation, vesting_plan, tokens_claimed, tokens_burnt)
     }
 
     pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan: String) -> Result<()> {

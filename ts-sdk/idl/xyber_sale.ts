@@ -659,7 +659,7 @@ export type XyberSale = {
           }
         },
         {
-          "name": "baseAllocation",
+          "name": "paymentAmount",
           "type": "u64"
         },
         {
@@ -893,7 +893,7 @@ export type XyberSale = {
           "type": "u128"
         },
         {
-          "name": "baseAllocation",
+          "name": "paymentAmount",
           "type": "u64"
         },
         {
@@ -1249,6 +1249,160 @@ export type XyberSale = {
       ]
     },
     {
+      "name": "setupDeterministicVesting",
+      "discriminator": [
+        94,
+        122,
+        230,
+        165,
+        103,
+        180,
+        117,
+        134
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "participant"
+        },
+        {
+          "name": "bucketData",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "bucketName"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vestingConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  86,
+                  69,
+                  83,
+                  84,
+                  73,
+                  78,
+                  71,
+                  95,
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "bucketName"
+              },
+              {
+                "kind": "account",
+                "path": "participant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "bucketName",
+          "type": "string"
+        },
+        {
+          "name": "newAllocation",
+          "type": "u64"
+        },
+        {
+          "name": "vestingPlan",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "tokensClaimed",
+          "type": "u64"
+        },
+        {
+          "name": "tokensBurnt",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "setupRound",
       "discriminator": [
         126,
@@ -1337,10 +1491,6 @@ export type XyberSale = {
               "name": "round"
             }
           }
-        },
-        {
-          "name": "price",
-          "type": "u64"
         },
         {
           "name": "startTime",
@@ -2169,6 +2319,20 @@ export type XyberSale = {
         "kind": "struct",
         "fields": [
           {
+            "name": "vestingType",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "bucketVestingType"
+                }
+              }
+            }
+          },
+          {
+            "name": "totalDeposit",
+            "type": "u64"
+          },
+          {
             "name": "bucketSupply",
             "type": "u64"
           },
@@ -2189,6 +2353,20 @@ export type XyberSale = {
             "type": {
               "vec": "string"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "bucketVestingType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "deterministic"
+          },
+          {
+            "name": "priceless"
           }
         ]
       }
@@ -2241,10 +2419,6 @@ export type XyberSale = {
           {
             "name": "quoteAmount",
             "type": "u64"
-          },
-          {
-            "name": "baseAllocation",
-            "type": "u64"
           }
         ]
       }
@@ -2265,10 +2439,6 @@ export type XyberSale = {
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "price",
-            "type": "u64"
-          },
           {
             "name": "startTime",
             "type": "i64"
@@ -2322,8 +2492,14 @@ export type XyberSale = {
             }
           },
           {
-            "name": "totalAllocation",
-            "type": "u64"
+            "name": "vestingType",
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "vestingType"
+                }
+              }
+            }
           },
           {
             "name": "tokensClaimed",
@@ -2376,6 +2552,32 @@ export type XyberSale = {
                 }
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "vestingType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "deterministic",
+            "fields": [
+              {
+                "name": "allocation",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "priceless",
+            "fields": [
+              {
+                "name": "deposit",
+                "type": "u64"
+              }
+            ]
           }
         ]
       }

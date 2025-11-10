@@ -8,7 +8,6 @@ async function parseCliArgs() {
   const cli = new Command();
   cli
     .requiredOption("--admin-keypair <PATH>", "Path to admin keypair file")
-    .requiredOption("--price <AMOUNT>", "Token price")
     .option("--start-time <UNIX_TIMESTAMP>", "Round start time (Unix timestamp, default: now - 60)")
     .option("--end-time <UNIX_TIMESTAMP>", "Round end time (Unix timestamp, default: now + 1 hour)")
     .parse(process.argv);
@@ -23,7 +22,6 @@ async function parseCliArgs() {
 
   return {
     adminKeypair,
-    price: new anchor.BN(options.price),
     startTime,
     endTime,
   };
@@ -36,7 +34,6 @@ async function main() {
     const { signature, config, roundConfig } = await sdk.setupRound({
       adminKeypair: options.adminKeypair,
       round: { public: {} },
-      price: options.price,
       startTime: options.startTime,
       endTime: options.endTime,
     });
@@ -45,7 +42,6 @@ async function main() {
     console.log("Explorer:", getExplorerUrl(provider, signature));
     console.log("Config PDA:", config.toBase58());
     console.log("Round Config PDA:", roundConfig.toBase58());
-    console.log("Price:", options.price.toString());
     console.log("Start time:", options.startTime.toString());
     console.log("End time:", options.endTime.toString());
   });

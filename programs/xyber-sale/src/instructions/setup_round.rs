@@ -30,12 +30,10 @@ pub struct SetupRound<'info> {
 pub fn setup_round(
     ctx: Context<SetupRound>,
     _round: Round,
-    price: u64,
     start_time: i64,
     end_time: i64,
 ) -> Result<()> {
     let round_config = &mut ctx.accounts.round_config;
-    round_config.price = price;
     round_config.start_time = start_time;
     round_config.end_time = end_time;
 

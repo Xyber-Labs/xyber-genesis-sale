@@ -112,7 +112,6 @@ export class TxBuilder {
   async setupRoundIx(args: {
     admin: web3.PublicKey;
     round: any;
-    price: BN;
     startTime: BN;
     endTime: BN;
   }): Promise<{
@@ -124,7 +123,7 @@ export class TxBuilder {
     const [roundConfig] = this.getRoundConfigPda(args.round);
 
     const setupRoundIx = await this.program.methods
-      .setupRound(args.round, args.price, args.startTime, args.endTime)
+      .setupRound(args.round, args.startTime, args.endTime)
       .accountsStrict({
         admin: args.admin,
         config: config,
@@ -139,7 +138,6 @@ export class TxBuilder {
   async setupRoundTx(args: {
     admin: web3.PublicKey;
     round: any;
-    price: BN;
     startTime: BN;
     endTime: BN;
   }): Promise<{
@@ -156,6 +154,8 @@ export class TxBuilder {
     admin: web3.PublicKey;
     bucketName: string;
     bucketData: {
+      vestingType: { deterministic: {} } | { priceless: {} } | null;
+      totalDeposit: BN;
       bucketSupply: BN;
       registeredSupply: BN;
       claimedSupply: BN;
@@ -203,6 +203,8 @@ export class TxBuilder {
     admin: web3.PublicKey;
     bucketName: string;
     bucketData: {
+      vestingType: { deterministic: {} } | { priceless: {} } | null;
+      totalDeposit: BN;
       bucketSupply: BN;
       registeredSupply: BN;
       claimedSupply: BN;
@@ -225,7 +227,7 @@ export class TxBuilder {
     backend: web3.PublicKey;
     round: any;
     solPrice: BN;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositSolIx: web3.TransactionInstruction;
@@ -246,7 +248,7 @@ export class TxBuilder {
     const quoteMint = configAccount.quoteMint;
 
     const depositSolIx = await this.program.methods
-      .depositSol(args.round, args.solPrice, args.baseAllocation, args.expiration)
+      .depositSol(args.round, args.solPrice, args.paymentAmount, args.expiration)
       .accountsStrict({
         buyer: args.buyer,
         backend: args.backend,
@@ -269,7 +271,7 @@ export class TxBuilder {
     backend: web3.PublicKey;
     round: any;
     solPrice: BN;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositSolTx: web3.Transaction;
@@ -287,7 +289,7 @@ export class TxBuilder {
     buyer: web3.PublicKey;
     backend: web3.PublicKey;
     round: any;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositAssetIx: web3.TransactionInstruction;
@@ -324,7 +326,7 @@ export class TxBuilder {
     );
 
     const depositAssetIx = await this.program.methods
-      .depositAsset(args.round, args.baseAllocation, args.expiration)
+      .depositAsset(args.round, args.paymentAmount, args.expiration)
       .accountsStrict({
         buyer: args.buyer,
         backend: args.backend,
@@ -350,7 +352,7 @@ export class TxBuilder {
     buyer: web3.PublicKey;
     backend: web3.PublicKey;
     round: any;
-    baseAllocation: BN;
+    paymentAmount: BN;
     expiration: BN;
   }): Promise<{
     depositAssetTx: web3.Transaction;
@@ -419,6 +421,64 @@ export class TxBuilder {
     const { setupVestingPlanIx, config, vestingPlan } = await this.setupVestingPlanIx(args);
     const setupVestingPlanTx = new web3.Transaction().add(setupVestingPlanIx);
     return { setupVestingPlanTx, config, vestingPlan };
+  }
+
+  async setupDeterministicVestingIx(args: {
+    admin: web3.PublicKey;
+    participant: web3.PublicKey;
+    bucketName: string;
+    newAllocation: BN;
+    vestingPlan: string | null;
+    tokensClaimed: BN;
+    tokensBurnt: BN;
+  }): Promise<{
+    setupDeterministicVestingIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    bucket: web3.PublicKey;
+    vestingConfig: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [bucket] = this.getBucketPda(args.bucketName);
+    const [vestingConfig] = this.getVestingConfigPda(args.bucketName, args.participant);
+
+    const setupDeterministicVestingIx = await this.program.methods
+      .setupDeterministicVesting(
+        args.bucketName,
+        args.newAllocation,
+        args.vestingPlan,
+        args.tokensClaimed,
+        args.tokensBurnt
+      )
+      .accountsStrict({
+        admin: args.admin,
+        config: config,
+        participant: args.participant,
+        bucketData: bucket,
+        vestingConfig: vestingConfig,
+        systemProgram: web3.SystemProgram.programId,
+      })
+      .instruction();
+
+    return { setupDeterministicVestingIx, config, bucket, vestingConfig };
+  }
+
+  async setupDeterministicVestingTx(args: {
+    admin: web3.PublicKey;
+    participant: web3.PublicKey;
+    bucketName: string;
+    newAllocation: BN;
+    vestingPlan: string | null;
+    tokensClaimed: BN;
+    tokensBurnt: BN;
+  }): Promise<{
+    setupDeterministicVestingTx: web3.Transaction;
+    config: web3.PublicKey;
+    bucket: web3.PublicKey;
+    vestingConfig: web3.PublicKey;
+  }> {
+    const { setupDeterministicVestingIx, config, bucket, vestingConfig } = await this.setupDeterministicVestingIx(args);
+    const setupDeterministicVestingTx = new web3.Transaction().add(setupDeterministicVestingIx);
+    return { setupDeterministicVestingTx, config, bucket, vestingConfig };
   }
 
   async claimIx(args: {
