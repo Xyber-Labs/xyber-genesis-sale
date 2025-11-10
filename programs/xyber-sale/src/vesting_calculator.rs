@@ -1,4 +1,4 @@
-use crate::data::VestingPeriod;
+use crate::data::{BucketData, VestingConfig, VestingPeriod, VestingPlan, VestingType};
 
 #[derive(Debug)]
 pub struct VestingCalculator {
@@ -29,6 +29,38 @@ struct VestingPlanBuilder {
 impl VestingCalculator {
     pub fn builder() -> VestingConfigBuilder {
         VestingConfigBuilder::default()
+    }
+
+    pub(super) fn new(
+        vesting_config: &VestingConfig,
+        vesting_plan: &VestingPlan,
+        bucket_data: &BucketData,
+    ) -> Self {
+        let participant_allocation = Self::get_participant_allocation(vesting_config, bucket_data);
+
+        let mut calculator = VestingCalculator::builder()
+            .claimed(vesting_config.tokens_claimed)
+            .burnt(vesting_config.tokens_burnt)
+            .total_allocation(participant_allocation)
+            .vesting_plan(vesting_plan.periods.clone())
+            .build();
+
+        calculator.recalculate_plan(vesting_plan.periods.clone());
+        calculator
+    }
+
+    pub(super) fn get_participant_allocation(
+        vesting_config: &VestingConfig,
+        bucket_data: &BucketData,
+    ) -> u64 {
+        match vesting_config.vesting_type {
+            Some(VestingType::Priceless { deposit }) => deposit
+                .checked_div(bucket_data.total_deposit)
+                .and_then(|mul| mul.checked_mul(bucket_data.bucket_supply))
+                .expect("Overflow calculating allocation"),
+            Some(VestingType::Deterministic { allocation }) => allocation,
+            None => panic!("Vesting is not possible vesting type is not set"),
+        }
     }
 
     pub fn recalculate_plan(&mut self, vesting_plan: Vec<VestingPeriod>) {
