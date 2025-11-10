@@ -2419,10 +2419,6 @@ export type XyberSale = {
           {
             "name": "quoteAmount",
             "type": "u64"
-          },
-          {
-            "name": "baseAllocation",
-            "type": "u64"
           }
         ]
       }

@@ -2413,10 +2413,6 @@
           {
             "name": "quote_amount",
             "type": "u64"
-          },
-          {
-            "name": "base_allocation",
-            "type": "u64"
           }
         ]
       }

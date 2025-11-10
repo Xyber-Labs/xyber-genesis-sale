@@ -99,7 +99,6 @@ pub fn deposit_asset(
         buyer: ctx.accounts.buyer.key(),
         round: _round,
         quote_amount: payment_amount,
-        base_allocation: 0,
     });
 
     Ok(())

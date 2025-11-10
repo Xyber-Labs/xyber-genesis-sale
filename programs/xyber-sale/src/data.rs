@@ -123,7 +123,6 @@ pub struct DepositEvent {
     pub buyer: Pubkey,
     pub round: Round,
     pub quote_amount: u64,
-    pub base_allocation: u64,
 }
 
 #[event]
