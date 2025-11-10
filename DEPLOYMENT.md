@@ -68,19 +68,6 @@ anchor run setup-vesting-plan --provider.cluster localnet -- \
   --period ${TGE_DATE},1.0,0.0
 ```
 
-For **other buckets** with gradual vesting (example: 30% at TGE, 70% after 3 months):
-
-```bash
-TGE_DATE=$(date +%s)
-VESTING_DATE=$(date -d "+90 days" +%s)
-
-anchor run setup-vesting-plan --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
-  --vesting-plan-name team \
-  --period ${TGE_DATE},0.3,0.0 \
-  --period ${VESTING_DATE},0.7,0.0,0
-```
-
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 
 - Multiple `--period` options can be specified for gradual vesting
