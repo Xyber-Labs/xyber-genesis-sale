@@ -28,4 +28,6 @@ pub enum CustomError {
     InsufficientFunds,
     #[msg("Insufficient bucket supply")]
     InsufficientBucketSupply,
+    #[msg("Cooldown period not passed")]
+    CooldownPeriodNotPassed,
 }

@@ -15,8 +15,12 @@ declare_id!("XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt");
 pub mod xyber_sale {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, backend: Pubkey, multisig: Pubkey) -> Result<()> {
-        instructions::initialize(ctx, new_admin, backend, multisig)
+    pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, multisig: Pubkey) -> Result<()> {
+        instructions::initialize(ctx, new_admin, multisig)
+    }
+
+    pub fn set_quote_mint(ctx: Context<SetQuoteMint>, price: i64, expo: i32, is_enabled: bool) -> Result<()> {
+        instructions::set_quote_mint(ctx, price, expo, is_enabled)
     }
 
     pub fn setup_round(ctx: Context<SetupRound>, round: data::Round, start_time: i64, end_time: i64) -> Result<()> {
@@ -27,8 +31,8 @@ pub mod xyber_sale {
         instructions::setup_bucket(ctx, bucket_name, bucket_data)
     }
 
-    pub fn deposit_sol(ctx: Context<DepositSol>, round: data::Round, sol_price: u128, payment_amount: u64, expiration: i64) -> Result<()> {
-        instructions::deposit_sol(ctx, round, sol_price, payment_amount, expiration)
+    pub fn deposit_sol(ctx: Context<DepositSol>, round: data::Round, payment_amount: u64) -> Result<()> {
+        instructions::deposit_sol(ctx, round, payment_amount)
     }
 
     pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, payment_amount: u64) -> Result<()> {

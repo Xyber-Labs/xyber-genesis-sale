@@ -54,7 +54,7 @@ pub struct WithdrawSol<'info> {
 }
 
 pub fn withdraw_asset(ctx: Context<WithdrawAsset>) -> Result<()> {
-    let asset_to_withdraw = ctx.accounts.bucket_pool_ata.amount;
+    let asset_to_withdraw = ctx.accounts.quote_pool_ata.amount;
     require!(asset_to_withdraw > 0, CustomError::InsufficientFunds);
 
     let asset_decimals = ctx.accounts.quote_mint.decimals;
@@ -64,7 +64,7 @@ pub fn withdraw_asset(ctx: Context<WithdrawAsset>) -> Result<()> {
     let cpi = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         TransferChecked {
-            from: ctx.accounts.bucket_pool_ata.to_account_info(),
+            from: ctx.accounts.quote_pool_ata.to_account_info(),
             mint: ctx.accounts.quote_mint.to_account_info(),
             to: ctx.accounts.withdraw_ata.to_account_info(),
             authority: ctx.accounts.bucket_pool.to_account_info(),
@@ -85,7 +85,7 @@ pub struct WithdrawAsset<'info> {
     #[account(seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED], bump)]
     bucket_pool: SystemAccount<'info>,
 
-    #[account(mut, constraint = quote_mint.key() == config.quote_mint @ CustomError::InvalidQuoteMint)]
+    #[account(mut)]
     quote_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
@@ -94,7 +94,7 @@ pub struct WithdrawAsset<'info> {
         associated_token::authority = bucket_pool,
         associated_token::token_program = token_program
     )]
-    bucket_pool_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    quote_pool_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut)]
     withdraw_owner: SystemAccount<'info>,

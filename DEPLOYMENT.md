@@ -5,8 +5,9 @@ This document contains the complete deployment flow for the Xyber Sale program.
 ## Prerequisites
 
 - Solana CLI configured with the deployer wallet
-- Keypairs generated for admin, backend, buyer
-- Base and quote token mints created
+- Keypairs generated for admin, multisig, buyer
+- Base token mint created
+- Quote token mints created (USDT, USDC, etc.)
 - Anchor CLI installed
 
 ## Deployment Steps

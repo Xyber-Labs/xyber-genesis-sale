@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
-};
+use anchor_spl::token_interface::Mint;
 
 use crate::{
     constants::{DEPLOYER, SALE_BUCKET_SEED, SEED_ROOT},
@@ -24,7 +21,6 @@ pub struct Initialize<'info> {
     )]
     pub config: Box<Account<'info, SaleConfig>>,
     pub base_mint: Box<InterfaceAccount<'info, Mint>>,
-    pub quote_mint: Box<InterfaceAccount<'info, Mint>>,
 
     /// CHECK
     #[account(
@@ -37,28 +33,18 @@ pub struct Initialize<'info> {
     )]
     pub bucket_pool: UncheckedAccount<'info>,
 
-    #[account(
-        init_if_needed,
-        payer = admin,
-        associated_token::mint = quote_mint,
-        associated_token::authority = bucket_pool,
-        associated_token::token_program = token_program,
-    )]
-    pub bucket_pool_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-
     pub system_program: Program<'info, System>,
-    pub token_program: Interface<'info, TokenInterface>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, backend: Pubkey, multisig: Pubkey) -> Result<()> {
+pub fn initialize(
+    ctx: Context<Initialize>,
+    new_admin: Pubkey,
+    multisig: Pubkey,
+) -> Result<()> {
     let config = &mut ctx.accounts.config;
     config.admin = new_admin;
     config.multisig = Some(multisig);
-
     config.base_mint = ctx.accounts.base_mint.key();
-    config.quote_mint = ctx.accounts.quote_mint.key();
-    config.backend = backend;
 
     Ok(())
 }

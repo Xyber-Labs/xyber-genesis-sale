@@ -5,8 +5,8 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{SALE_BUCKET_SEED, SEED_ROOT},
-    data::{BucketData, DepositEvent, Round, RoundConfig, SaleConfig, VestingConfig},
+    constants::{QUOTE_SEED, SALE_BUCKET_SEED, SEED_ROOT},
+    data::{BucketData, DepositEvent, QuoteConfig, Round, RoundConfig, SaleConfig, VestingConfig},
     errors::CustomError,
 };
 
@@ -21,6 +21,11 @@ pub struct DepositAsset<'info> {
     #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
 
+    pub quote_mint: Box<InterfaceAccount<'info, Mint>>,
+
+    #[account(seeds = [SEED_ROOT, QUOTE_SEED, quote_mint.key().as_ref()], bump, constraint = quote_config.is_enabled @ CustomError::InvalidQuoteMint)]
+    pub quote_config: Box<Account<'info, QuoteConfig>>,
+
     #[account(
         init_if_needed,
         payer = buyer,
@@ -33,12 +38,6 @@ pub struct DepositAsset<'info> {
     #[account(seeds = [SEED_ROOT, b"ROUND", round.as_bytes()], bump)]
     pub round_config: Box<Account<'info, RoundConfig>>,
 
-    #[account(address = config.base_mint @ CustomError::InvalidBaseMint)]
-    pub base_mint: Box<InterfaceAccount<'info, Mint>>,
-
-    #[account(address = config.quote_mint @ CustomError::InvalidQuoteMint)]
-    pub quote_mint: Box<InterfaceAccount<'info, Mint>>,
-
     #[account(
         mut,
         associated_token::mint = quote_mint,
@@ -47,7 +46,7 @@ pub struct DepositAsset<'info> {
     )]
     pub buyer_quote_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    /// CHECK
+    /// CHECK: Bucket pool PDA
     #[account(mut, seeds = [SEED_ROOT, b"BUCKET_POOL", SALE_BUCKET_SEED], bump)]
     pub bucket_pool: UncheckedAccount<'info>,
 
@@ -57,7 +56,7 @@ pub struct DepositAsset<'info> {
         associated_token::authority = bucket_pool,
         associated_token::token_program = token_program,
     )]
-    pub bucket_pool_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub quote_pool_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(mut, seeds = [SEED_ROOT, b"BUCKET", round.as_bytes()], bump)]
     pub bucket_data: Box<Account<'info, BucketData>>,
@@ -67,11 +66,7 @@ pub struct DepositAsset<'info> {
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
-pub fn deposit_asset(
-    ctx: Context<DepositAsset>,
-    _round: Round,
-    payment_amount: u64,
-) -> Result<()> {
+pub fn deposit_asset(ctx: Context<DepositAsset>, _round: Round, payment_amount: u64) -> Result<()> {
     let round_config = &ctx.accounts.round_config;
     let now = Clock::get()?.unix_timestamp;
     require!(now >= round_config.start_time, CustomError::RoundNotStarted);
@@ -80,24 +75,51 @@ pub fn deposit_asset(
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.buyer_quote_ata.to_account_info(),
         mint: ctx.accounts.quote_mint.to_account_info(),
-        to: ctx.accounts.bucket_pool_ata.to_account_info(),
+        to: ctx.accounts.quote_pool_ata.to_account_info(),
         authority: ctx.accounts.buyer.to_account_info(),
     };
 
     let cpi = CpiContext::new(ctx.accounts.token_program.to_account_info(), transfer_accounts);
     transfer_checked(cpi, payment_amount, ctx.accounts.quote_mint.decimals)?;
 
+    let sol_equivalent = convert_quote_to_sol(
+        payment_amount,
+        ctx.accounts.quote_config.price,
+        ctx.accounts.quote_config.expo,
+        ctx.accounts.quote_mint.decimals,
+    );
+
     update_allocation(
         &mut ctx.accounts.vesting_config,
         &mut ctx.accounts.bucket_data,
-        payment_amount,
+        sol_equivalent,
     )?;
 
     emit!(DepositEvent {
         buyer: ctx.accounts.buyer.key(),
         round: _round,
-        quote_amount: payment_amount,
+        sol_amount: sol_equivalent,
     });
 
     Ok(())
+}
+
+const SOL_DECIMALS: u32 = 9;
+
+fn convert_quote_to_sol(quote_amount: u64, price: i64, expo: i32, quote_decimals: u8) -> u64 {
+    let price_abs = price.abs() as u128;
+    let expo_abs = expo.abs() as u32;
+
+    let numerator = (quote_amount as u128)
+        .checked_mul(10u128.pow(expo_abs))
+        .and_then(|v| v.checked_mul(10u128.pow(SOL_DECIMALS)))
+        .expect("Overflow in numerator");
+
+    let denominator =
+        price_abs.checked_mul(10u128.pow(quote_decimals as u32)).expect("Overflow in denominator");
+
+    let sol_equivalent =
+        numerator.checked_div(denominator).expect("Error in convert_quote_to_sol calculation");
+
+    u64::try_from(sol_equivalent).expect("Overflow in convert_quote_to_sol")
 }

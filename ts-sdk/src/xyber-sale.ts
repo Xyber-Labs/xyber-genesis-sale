@@ -27,18 +27,14 @@ const XyberSaleSDK = {
     async function initialize(args: {
       adminKeypair: anchor.web3.Keypair;
       newAdmin: anchor.web3.PublicKey;
-      backend: anchor.web3.PublicKey;
       multisig: anchor.web3.PublicKey;
       baseMint: anchor.web3.PublicKey;
-      quoteMint: anchor.web3.PublicKey;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
       const { initializeTx, config, bucketPool } = await txBuilder.initializeTx({
         admin: args.adminKeypair.publicKey,
         newAdmin: args.newAdmin,
-        backend: args.backend,
         multisig: args.multisig,
         baseMint: args.baseMint,
-        quoteMint: args.quoteMint,
       });
 
       if (!provider.sendAndConfirm) {
@@ -46,6 +42,28 @@ const XyberSaleSDK = {
       }
       const signature = await provider.sendAndConfirm(initializeTx, [args.adminKeypair]);
       return { signature, config, bucketPool };
+    }
+
+    async function setQuoteMint(args: {
+      multisigKeypair: anchor.web3.Keypair;
+      quoteMint: anchor.web3.PublicKey;
+      price: BN;
+      expo: number;
+      isEnabled: boolean;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey; quoteConfig: anchor.web3.PublicKey }> {
+      const { setQuoteMintTx, config, quoteConfig } = await txBuilder.setQuoteMintTx({
+        multisig: args.multisigKeypair.publicKey,
+        quoteMint: args.quoteMint,
+        price: args.price,
+        expo: args.expo,
+        isEnabled: args.isEnabled,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(setQuoteMintTx, [args.multisigKeypair]);
+      return { signature, config, quoteConfig };
     }
 
     async function setupRound(args: {
@@ -96,36 +114,32 @@ const XyberSaleSDK = {
 
     async function depositSol(args: {
       buyerKeypair: anchor.web3.Keypair;
-      backendKeypair: anchor.web3.Keypair;
       round: any;
-      solPrice: BN;
       paymentAmount: BN;
-      expiration: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositSolTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositSolTx({
         buyer: args.buyerKeypair.publicKey,
-        backend: args.backendKeypair.publicKey,
         round: args.round,
-        solPrice: args.solPrice,
         paymentAmount: args.paymentAmount,
-        expiration: args.expiration,
       });
 
       if (!provider.sendAndConfirm) {
         throw new Error("Provider does not support sendAndConfirm");
       }
-      const signature = await provider.sendAndConfirm(depositSolTx, [args.buyerKeypair, args.backendKeypair]);
+      const signature = await provider.sendAndConfirm(depositSolTx, [args.buyerKeypair]);
       return { signature, config, roundConfig, vestingConfig, bucket };
     }
 
     async function depositAsset(args: {
       buyerKeypair: anchor.web3.Keypair;
       round: any;
+      quoteMint: anchor.web3.PublicKey;
       paymentAmount: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
         buyer: args.buyerKeypair.publicKey,
         round: args.round,
+        quoteMint: args.quoteMint,
         paymentAmount: args.paymentAmount,
       });
 
@@ -223,10 +237,12 @@ const XyberSaleSDK = {
 
     async function withdrawAsset(args: {
       multisigKeypair: anchor.web3.Keypair;
+      quoteMint: anchor.web3.PublicKey;
       withdrawOwner: anchor.web3.PublicKey;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
       const { withdrawAssetTx, config, bucketPool } = await txBuilder.withdrawAssetTx({
         multisig: args.multisigKeypair.publicKey,
+        quoteMint: args.quoteMint,
         withdrawOwner: args.withdrawOwner,
       });
 
@@ -265,6 +281,10 @@ const XyberSaleSDK = {
       initialize,
       initializeIx: txBuilder.initializeIx.bind(txBuilder),
       initializeTx: txBuilder.initializeTx.bind(txBuilder),
+
+      setQuoteMint,
+      setQuoteMintIx: txBuilder.setQuoteMintIx.bind(txBuilder),
+      setQuoteMintTx: txBuilder.setQuoteMintTx.bind(txBuilder),
 
       setupRound,
       setupRoundIx: txBuilder.setupRoundIx.bind(txBuilder),

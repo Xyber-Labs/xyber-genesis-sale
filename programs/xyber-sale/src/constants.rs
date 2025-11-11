@@ -13,4 +13,7 @@ pub const BUCKET_SEED: &[u8] = b"BUCKET";
 pub const BUCKET_POOL_SEED: &[u8] = b"BUCKET_POOL";
 
 #[constant]
+pub const QUOTE_SEED: &[u8] = b"QUOTE";
+
+#[constant]
 pub const DEPLOYER: Pubkey = pubkey!("BMBeWpWc16LQNtqw4JxjSWTf5E9mUBhhPzuTmaVFvxrf");
