@@ -21,7 +21,7 @@ pub enum VestingType {
 impl Round {
     pub fn as_bytes(&self) -> &[u8] {
         match self {
-            Round::Public => b"public",
+            Round::Public => b"PUBLIC",
         }
     }
 }

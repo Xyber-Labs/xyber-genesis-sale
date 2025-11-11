@@ -158,7 +158,7 @@ describe("XyberSale", () => {
   });
 
   it("Should setup priceless bucket", async () => {
-    const bucketName = "public";
+    const bucketName = "PUBLIC";
     const bucketData = {
       vestingType: { priceless: {} },
       totalDeposit: new anchor.BN(0),
@@ -166,7 +166,7 @@ describe("XyberSale", () => {
       registeredSupply: new anchor.BN(0),
       claimedSupply: new anchor.BN(0),
       burntSupply: new anchor.BN(0),
-      vestingPlan: ["public"],
+      vestingPlan: ["PUBLIC"],
     };
 
     const { signature, config, bucket, bucketBaseAta } = await sdk.setupBucket({
@@ -271,9 +271,6 @@ describe("XyberSale", () => {
 
     const paymentAmount = new anchor.BN(4000);
 
-    const now = Math.floor(Date.now() / 1000);
-    const expiration = new anchor.BN(now + 600);
-
     const [bucketPool] = sdk.txBuilder.getBucketPoolPda();
     const bucketPoolQuoteAta = splToken.getAssociatedTokenAddressSync(
       quoteMint,
@@ -288,10 +285,8 @@ describe("XyberSale", () => {
 
     const { signature, config, roundConfig, vestingConfig, bucket } = await sdk.depositAsset({
       buyerKeypair: buyer,
-      backendKeypair: backend,
       round: { public: {} },
       paymentAmount: paymentAmount,
-      expiration: expiration,
     });
 
     console.log("Deposit Asset tx:", signature);
@@ -336,7 +331,7 @@ describe("XyberSale", () => {
   });
 
   it("Should setup vesting plan for public sale (100% unlock at TGE)", async () => {
-    const vestingPlanName = "public";
+    const vestingPlanName = "PUBLIC";
     const tgeDate = Math.floor(Date.now() / 1000);
 
     const plan = {
@@ -375,7 +370,7 @@ describe("XyberSale", () => {
   });
 
   it("Should mint base tokens to bucket for testing claim", async () => {
-    const bucketName = "public";
+    const bucketName = "PUBLIC";
     const [bucket] = sdk.txBuilder.getBucketPda(bucketName);
 
     const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
@@ -405,8 +400,8 @@ describe("XyberSale", () => {
   });
 
   it("Should claim 100% tokens at TGE for public sale buyer", async () => {
-    const bucketName = "public";
-    const vestingPlanName = "public";
+    const bucketName = "PUBLIC";
+    const vestingPlanName = "PUBLIC";
 
     const [vestingConfig] = sdk.txBuilder.getVestingConfigPda(bucketName, buyer.publicKey);
 
@@ -469,8 +464,8 @@ describe("XyberSale", () => {
   });
 
   it("Should fail when trying to claim again (nothing left to claim)", async () => {
-    const bucketName = "public";
-    const vestingPlanName = "public";
+    const bucketName = "PUBLIC";
+    const vestingPlanName = "PUBLIC";
 
     await doAndCheckError(
       sdk.claim({

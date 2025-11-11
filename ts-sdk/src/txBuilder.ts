@@ -287,10 +287,8 @@ export class TxBuilder {
 
   async depositAssetIx(args: {
     buyer: web3.PublicKey;
-    backend: web3.PublicKey;
     round: any;
     paymentAmount: BN;
-    expiration: BN;
   }): Promise<{
     depositAssetIx: web3.TransactionInstruction;
     config: web3.PublicKey;
@@ -326,10 +324,9 @@ export class TxBuilder {
     );
 
     const depositAssetIx = await this.program.methods
-      .depositAsset(args.round, args.paymentAmount, args.expiration)
+      .depositAsset(args.round, args.paymentAmount)
       .accountsStrict({
         buyer: args.buyer,
-        backend: args.backend,
         config: config,
         vestingConfig: vestingConfig,
         roundConfig: roundConfig,
@@ -350,10 +347,8 @@ export class TxBuilder {
 
   async depositAssetTx(args: {
     buyer: web3.PublicKey;
-    backend: web3.PublicKey;
     round: any;
     paymentAmount: BN;
-    expiration: BN;
   }): Promise<{
     depositAssetTx: web3.Transaction;
     config: web3.PublicKey;
@@ -555,7 +550,7 @@ export class TxBuilder {
 
   getBucketPoolPda(): [web3.PublicKey, number] {
     return web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("root"), Buffer.from("BUCKET_POOL"), this.saleBucketSeed],
+      [this.seedRoot, Buffer.from("BUCKET_POOL"), this.saleBucketSeed],
       this.program.programId
     );
   }

@@ -33,14 +33,14 @@ export function parseRound(round: any): string {
   const keys = ["public"];
   for (const key of keys) {
     if (key in round) {
-      return key;
+      return key.toUpperCase();
     }
   }
   throw new Error(`Invalid round: ${JSON.stringify(round)}`);
 }
 
 export function getRound(roundName: string): any {
-  switch (roundName) {
+  switch (roundName.toLowerCase()) {
     case "public":
       return { public: {} };
     default:

@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
 
 #[constant]
-pub const SEED_ROOT: &[u8] = b"root";
+pub const SEED_ROOT: &[u8] = b"ROOT";
 
 #[constant]
-pub const SALE_BUCKET_SEED: &[u8] = b"sale";
+pub const SALE_BUCKET_SEED: &[u8] = b"SALE";
 
 #[constant]
 pub const BUCKET_SEED: &[u8] = b"BUCKET";

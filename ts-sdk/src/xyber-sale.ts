@@ -120,23 +120,19 @@ const XyberSaleSDK = {
 
     async function depositAsset(args: {
       buyerKeypair: anchor.web3.Keypair;
-      backendKeypair: anchor.web3.Keypair;
       round: any;
       paymentAmount: BN;
-      expiration: BN;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
       const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
         buyer: args.buyerKeypair.publicKey,
-        backend: args.backendKeypair.publicKey,
         round: args.round,
         paymentAmount: args.paymentAmount,
-        expiration: args.expiration,
       });
 
       if (!provider.sendAndConfirm) {
         throw new Error("Provider does not support sendAndConfirm");
       }
-      const signature = await provider.sendAndConfirm(depositAssetTx, [args.buyerKeypair, args.backendKeypair]);
+      const signature = await provider.sendAndConfirm(depositAssetTx, [args.buyerKeypair]);
       return { signature, config, roundConfig, vestingConfig, bucket };
     }
 

@@ -31,8 +31,8 @@ pub mod xyber_sale {
         instructions::deposit_sol(ctx, round, sol_price, payment_amount, expiration)
     }
 
-    pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, payment_amount: u64, expiration: i64) -> Result<()> {
-        instructions::deposit_asset(ctx, round, payment_amount, expiration)
+    pub fn deposit_asset(ctx: Context<DepositAsset>, round: data::Round, payment_amount: u64) -> Result<()> {
+        instructions::deposit_asset(ctx, round, payment_amount)
     }
 
     pub fn setup_vesting_plan(ctx: Context<SetupVestingPlan>, vesting_plan_name: String, plan: data::VestingPlan) -> Result<()> {

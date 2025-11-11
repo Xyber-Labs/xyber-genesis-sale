@@ -10,16 +10,13 @@ use crate::{
     errors::CustomError,
 };
 
-use super::{update_allocation, validate_round};
+use super::update_allocation;
 
 #[derive(Accounts)]
 #[instruction(round: Round)]
 pub struct DepositAsset<'info> {
     #[account(signer, mut)]
     pub buyer: Signer<'info>,
-
-    #[account(signer, address = config.backend @ CustomError::InvalidBackend)]
-    pub backend: Signer<'info>,
 
     #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
@@ -74,10 +71,11 @@ pub fn deposit_asset(
     ctx: Context<DepositAsset>,
     _round: Round,
     payment_amount: u64,
-    expiration: i64,
 ) -> Result<()> {
     let round_config = &ctx.accounts.round_config;
-    validate_round(round_config, expiration)?;
+    let now = Clock::get()?.unix_timestamp;
+    require!(now >= round_config.start_time, CustomError::RoundNotStarted);
+    require!(round_config.end_time >= now, CustomError::RoundFinished);
 
     let transfer_accounts = TransferChecked {
         from: ctx.accounts.buyer_quote_ata.to_account_info(),

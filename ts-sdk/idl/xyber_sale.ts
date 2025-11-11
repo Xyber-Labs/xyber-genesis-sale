@@ -38,10 +38,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -65,10 +65,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -104,10 +104,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -148,10 +148,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -336,20 +336,16 @@ export type XyberSale = {
           "signer": true
         },
         {
-          "name": "backend",
-          "signer": true
-        },
-        {
           "name": "config",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -374,10 +370,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -417,10 +413,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -514,10 +510,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -539,10 +535,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  108,
-                  101
+                  83,
+                  65,
+                  76,
+                  69
                 ]
               }
             ]
@@ -613,10 +609,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -661,10 +657,6 @@ export type XyberSale = {
         {
           "name": "paymentAmount",
           "type": "u64"
-        },
-        {
-          "name": "expiration",
-          "type": "i64"
         }
       ]
     },
@@ -697,10 +689,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -725,10 +717,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -768,10 +760,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -802,10 +794,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -827,10 +819,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  108,
-                  101
+                  83,
+                  65,
+                  76,
+                  69
                 ]
               }
             ]
@@ -850,10 +842,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -928,10 +920,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -965,10 +957,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -990,10 +982,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  108,
-                  101
+                  83,
+                  65,
+                  76,
+                  69
                 ]
               }
             ]
@@ -1108,10 +1100,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1136,10 +1128,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1273,10 +1265,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1304,10 +1296,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1336,10 +1328,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1427,10 +1419,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1455,10 +1447,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1527,10 +1519,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1555,10 +1547,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1630,10 +1622,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1657,10 +1649,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1682,10 +1674,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  108,
-                  101
+                  83,
+                  65,
+                  76,
+                  69
                 ]
               }
             ]
@@ -1852,10 +1844,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1883,10 +1875,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1908,10 +1900,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  115,
-                  97,
-                  108,
-                  101
+                  83,
+                  65,
+                  76,
+                  69
                 ]
               }
             ]
@@ -1953,10 +1945,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -1981,10 +1973,10 @@ export type XyberSale = {
               {
                 "kind": "const",
                 "value": [
-                  114,
-                  111,
-                  111,
-                  116
+                  82,
+                  79,
+                  79,
+                  84
                 ]
               },
               {
@@ -2602,12 +2594,12 @@ export type XyberSale = {
     {
       "name": "saleBucketSeed",
       "type": "bytes",
-      "value": "[115, 97, 108, 101]"
+      "value": "[83, 65, 76, 69]"
     },
     {
       "name": "seedRoot",
       "type": "bytes",
-      "value": "[114, 111, 111, 116]"
+      "value": "[82, 79, 79, 84]"
     }
   ]
 };
