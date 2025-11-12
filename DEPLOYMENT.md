@@ -41,9 +41,9 @@ spl-token create-token --decimals 6 keys/quote-mint.json -u localhost
 
 ```bash
 anchor run initialize --provider.cluster localnet -- \
-  --admin ANikp9qHf2CFyEdgvh9iuZRMw6eLaTaEbCKB8i1nbfNg \
-  --multisig 2StawVzybhciXgXxumcU8r1ZQNdcEu73cuq6VF5uQUP9 \
-  --base-mint 9ww1Rt2KEycANggPZ7hmZ99kM6m8jRBDbUBzU3MeUA96
+  --admin $(solana address -k keys/admin.json) \
+  --multisig $(solana address -k keys/multisig.json) \
+  --base-mint $(solana address -k keys/base-mint.json)
 ```
 
 ### 5. Configure Quote Token (USDT, USDC, etc.)
