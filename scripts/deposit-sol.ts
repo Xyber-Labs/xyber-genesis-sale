@@ -9,29 +9,19 @@ async function parseCliArgs() {
   const cli = new Command();
   cli
     .requiredOption("--buyer-keypair <PATH>", "Path to buyer keypair file")
-    .requiredOption("--backend-keypair <PATH>", "Path to backend keypair file")
     .requiredOption("--round <ROUND>", "Round name (e.g., 'public')")
-    .requiredOption("--sol-price <AMOUNT>", "SOL price in PRICE_DECIMALS (18 decimals)")
-    .requiredOption("--payment-amount <AMOUNT>", "Payment amount in quote token")
-    .option("--expiration <UNIX_TIMESTAMP>", "Signature expiration time (Unix timestamp, default: now + 10 minutes)")
+    .requiredOption("--payment-amount <AMOUNT>", "Payment amount in lamports")
     .parse(process.argv);
 
   const options = cli.opts();
 
   const buyerKeypair = await getKeypairFromFile(options.buyerKeypair);
-  const backendKeypair = await getKeypairFromFile(options.backendKeypair);
   const round = getRound(options.round);
-
-  const now = Math.floor(Date.now() / 1000);
-  const expiration = options.expiration ? new anchor.BN(options.expiration) : new anchor.BN(now + 600);
 
   return {
     buyerKeypair,
-    backendKeypair,
     round,
-    solPrice: new anchor.BN(options.solPrice),
     paymentAmount: new anchor.BN(options.paymentAmount),
-    expiration,
   };
 }
 
@@ -41,11 +31,8 @@ async function main() {
   await runWithSdk(async ({ provider, sdk }) => {
     const { signature, config, roundConfig, vestingConfig, bucket } = await sdk.depositSol({
       buyerKeypair: options.buyerKeypair,
-      backendKeypair: options.backendKeypair,
       round: options.round,
-      solPrice: options.solPrice,
       paymentAmount: options.paymentAmount,
-      expiration: options.expiration,
     });
 
     console.log("✅ Success!");
@@ -54,8 +41,8 @@ async function main() {
     console.log("Round Config PDA:", roundConfig.toBase58());
     console.log("Vesting Config PDA:", vestingConfig.toBase58());
     console.log("Bucket PDA:", bucket.toBase58());
-    console.log("SOL Price:", options.solPrice.toString());
-    console.log("Payment Amount:", options.paymentAmount.toString());
+    console.log("Payment Amount (lamports):", options.paymentAmount.toString());
+    console.log("Payment Amount (SOL):", (options.paymentAmount.toNumber() / 1e9).toFixed(2));
   });
 }
 

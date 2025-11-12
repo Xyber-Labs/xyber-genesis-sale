@@ -41,13 +41,31 @@ spl-token create-token --decimals 6 keys/quote-mint.json -u localhost
 ```bash
 anchor run initialize --provider.cluster localnet -- \
   --admin ANikp9qHf2CFyEdgvh9iuZRMw6eLaTaEbCKB8i1nbfNg \
-  --backend 7CZqeCAnSnoQtNhAowspmUYTYMinAoxKDyzUq5umkyRG \
   --multisig 2StawVzybhciXgXxumcU8r1ZQNdcEu73cuq6VF5uQUP9 \
-  --base-mint 9ww1Rt2KEycANggPZ7hmZ99kM6m8jRBDbUBzU3MeUA96 \
-  --quote-mint 8D7xtj83FmfqXRGGefBaMZ2UeAhYdsaEBR8FVJohU2tW
+  --base-mint 9ww1Rt2KEycANggPZ7hmZ99kM6m8jRBDbUBzU3MeUA96
 ```
 
-### 5. Setup Sale Round
+### 5. Configure Quote Token (USDT, USDC, etc.)
+
+Configure quote token that will be accepted for payment with its price in SOL:
+
+```bash
+anchor run set-quote-mint --provider.cluster localnet -- \
+  --multisig-keypair ./keys/multisig.json \
+  --quote-mint $(solana address -k keys/quote-mint.json) \
+  --price 200 \
+  --expo 0 \
+  --is-enabled true
+```
+
+**Price Format:**
+- `price` = SOL price in USD (e.g., 200 for $200/SOL)
+- `expo` = exponent (use 0 for simple prices)
+- Actual price = `price × 10^expo` (e.g., 200 × 10^0 = $200)
+
+**Note:** Prices can only be updated once per 24 hours (cooldown protection).
+
+### 6. Setup Sale Round
 
 ```bash
 anchor run setup-round --provider.cluster localnet -- \
@@ -56,7 +74,7 @@ anchor run setup-round --provider.cluster localnet -- \
   --end-time $(date -d "+30 days" +%s)
 ```
 
-### 6. Setup Vesting Plan
+### 7. Setup Vesting Plan
 
 For **public sale** (100% unlock at TGE):
 
@@ -76,42 +94,43 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 - `BURN_RATIO`: Portion of tokens to burn (0.0 to 1.0)
 - `BASE_PERIOD_INDEX`: Optional, references a previous period's remaining balance
 
-### 7. Setup Token Bucket
+### 8. Setup Token Bucket
 
 For **public sale** (priceless):
 
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
   --admin-keypair ./keys/admin.json \
-  --bucket-name public \
+  --bucket-name PUBLIC \
   --bucket-supply 100000000000000 \
   --vesting-type priceless \
   --vesting-plan public
 ```
 
-### 8. Mint Base Tokens to Bucket
+**Note:** Bucket name must be uppercase to match round name (PUBLIC)
+
+### 9. Mint Base Tokens to Bucket
 
 Mint base tokens to bucket for claim distribution:
 
 ```bash
 anchor run mint-to-bucket --provider.cluster localnet -- \
-  --bucket-name public \
+  --bucket-name PUBLIC \
   --amount 100000000000000
 ```
 
-### 9. Deposit SOL to Purchase Tokens
+### 10. Deposit SOL to Purchase Tokens
 
 ```bash
 anchor run deposit-sol --provider.cluster localnet -- \
   --buyer-keypair ./keys/buyer.json \
-  --backend-keypair ./keys/backend.json \
   --round public \
-  --sol-price 250000000000000000000 \
-  --payment-amount 4000000 \
-  --expiration $(date -d "+10 minutes" +%s)
+  --payment-amount 5000000000
 ```
 
-### 10. Mint Quote Tokens to Buyer (for SPL deposit)
+**Note:** Payment amount is in lamports (1 SOL = 10^9 lamports)
+
+### 11. Mint Quote Tokens to Buyer (for SPL deposit)
 
 Create token account and mint quote tokens to buyer for testing SPL deposit:
 
@@ -124,25 +143,26 @@ spl-token create-account $(solana address -k keys/quote-mint.json) \
 spl-token mint $(solana address -k keys/quote-mint.json) 10000000 --recipient-owner keys/buyer.json -u localhost
 ```
 
-### 11. Deposit Tokens (SPL) to Purchase Tokens
+### 12. Deposit Tokens (SPL) to Purchase Tokens
 
 ```bash
 anchor run deposit-asset --provider.cluster localnet -- \
   --buyer-keypair ./keys/buyer.json \
-  --backend-keypair ./keys/backend.json \
   --round public \
-  --payment-amount 4000000 \
-  --expiration $(date -d "+10 minutes" +%s)
+  --quote-mint $(solana address -k keys/quote-mint.json) \
+  --payment-amount 1000000000
 ```
 
-### 12. Claim Purchased Tokens
+**Note:** Payment amount is in token's smallest units (depends on token decimals)
+
+### 13. Claim Purchased Tokens
 
 After TGE (Token Generation Event) or when vesting period starts, buyers can claim their tokens:
 
 ```bash
 anchor run claim --provider.cluster localnet -- \
   --buyer-keypair ./keys/buyer.json \
-  --bucket-name public \
+  --bucket-name PUBLIC \
   --vesting-plan public
 ```
 
@@ -152,7 +172,7 @@ anchor run claim --provider.cluster localnet -- \
 
 These operations can only be performed by the multisig account to withdraw accumulated funds from the sale.
 
-### 13. Withdraw SOL from Bucket Pool
+### 14. Withdraw SOL from Bucket Pool
 
 Withdraw all accumulated SOL (except rent reserve) from the bucket pool:
 
@@ -164,17 +184,18 @@ anchor run withdraw-sol --provider.cluster localnet -- \
 
 **Note:** Automatically leaves rent-exempt minimum in bucket_pool.
 
-### 14. Withdraw Quote Tokens (Asset) from Bucket Pool
+### 15. Withdraw Quote Tokens (Asset) from Bucket Pool
 
 Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool:
 
 ```bash
 anchor run withdraw-asset --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
+  --quote-mint $(solana address -k keys/quote-mint.json) \
   --withdraw-owner $(solana address)
 ```
 
-**Note:** Creates an associated token account for withdraw-owner if needed.
+**Note:** Creates an associated token account for withdraw-owner if needed. Specify which quote token to withdraw.
 
 ## Deterministic Vesting Flow (Team, Advisors, Partners)
 
@@ -278,9 +299,9 @@ anchor test --skip-build --skip-deploy -- --grep "deposit"
 
 ## Notes
 
-- All prices use 18 decimals for precision (PRICE_DECIMALS)
 - Token amounts use mint decimals (typically 6 or 9)
 - SOL amounts are in lamports (1 SOL = 10^9 lamports)
+- Quote token prices use Pyth-compatible format: actual_price = price × 10^expo
 - Round must be active (current time between start_time and end_time)
 - Bucket supply must be sufficient for allocation requests
-- Backend signature is required for all deposits
+- Quote token prices have 24-hour cooldown between updates

@@ -106,8 +106,8 @@ pub fn deposit_asset(ctx: Context<DepositAsset>, _round: Round, payment_amount: 
 
 fn convert_quote_to_sol(quote_amount: u64, price: i64, expo: i32, quote_decimals: u8) -> u64 {
     const SOL_DECIMALS: u32 = 9;
-    let price_abs = price.abs() as u128;
-    let expo_abs = expo.abs() as u32;
+    let price_abs = price.unsigned_abs() as u128;
+    let expo_abs = expo.unsigned_abs();
 
     let numerator = (quote_amount as u128)
         .checked_mul(10u128.pow(expo_abs))
