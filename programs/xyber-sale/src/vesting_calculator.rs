@@ -55,12 +55,10 @@ impl VestingCalculator {
     ) -> u64 {
         match vesting_config.vesting_type {
             Some(VestingType::Priceless { deposit }) => {
-                let numerator = (deposit as u128)
+                let result = (deposit as u128)
                     .checked_mul(bucket_data.bucket_supply as u128)
-                    .expect("Overflow in numerator");
-                let result = numerator
-                    .checked_div(bucket_data.total_deposit as u128)
-                    .expect("Division error");
+                    .and_then(|v| v.checked_div(bucket_data.total_deposit as u128))
+                    .expect("Overflow calculating allocation");
                 u64::try_from(result).expect("Overflow converting allocation to u64")
             }
             Some(VestingType::Deterministic { allocation }) => allocation,

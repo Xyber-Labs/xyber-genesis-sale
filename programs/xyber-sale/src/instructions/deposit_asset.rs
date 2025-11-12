@@ -104,9 +104,8 @@ pub fn deposit_asset(ctx: Context<DepositAsset>, _round: Round, payment_amount: 
     Ok(())
 }
 
-const SOL_DECIMALS: u32 = 9;
-
 fn convert_quote_to_sol(quote_amount: u64, price: i64, expo: i32, quote_decimals: u8) -> u64 {
+    const SOL_DECIMALS: u32 = 9;
     let price_abs = price.abs() as u128;
     let expo_abs = expo.abs() as u32;
 
