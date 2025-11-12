@@ -9,20 +9,16 @@ function parseCliArgs() {
     .name("initialize")
     .description("Initialize XyberSale configuration")
     .requiredOption("--admin <PUBKEY>", "New admin public key")
-    .requiredOption("--backend <PUBKEY>", "Backend public key")
     .requiredOption("--multisig <PUBKEY>", "Multisig public key")
     .requiredOption("--base-mint <PUBKEY>", "Base token mint address")
-    .requiredOption("--quote-mint <PUBKEY>", "Quote token mint address")
     .parse(process.argv);
 
   const options = cli.opts();
 
   return {
     admin: new web3.PublicKey(options.admin),
-    backend: new web3.PublicKey(options.backend),
     multisig: new web3.PublicKey(options.multisig),
     baseMint: new web3.PublicKey(options.baseMint),
-    quoteMint: new web3.PublicKey(options.quoteMint),
   };
 }
 
@@ -33,10 +29,8 @@ async function main() {
     const { signature, config, bucketPool } = await sdk.initialize({
       adminKeypair: (provider.wallet as any).payer,
       newAdmin: options.admin,
-      backend: options.backend,
       multisig: options.multisig,
       baseMint: options.baseMint,
-      quoteMint: options.quoteMint,
     });
 
     console.log("✅ Success!");

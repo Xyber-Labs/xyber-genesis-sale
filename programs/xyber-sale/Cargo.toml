@@ -27,3 +27,4 @@ anchor-spl = "0.31.1"
 
 [lints.rust]
 deprecated = "allow"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

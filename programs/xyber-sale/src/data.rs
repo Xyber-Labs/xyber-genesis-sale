@@ -30,10 +30,17 @@ impl Round {
 #[derive(Default, InitSpace)]
 pub struct SaleConfig {
     pub admin: Pubkey,
-    pub backend: Pubkey,
     pub base_mint: Pubkey,
-    pub quote_mint: Pubkey,
     pub multisig: Option<Pubkey>,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct QuoteConfig {
+    pub price: i64,
+    pub expo: i32,
+    pub update_allowed_at: i64,
+    pub is_enabled: bool,
 }
 
 #[account]
@@ -86,7 +93,7 @@ pub struct VestingPlan {
 pub struct DepositEvent {
     pub buyer: Pubkey,
     pub round: Round,
-    pub quote_amount: u64,
+    pub sol_amount: u64,
 }
 
 #[event]

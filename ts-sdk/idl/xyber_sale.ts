@@ -363,6 +363,39 @@ export type XyberSale = {
           }
         },
         {
+          "name": "quoteMint"
+        },
+        {
+          "name": "quoteConfig",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  81,
+                  85,
+                  79,
+                  84,
+                  69
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "quoteMint"
+              }
+            ]
+          }
+        },
+        {
           "name": "vestingConfig",
           "writable": true,
           "pda": {
@@ -437,12 +470,6 @@ export type XyberSale = {
           }
         },
         {
-          "name": "baseMint"
-        },
-        {
-          "name": "quoteMint"
-        },
-        {
           "name": "buyerQuoteAta",
           "writable": true,
           "pda": {
@@ -501,9 +528,6 @@ export type XyberSale = {
         },
         {
           "name": "bucketPool",
-          "docs": [
-            "CHECK"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -545,7 +569,7 @@ export type XyberSale = {
           }
         },
         {
-          "name": "bucketPoolAta",
+          "name": "quotePoolAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -679,10 +703,6 @@ export type XyberSale = {
           "signer": true
         },
         {
-          "name": "backend",
-          "signer": true
-        },
-        {
           "name": "config",
           "pda": {
             "seeds": [
@@ -785,9 +805,6 @@ export type XyberSale = {
         },
         {
           "name": "bucketPool",
-          "docs": [
-            "CHECK"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -827,12 +844,6 @@ export type XyberSale = {
               }
             ]
           }
-        },
-        {
-          "name": "baseMint"
-        },
-        {
-          "name": "quoteMint"
         },
         {
           "name": "bucketData",
@@ -881,16 +892,8 @@ export type XyberSale = {
           }
         },
         {
-          "name": "solPrice",
-          "type": "u128"
-        },
-        {
           "name": "paymentAmount",
           "type": "u64"
-        },
-        {
-          "name": "expiration",
-          "type": "i64"
         }
       ]
     },
@@ -944,9 +947,6 @@ export type XyberSale = {
           "name": "baseMint"
         },
         {
-          "name": "quoteMint"
-        },
-        {
           "name": "bucketPool",
           "docs": [
             "CHECK"
@@ -992,7 +992,143 @@ export type XyberSale = {
           }
         },
         {
-          "name": "bucketPoolAta",
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "newAdmin",
+          "type": "pubkey"
+        },
+        {
+          "name": "multisig",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "setQuoteMint",
+      "discriminator": [
+        135,
+        251,
+        130,
+        81,
+        135,
+        206,
+        166,
+        228
+      ],
+      "accounts": [
+        {
+          "name": "multisig",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "quoteMint"
+        },
+        {
+          "name": "quoteConfig",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  81,
+                  85,
+                  79,
+                  84,
+                  69
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "quoteMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucketPool",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84,
+                  95,
+                  80,
+                  79,
+                  79,
+                  76
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  65,
+                  76,
+                  69
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "quotePoolAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1062,16 +1198,16 @@ export type XyberSale = {
       ],
       "args": [
         {
-          "name": "newAdmin",
-          "type": "pubkey"
+          "name": "price",
+          "type": "i64"
         },
         {
-          "name": "backend",
-          "type": "pubkey"
+          "name": "expo",
+          "type": "i32"
         },
         {
-          "name": "multisig",
-          "type": "pubkey"
+          "name": "isEnabled",
+          "type": "bool"
         }
       ]
     },
@@ -1688,7 +1824,7 @@ export type XyberSale = {
           "writable": true
         },
         {
-          "name": "bucketPoolAta",
+          "name": "quotePoolAta",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2157,6 +2293,19 @@ export type XyberSale = {
       ]
     },
     {
+      "name": "quoteConfig",
+      "discriminator": [
+        212,
+        148,
+        253,
+        35,
+        84,
+        28,
+        182,
+        112
+      ]
+    },
+    {
       "name": "roundConfig",
       "discriminator": [
         243,
@@ -2302,6 +2451,11 @@ export type XyberSale = {
       "code": 6012,
       "name": "insufficientBucketSupply",
       "msg": "Insufficient bucket supply"
+    },
+    {
+      "code": 6013,
+      "name": "cooldownPeriodNotPassed",
+      "msg": "Cooldown period not passed"
     }
   ],
   "types": [
@@ -2409,8 +2563,32 @@ export type XyberSale = {
             }
           },
           {
-            "name": "quoteAmount",
+            "name": "solAmount",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "quoteConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "i64"
+          },
+          {
+            "name": "expo",
+            "type": "i32"
+          },
+          {
+            "name": "updateAllowedAt",
+            "type": "i64"
+          },
+          {
+            "name": "isEnabled",
+            "type": "bool"
           }
         ]
       }
@@ -2452,15 +2630,7 @@ export type XyberSale = {
             "type": "pubkey"
           },
           {
-            "name": "backend",
-            "type": "pubkey"
-          },
-          {
             "name": "baseMint",
-            "type": "pubkey"
-          },
-          {
-            "name": "quoteMint",
             "type": "pubkey"
           },
           {
@@ -2590,6 +2760,11 @@ export type XyberSale = {
       "name": "deployer",
       "type": "pubkey",
       "value": "BMBeWpWc16LQNtqw4JxjSWTf5E9mUBhhPzuTmaVFvxrf"
+    },
+    {
+      "name": "quoteSeed",
+      "type": "bytes",
+      "value": "[81, 85, 79, 84, 69]"
     },
     {
       "name": "saleBucketSeed",

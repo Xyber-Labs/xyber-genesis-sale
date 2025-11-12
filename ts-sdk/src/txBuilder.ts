@@ -54,10 +54,8 @@ export class TxBuilder {
   async initializeIx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
-    backend: web3.PublicKey;
     multisig: web3.PublicKey;
     baseMint: web3.PublicKey;
-    quoteMint: web3.PublicKey;
   }): Promise<{
     initializeIx: web3.TransactionInstruction;
     config: web3.PublicKey;
@@ -66,26 +64,14 @@ export class TxBuilder {
     const [config] = this.getConfigPda();
     const [bucketPool] = this.getBucketPoolPda();
 
-    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
-      args.quoteMint,
-      bucketPool,
-      true,
-      splToken.TOKEN_PROGRAM_ID,
-      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-
     const initializeIx = await this.program.methods
-      .initialize(args.newAdmin, args.backend, args.multisig)
+      .initialize(args.newAdmin, args.multisig)
       .accountsStrict({
         admin: args.admin,
         config: config,
         baseMint: args.baseMint,
-        quoteMint: args.quoteMint,
         bucketPool: bucketPool,
-        bucketPoolAta: bucketPoolAta,
         systemProgram: web3.SystemProgram.programId,
-        tokenProgram: splToken.TOKEN_PROGRAM_ID,
-        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .instruction();
 
@@ -95,10 +81,8 @@ export class TxBuilder {
   async initializeTx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
-    backend: web3.PublicKey;
     multisig: web3.PublicKey;
     baseMint: web3.PublicKey;
-    quoteMint: web3.PublicKey;
   }): Promise<{
     initializeTx: web3.Transaction;
     config: web3.PublicKey;
@@ -107,6 +91,63 @@ export class TxBuilder {
     const { initializeIx, config, bucketPool } = await this.initializeIx(args);
     const initializeTx = new web3.Transaction().add(initializeIx);
     return { initializeTx, config, bucketPool };
+  }
+
+  async setQuoteMintIx(args: {
+    multisig: web3.PublicKey;
+    quoteMint: web3.PublicKey;
+    price: BN;
+    expo: number;
+    isEnabled: boolean;
+  }): Promise<{
+    setQuoteMintIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+    quoteConfig: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+    const [quoteConfig] = this.getQuoteConfigPda(args.quoteMint);
+    const [bucketPool] = this.getBucketPoolPda();
+
+    const quotePoolAta = splToken.getAssociatedTokenAddressSync(
+      args.quoteMint,
+      bucketPool,
+      true,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const setQuoteMintIx = await this.program.methods
+      .setQuoteMint(args.price, args.expo, args.isEnabled)
+      .accountsStrict({
+        multisig: args.multisig,
+        config: config,
+        quoteMint: args.quoteMint,
+        quoteConfig: quoteConfig,
+        bucketPool: bucketPool,
+        quotePoolAta: quotePoolAta,
+        systemProgram: web3.SystemProgram.programId,
+        tokenProgram: splToken.TOKEN_PROGRAM_ID,
+        associatedTokenProgram: splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .instruction();
+
+    return { setQuoteMintIx, config, quoteConfig };
+  }
+
+  async setQuoteMintTx(args: {
+    multisig: web3.PublicKey;
+    quoteMint: web3.PublicKey;
+    price: BN;
+    expo: number;
+    isEnabled: boolean;
+  }): Promise<{
+    setQuoteMintTx: web3.Transaction;
+    config: web3.PublicKey;
+    quoteConfig: web3.PublicKey;
+  }> {
+    const { setQuoteMintIx, config, quoteConfig } = await this.setQuoteMintIx(args);
+    const setQuoteMintTx = new web3.Transaction().add(setQuoteMintIx);
+    return { setQuoteMintTx, config, quoteConfig };
   }
 
   async setupRoundIx(args: {
@@ -224,11 +265,8 @@ export class TxBuilder {
 
   async depositSolIx(args: {
     buyer: web3.PublicKey;
-    backend: web3.PublicKey;
     round: any;
-    solPrice: BN;
     paymentAmount: BN;
-    expiration: BN;
   }): Promise<{
     depositSolIx: web3.TransactionInstruction;
     config: web3.PublicKey;
@@ -243,22 +281,15 @@ export class TxBuilder {
     const [bucket] = this.getBucketPda(roundName);
     const [bucketPool] = this.getBucketPoolPda();
 
-    const configAccount = await this.program.account.saleConfig.fetch(config);
-    const baseMint = configAccount.baseMint;
-    const quoteMint = configAccount.quoteMint;
-
     const depositSolIx = await this.program.methods
-      .depositSol(args.round, args.solPrice, args.paymentAmount, args.expiration)
+      .depositSol(args.round, args.paymentAmount)
       .accountsStrict({
         buyer: args.buyer,
-        backend: args.backend,
         config: config,
-        roundConfig: roundConfig,
         vestingConfig: vestingConfig,
-        bucketData: bucket,
-        baseMint: baseMint,
-        quoteMint: quoteMint,
+        roundConfig: roundConfig,
         bucketPool: bucketPool,
+        bucketData: bucket,
         systemProgram: web3.SystemProgram.programId,
       })
       .instruction();
@@ -268,11 +299,8 @@ export class TxBuilder {
 
   async depositSolTx(args: {
     buyer: web3.PublicKey;
-    backend: web3.PublicKey;
     round: any;
-    solPrice: BN;
     paymentAmount: BN;
-    expiration: BN;
   }): Promise<{
     depositSolTx: web3.Transaction;
     config: web3.PublicKey;
@@ -285,9 +313,15 @@ export class TxBuilder {
     return { depositSolTx, config, roundConfig, vestingConfig, bucket };
   }
 
+  getQuoteConfigPda(quoteMint: web3.PublicKey): [web3.PublicKey, number] {
+    const quoteSeed = Buffer.from(getConstantRaw("quoteSeed", this.program.idl as any));
+    return this.getPda([quoteSeed, quoteMint.toBuffer()]);
+  }
+
   async depositAssetIx(args: {
     buyer: web3.PublicKey;
     round: any;
+    quoteMint: web3.PublicKey;
     paymentAmount: BN;
   }): Promise<{
     depositAssetIx: web3.TransactionInstruction;
@@ -298,25 +332,22 @@ export class TxBuilder {
   }> {
     const roundName = parseRound(args.round);
     const [config] = this.getConfigPda();
+    const [quoteConfig] = this.getQuoteConfigPda(args.quoteMint);
     const [roundConfig] = this.getRoundConfigPda(args.round);
     const [vestingConfig] = this.getVestingConfigPda(roundName, args.buyer);
     const [bucket] = this.getBucketPda(roundName);
     const [bucketPool] = this.getBucketPoolPda();
 
-    const configAccount = await this.program.account.saleConfig.fetch(config);
-    const baseMint = configAccount.baseMint;
-    const quoteMint = configAccount.quoteMint;
-
     const buyerQuoteAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+      args.quoteMint,
       args.buyer,
       false,
       splToken.TOKEN_PROGRAM_ID,
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+    const quotePoolAta = splToken.getAssociatedTokenAddressSync(
+      args.quoteMint,
       bucketPool,
       true,
       splToken.TOKEN_PROGRAM_ID,
@@ -328,13 +359,13 @@ export class TxBuilder {
       .accountsStrict({
         buyer: args.buyer,
         config: config,
+        quoteMint: args.quoteMint,
+        quoteConfig: quoteConfig,
         vestingConfig: vestingConfig,
         roundConfig: roundConfig,
-        baseMint: baseMint,
-        quoteMint: quoteMint,
         buyerQuoteAta: buyerQuoteAta,
         bucketPool: bucketPool,
-        bucketPoolAta: bucketPoolAta,
+        quotePoolAta: quotePoolAta,
         bucketData: bucket,
         systemProgram: web3.SystemProgram.programId,
         tokenProgram: splToken.TOKEN_PROGRAM_ID,
@@ -348,6 +379,7 @@ export class TxBuilder {
   async depositAssetTx(args: {
     buyer: web3.PublicKey;
     round: any;
+    quoteMint: web3.PublicKey;
     paymentAmount: BN;
   }): Promise<{
     depositAssetTx: web3.Transaction;
@@ -595,6 +627,7 @@ export class TxBuilder {
 
   async withdrawAssetIx(args: {
     multisig: web3.PublicKey;
+    quoteMint: web3.PublicKey;
     withdrawOwner: web3.PublicKey;
   }): Promise<{
     withdrawAssetIx: web3.TransactionInstruction;
@@ -603,11 +636,9 @@ export class TxBuilder {
   }> {
     const [config] = this.getConfigPda();
     const [bucketPool] = this.getBucketPoolPda();
-    const configAccount = await this.program.account.saleConfig.fetch(config);
-    const quoteMint = configAccount.quoteMint;
 
-    const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+    const quotePoolAta = splToken.getAssociatedTokenAddressSync(
+      args.quoteMint,
       bucketPool,
       true,
       splToken.TOKEN_PROGRAM_ID,
@@ -615,7 +646,7 @@ export class TxBuilder {
     );
 
     const withdrawAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+      args.quoteMint,
       args.withdrawOwner,
       false,
       splToken.TOKEN_PROGRAM_ID,
@@ -628,8 +659,8 @@ export class TxBuilder {
         multisig: args.multisig,
         config: config,
         bucketPool: bucketPool,
-        quoteMint: quoteMint,
-        bucketPoolAta: bucketPoolAta,
+        quoteMint: args.quoteMint,
+        quotePoolAta: quotePoolAta,
         withdrawOwner: args.withdrawOwner,
         withdrawAta: withdrawAta,
         tokenProgram: splToken.TOKEN_PROGRAM_ID,
@@ -643,6 +674,7 @@ export class TxBuilder {
 
   async withdrawAssetTx(args: {
     multisig: web3.PublicKey;
+    quoteMint: web3.PublicKey;
     withdrawOwner: web3.PublicKey;
   }): Promise<{
     withdrawAssetTx: web3.Transaction;

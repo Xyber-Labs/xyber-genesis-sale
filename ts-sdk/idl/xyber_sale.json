@@ -357,6 +357,39 @@
           }
         },
         {
+          "name": "quote_mint"
+        },
+        {
+          "name": "quote_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  81,
+                  85,
+                  79,
+                  84,
+                  69
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "quote_mint"
+              }
+            ]
+          }
+        },
+        {
           "name": "vesting_config",
           "writable": true,
           "pda": {
@@ -431,12 +464,6 @@
           }
         },
         {
-          "name": "base_mint"
-        },
-        {
-          "name": "quote_mint"
-        },
-        {
           "name": "buyer_quote_ata",
           "writable": true,
           "pda": {
@@ -495,9 +522,6 @@
         },
         {
           "name": "bucket_pool",
-          "docs": [
-            "CHECK"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -539,7 +563,7 @@
           }
         },
         {
-          "name": "bucket_pool_ata",
+          "name": "quote_pool_ata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -673,10 +697,6 @@
           "signer": true
         },
         {
-          "name": "backend",
-          "signer": true
-        },
-        {
           "name": "config",
           "pda": {
             "seeds": [
@@ -779,9 +799,6 @@
         },
         {
           "name": "bucket_pool",
-          "docs": [
-            "CHECK"
-          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -821,12 +838,6 @@
               }
             ]
           }
-        },
-        {
-          "name": "base_mint"
-        },
-        {
-          "name": "quote_mint"
         },
         {
           "name": "bucket_data",
@@ -875,16 +886,8 @@
           }
         },
         {
-          "name": "sol_price",
-          "type": "u128"
-        },
-        {
           "name": "payment_amount",
           "type": "u64"
-        },
-        {
-          "name": "expiration",
-          "type": "i64"
         }
       ]
     },
@@ -938,9 +941,6 @@
           "name": "base_mint"
         },
         {
-          "name": "quote_mint"
-        },
-        {
           "name": "bucket_pool",
           "docs": [
             "CHECK"
@@ -986,7 +986,143 @@
           }
         },
         {
-          "name": "bucket_pool_ata",
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "multisig",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_quote_mint",
+      "discriminator": [
+        135,
+        251,
+        130,
+        81,
+        135,
+        206,
+        166,
+        228
+      ],
+      "accounts": [
+        {
+          "name": "multisig",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "quote_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  81,
+                  85,
+                  79,
+                  84,
+                  69
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "quote_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "bucket_pool",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  85,
+                  67,
+                  75,
+                  69,
+                  84,
+                  95,
+                  80,
+                  79,
+                  79,
+                  76
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  65,
+                  76,
+                  69
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "quote_pool_ata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1056,16 +1192,16 @@
       ],
       "args": [
         {
-          "name": "new_admin",
-          "type": "pubkey"
+          "name": "price",
+          "type": "i64"
         },
         {
-          "name": "backend",
-          "type": "pubkey"
+          "name": "expo",
+          "type": "i32"
         },
         {
-          "name": "multisig",
-          "type": "pubkey"
+          "name": "is_enabled",
+          "type": "bool"
         }
       ]
     },
@@ -1682,7 +1818,7 @@
           "writable": true
         },
         {
-          "name": "bucket_pool_ata",
+          "name": "quote_pool_ata",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2151,6 +2287,19 @@
       ]
     },
     {
+      "name": "QuoteConfig",
+      "discriminator": [
+        212,
+        148,
+        253,
+        35,
+        84,
+        28,
+        182,
+        112
+      ]
+    },
+    {
       "name": "RoundConfig",
       "discriminator": [
         243,
@@ -2296,6 +2445,11 @@
       "code": 6012,
       "name": "InsufficientBucketSupply",
       "msg": "Insufficient bucket supply"
+    },
+    {
+      "code": 6013,
+      "name": "CooldownPeriodNotPassed",
+      "msg": "Cooldown period not passed"
     }
   ],
   "types": [
@@ -2403,8 +2557,32 @@
             }
           },
           {
-            "name": "quote_amount",
+            "name": "sol_amount",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuoteConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "i64"
+          },
+          {
+            "name": "expo",
+            "type": "i32"
+          },
+          {
+            "name": "update_allowed_at",
+            "type": "i64"
+          },
+          {
+            "name": "is_enabled",
+            "type": "bool"
           }
         ]
       }
@@ -2446,15 +2624,7 @@
             "type": "pubkey"
           },
           {
-            "name": "backend",
-            "type": "pubkey"
-          },
-          {
             "name": "base_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "quote_mint",
             "type": "pubkey"
           },
           {
@@ -2584,6 +2754,11 @@
       "name": "DEPLOYER",
       "type": "pubkey",
       "value": "BMBeWpWc16LQNtqw4JxjSWTf5E9mUBhhPzuTmaVFvxrf"
+    },
+    {
+      "name": "QUOTE_SEED",
+      "type": "bytes",
+      "value": "[81, 85, 79, 84, 69]"
     },
     {
       "name": "SALE_BUCKET_SEED",

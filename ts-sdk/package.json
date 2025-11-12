@@ -1,16 +1,32 @@
 {
   "name": "@xyber-labs/xyber-sale-sdk",
   "version": "0.1.0",
+  "description": "TypeScript SDK for XyberSale - Solana token sale platform",
   "main": "dist/src/xyber-sale.js",
   "types": "dist/src/xyber-sale.d.ts",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "prepublishOnly": "yarn build"
   },
   "files": [
     "dist",
     "src",
     "idl"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Xyber-Labs/xyber-ico-solana"
+  },
+  "keywords": [
+    "solana",
+    "token-sale",
+    "ico",
+    "blockchain",
+    "web3",
+    "anchor"
+  ],
+  "author": "Xyber Labs",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },

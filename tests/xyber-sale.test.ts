@@ -15,15 +15,17 @@ describe("XyberSale", () => {
 
   const deployerKeypair = (provider.wallet as any).payer as anchor.web3.Keypair;
   const admin = anchor.web3.Keypair.generate();
-  const backend = anchor.web3.Keypair.generate();
   const multisig = anchor.web3.Keypair.generate();
   const baseMintKeypair = anchor.web3.Keypair.generate();
-  const quoteMintKeypair = anchor.web3.Keypair.generate();
+  const usdtMintKeypair = anchor.web3.Keypair.generate();
+  const usdcMintKeypair = anchor.web3.Keypair.generate();
   const buyer = anchor.web3.Keypair.generate();
+  const buyer2 = anchor.web3.Keypair.generate();
   const teamMember = anchor.web3.Keypair.generate();
 
   let baseMint: anchor.web3.PublicKey;
-  let quoteMint: anchor.web3.PublicKey;
+  let usdtMint: anchor.web3.PublicKey;
+  let usdcMint: anchor.web3.PublicKey;
 
   before(async () => {
     const adminAirdrop = await provider.connection.requestAirdrop(
@@ -34,7 +36,7 @@ describe("XyberSale", () => {
 
     const buyerAirdrop = await provider.connection.requestAirdrop(
       buyer.publicKey,
-      5 * anchor.web3.LAMPORTS_PER_SOL
+      10 * anchor.web3.LAMPORTS_PER_SOL
     );
     await provider.connection.confirmTransaction(buyerAirdrop);
 
@@ -50,6 +52,12 @@ describe("XyberSale", () => {
     );
     await provider.connection.confirmTransaction(teamMemberAirdrop);
 
+    const buyer2Airdrop = await provider.connection.requestAirdrop(
+      buyer2.publicKey,
+      10 * anchor.web3.LAMPORTS_PER_SOL
+    );
+    await provider.connection.confirmTransaction(buyer2Airdrop);
+
     baseMint = await splToken.createMint(
       provider.connection,
       deployerKeypair,
@@ -62,27 +70,37 @@ describe("XyberSale", () => {
     );
     console.log("Base mint created:", baseMint.toBase58());
 
-    quoteMint = await splToken.createMint(
+    usdtMint = await splToken.createMint(
       provider.connection,
       deployerKeypair,
       deployerKeypair.publicKey,
       deployerKeypair.publicKey,
       6,
-      quoteMintKeypair,
+      usdtMintKeypair,
       null,
       splToken.TOKEN_PROGRAM_ID
     );
-    console.log("Quote mint created:", quoteMint.toBase58());
+    console.log("USDT mint created:", usdtMint.toBase58());
+
+    usdcMint = await splToken.createMint(
+      provider.connection,
+      deployerKeypair,
+      deployerKeypair.publicKey,
+      deployerKeypair.publicKey,
+      6,
+      usdcMintKeypair,
+      null,
+      splToken.TOKEN_PROGRAM_ID
+    );
+    console.log("USDC mint created:", usdcMint.toBase58());
   });
 
   it("Should initialize the config", async () => {
     const { signature, config, bucketPool } = await sdk.initialize({
       adminKeypair: deployerKeypair,
       newAdmin: admin.publicKey,
-      backend: backend.publicKey,
       multisig: multisig.publicKey,
       baseMint: baseMint,
-      quoteMint: quoteMint,
     });
 
     console.log("Initialize tx:", signature);
@@ -93,17 +111,13 @@ describe("XyberSale", () => {
     const configAccount = await program.account.saleConfig.fetch(config);
 
     assert.deepEqual(configAccount.admin, admin.publicKey);
-    assert.deepEqual(configAccount.backend, backend.publicKey);
     assert.deepEqual(configAccount.multisig, multisig.publicKey);
     assert.deepEqual(configAccount.baseMint, baseMint);
-    assert.deepEqual(configAccount.quoteMint, quoteMint);
 
     console.log("Config initialized successfully!");
     console.log("Admin:", configAccount.admin.toBase58());
-    console.log("Backend:", configAccount.backend.toBase58());
     console.log("Multisig:", configAccount.multisig.toBase58());
     console.log("Base Mint:", configAccount.baseMint.toBase58());
-    console.log("Quote Mint:", configAccount.quoteMint.toBase58());
   });
 
   it("Should fail when trying to initialize again with wrong admin", async () => {
@@ -119,15 +133,59 @@ describe("XyberSale", () => {
       sdk.initialize({
         adminKeypair: attacker,
         newAdmin: attacker.publicKey,
-        backend: attacker.publicKey,
         multisig: attacker.publicKey,
         baseMint: baseMint,
-        quoteMint: quoteMint,
       }),
       "Invalid admin account is provided"
     );
 
     console.log("Correctly rejected unauthorized initialization attempt");
+  });
+
+  it("Should set quote mint configuration for USDT and USDC", async () => {
+    const price = new anchor.BN("20000000000");
+    const expo = -8;
+
+    const { signature: usdtSig, config, quoteConfig: usdtQuoteConfig } = await sdk.setQuoteMint({
+      multisigKeypair: multisig,
+      quoteMint: usdtMint,
+      price: price,
+      expo: expo,
+      isEnabled: true,
+    });
+
+    console.log("Set USDT quote mint tx:", usdtSig);
+    console.log("Explorer:", getExplorerUrl(provider, usdtSig));
+    console.log("USDT Quote Config PDA:", usdtQuoteConfig.toBase58());
+
+    const usdtQuoteConfigAccount = await program.account.quoteConfig.fetch(usdtQuoteConfig);
+
+    assert.deepEqual(usdtQuoteConfigAccount.price.toString(), price.toString());
+    assert.equal(usdtQuoteConfigAccount.expo, expo);
+    assert.equal(usdtQuoteConfigAccount.isEnabled, true);
+
+    console.log("USDT configured - Price:", usdtQuoteConfigAccount.price.toString());
+
+    const { signature: usdcSig, quoteConfig: usdcQuoteConfig } = await sdk.setQuoteMint({
+      multisigKeypair: multisig,
+      quoteMint: usdcMint,
+      price: price,
+      expo: expo,
+      isEnabled: true,
+    });
+
+    console.log("Set USDC quote mint tx:", usdcSig);
+    console.log("Explorer:", getExplorerUrl(provider, usdcSig));
+    console.log("USDC Quote Config PDA:", usdcQuoteConfig.toBase58());
+
+    const usdcQuoteConfigAccount = await program.account.quoteConfig.fetch(usdcQuoteConfig);
+
+    assert.deepEqual(usdcQuoteConfigAccount.price.toString(), price.toString());
+    assert.equal(usdcQuoteConfigAccount.expo, expo);
+    assert.equal(usdcQuoteConfigAccount.isEnabled, true);
+
+    console.log("USDC configured - Price:", usdcQuoteConfigAccount.price.toString());
+    console.log("Successfully configured multiple quote tokens!");
   });
 
   it("Should setup round", async () => {
@@ -162,7 +220,7 @@ describe("XyberSale", () => {
     const bucketData = {
       vestingType: { priceless: {} },
       totalDeposit: new anchor.BN(0),
-      bucketSupply: new anchor.BN(1000000),
+      bucketSupply: new anchor.BN(500000000000000),
       registeredSupply: new anchor.BN(0),
       claimedSupply: new anchor.BN(0),
       burntSupply: new anchor.BN(0),
@@ -194,11 +252,7 @@ describe("XyberSale", () => {
   });
 
   it("Should deposit SOL correctly", async () => {
-    const solPrice = new anchor.BN("250000000000000000000");
-    const paymentAmount = new anchor.BN(4000);
-
-    const now = Math.floor(Date.now() / 1000);
-    const expiration = new anchor.BN(now + 600);
+    const paymentAmount = new anchor.BN(5_000_000_000);
 
     const [bucketPool] = sdk.txBuilder.getBucketPoolPda();
     const bucketPoolBalanceBefore = await provider.connection.getBalance(bucketPool);
@@ -206,11 +260,8 @@ describe("XyberSale", () => {
 
     const { signature, config, roundConfig, vestingConfig, bucket } = await sdk.depositSol({
       buyerKeypair: buyer,
-      backendKeypair: backend,
       round: { public: {} },
-      solPrice: solPrice,
       paymentAmount: paymentAmount,
-      expiration: expiration,
     });
 
     console.log("Deposit SOL tx:", signature);
@@ -227,7 +278,8 @@ describe("XyberSale", () => {
 
     const expectedDeposit = paymentAmount;
 
-    console.log("Expected deposit:", expectedDeposit.toString());
+    console.log("Expected deposit (lamports):", expectedDeposit.toString());
+    console.log("Expected deposit (SOL):", (expectedDeposit.toNumber() / anchor.web3.LAMPORTS_PER_SOL).toFixed(2));
     console.log("Actual deposit:", vestingConfigAccount.vestingType?.priceless?.deposit?.toString());
 
     assert.ok(vestingConfigAccount.vestingType !== undefined);
@@ -240,8 +292,6 @@ describe("XyberSale", () => {
     assert.ok(buyerBalanceAfter < buyerBalanceBefore);
 
     console.log("Deposit completed successfully!");
-    console.log("Expected deposit:", expectedDeposit.toString());
-    console.log("Actual deposit:", vestingConfigAccount.vestingType.priceless.deposit.toString());
     console.log("Bucket pool balance increase:", bucketPoolBalanceAfter - bucketPoolBalanceBefore);
   });
 
@@ -249,18 +299,18 @@ describe("XyberSale", () => {
     const buyerQuoteAta = await splToken.createAssociatedTokenAccount(
       provider.connection,
       deployerKeypair,
-      quoteMint,
+      usdtMint,
       buyer.publicKey,
       null,
       splToken.TOKEN_PROGRAM_ID,
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    const mintAmount = 10000000;
+    const mintAmount = 100_000_000_000;
     await splToken.mintTo(
       provider.connection,
       deployerKeypair,
-      quoteMint,
+      usdtMint,
       buyerQuoteAta,
       deployerKeypair,
       mintAmount,
@@ -269,11 +319,11 @@ describe("XyberSale", () => {
       splToken.TOKEN_PROGRAM_ID
     );
 
-    const paymentAmount = new anchor.BN(4000);
+    const paymentAmount = new anchor.BN(1_000_000_000);
 
     const [bucketPool] = sdk.txBuilder.getBucketPoolPda();
     const bucketPoolQuoteAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+      usdtMint,
       bucketPool,
       true,
       splToken.TOKEN_PROGRAM_ID,
@@ -286,6 +336,7 @@ describe("XyberSale", () => {
     const { signature, config, roundConfig, vestingConfig, bucket } = await sdk.depositAsset({
       buyerKeypair: buyer,
       round: { public: {} },
+      quoteMint: usdtMint,
       paymentAmount: paymentAmount,
     });
 
@@ -301,8 +352,8 @@ describe("XyberSale", () => {
 
     const vestingConfigAccount = await program.account.vestingConfig.fetch(vestingConfig);
 
-    const expectedSingleDeposit = paymentAmount;
-    const expectedTotalDeposit = expectedSingleDeposit.mul(new anchor.BN(2));
+    const solEquivalentOfQuoteDeposit = new anchor.BN(5_000_000_000);
+    const expectedTotalDeposit = new anchor.BN(5_000_000_000).add(solEquivalentOfQuoteDeposit);
 
     assert.ok(vestingConfigAccount.vestingType !== undefined);
     assert.ok(vestingConfigAccount.vestingType.priceless !== undefined);
@@ -318,7 +369,12 @@ describe("XyberSale", () => {
     );
 
     console.log("Deposit Asset completed successfully!");
-    console.log("Expected total deposit:", expectedTotalDeposit.toString());
+    console.log("Quote payment amount (tokens):", paymentAmount.toString());
+    console.log("Quote payment amount (USD):", "$" + (paymentAmount.toNumber() / 1_000_000).toFixed(2));
+    console.log("SOL equivalent (lamports):", solEquivalentOfQuoteDeposit.toString());
+    console.log("SOL equivalent (SOL):", (solEquivalentOfQuoteDeposit.toNumber() / anchor.web3.LAMPORTS_PER_SOL).toFixed(2));
+    console.log("Expected total deposit (lamports):", expectedTotalDeposit.toString());
+    console.log("Expected total deposit (SOL):", (expectedTotalDeposit.toNumber() / anchor.web3.LAMPORTS_PER_SOL).toFixed(2));
     console.log("Actual total deposit:", vestingConfigAccount.vestingType.priceless.deposit.toString());
     console.log(
       "Buyer quote balance decrease:",
@@ -328,6 +384,123 @@ describe("XyberSale", () => {
       "Bucket pool quote balance increase:",
       parseInt(bucketPoolQuoteBalanceAfter.value.amount) - parseInt(bucketPoolQuoteBalanceBefore.value.amount)
     );
+  });
+
+  it("Should fail to deposit with non-existent quote mint", async () => {
+    const nonExistentQuoteMint = anchor.web3.Keypair.generate().publicKey;
+    const paymentAmount = new anchor.BN(1_000_000_000);
+
+    await doAndCheckError(
+      sdk.depositAsset({
+        buyerKeypair: buyer,
+        round: { public: {} },
+        quoteMint: nonExistentQuoteMint,
+        paymentAmount: paymentAmount,
+      }),
+      "AccountNotInitialized"
+    );
+
+    console.log("Correctly rejected deposit with non-existent quote mint");
+  });
+
+  it("Should fail to deposit with disabled quote mint", async () => {
+    const disabledQuoteMintKeypair = anchor.web3.Keypair.generate();
+    const disabledQuoteMint = await splToken.createMint(
+      provider.connection,
+      deployerKeypair,
+      deployerKeypair.publicKey,
+      deployerKeypair.publicKey,
+      6,
+      disabledQuoteMintKeypair,
+      null,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const price = new anchor.BN("20000000000");
+    const expo = -8;
+
+    await sdk.setQuoteMint({
+      multisigKeypair: multisig,
+      quoteMint: disabledQuoteMint,
+      price: price,
+      expo: expo,
+      isEnabled: false,
+    });
+
+    await splToken.createAssociatedTokenAccount(
+      provider.connection,
+      deployerKeypair,
+      disabledQuoteMint,
+      buyer.publicKey,
+      null,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const paymentAmount = new anchor.BN(1_000_000_000);
+
+    await doAndCheckError(
+      sdk.depositAsset({
+        buyerKeypair: buyer,
+        round: { public: {} },
+        quoteMint: disabledQuoteMint,
+        paymentAmount: paymentAmount,
+      }),
+      "InvalidQuoteMint"
+    );
+
+    console.log("Correctly rejected deposit with disabled quote mint");
+  });
+
+  it("Should deposit with USDC (second buyer, different quote token)", async () => {
+    const buyer2UsdcAta = await splToken.createAssociatedTokenAccount(
+      provider.connection,
+      deployerKeypair,
+      usdcMint,
+      buyer2.publicKey,
+      null,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const mintAmount = 100_000_000_000;
+    await splToken.mintTo(
+      provider.connection,
+      deployerKeypair,
+      usdcMint,
+      buyer2UsdcAta,
+      deployerKeypair,
+      mintAmount,
+      [],
+      null,
+      splToken.TOKEN_PROGRAM_ID
+    );
+
+    const paymentAmount = new anchor.BN(1_000_000_000);
+
+    const { signature, vestingConfig } = await sdk.depositAsset({
+      buyerKeypair: buyer2,
+      round: { public: {} },
+      quoteMint: usdcMint,
+      paymentAmount: paymentAmount,
+    });
+
+    const buyer2VestingConfig = await program.account.vestingConfig.fetch(vestingConfig);
+    const [bucket] = sdk.txBuilder.getBucketPda("PUBLIC");
+    const bucketData = await program.account.bucketData.fetch(bucket);
+
+    const expectedBuyer2Deposit = new anchor.BN(5_000_000_000);
+    const expectedTotalBucketDeposit = new anchor.BN(15_000_000_000);
+
+    assert.ok(buyer2VestingConfig.vestingType.priceless.deposit.eq(expectedBuyer2Deposit));
+    assert.ok(bucketData.totalDeposit.eq(expectedTotalBucketDeposit));
+
+    console.log("USDC deposit tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+    console.log("Buyer 2 deposit (1000 USDC = 5 SOL equivalent):", buyer2VestingConfig.vestingType.priceless.deposit.toString());
+    console.log("Total bucket deposit (buyer1: 10 SOL, buyer2: 5 SOL):", bucketData.totalDeposit.toString());
+    console.log("Buyer 1 share: 10/15 = 66.67%, Buyer 2 share: 5/15 = 33.33%");
+    console.log("Successfully deposited with USDC - multiple quote tokens working!");
   });
 
   it("Should setup vesting plan for public sale (100% unlock at TGE)", async () => {
@@ -381,7 +554,7 @@ describe("XyberSale", () => {
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    const mintAmount = 1000000;
+    const mintAmount = 500000000000000;
     await splToken.mintTo(
       provider.connection,
       deployerKeypair,
@@ -399,28 +572,26 @@ describe("XyberSale", () => {
     assert.ok(parseInt(balance.value.amount) >= mintAmount);
   });
 
-  it("Should claim 100% tokens at TGE for public sale buyer", async () => {
+  it("Should claim tokens at TGE for both buyers with correct allocation", async () => {
     const bucketName = "PUBLIC";
     const vestingPlanName = "PUBLIC";
 
-    const [vestingConfig] = sdk.txBuilder.getVestingConfigPda(bucketName, buyer.publicKey);
+    const [bucket] = sdk.txBuilder.getBucketPda(bucketName);
+    const bucketData = await program.account.bucketData.fetch(bucket);
 
-    const vestingConfigAccountBefore = await program.account.vestingConfig.fetch(vestingConfig);
+    console.log("Bucket state before claims:");
+    console.log("  Total deposit:", bucketData.totalDeposit.toString(), "lamports (15 SOL)");
+    console.log("  Bucket supply:", bucketData.bucketSupply.toString(), "tokens");
 
-    console.log("Before claim:");
-    console.log("  Vesting type:", vestingConfigAccountBefore.vestingType);
-    console.log("  Tokens claimed:", vestingConfigAccountBefore.tokensClaimed.toString());
-    console.log("  Vesting plan:", vestingConfigAccountBefore.vestingPlan);
+    // Buyer1 claim (10 SOL = 66.67%)
+    const [vestingConfig1] = sdk.txBuilder.getVestingConfigPda(bucketName, buyer.publicKey);
+    const vestingConfigAccountBefore1 = await program.account.vestingConfig.fetch(vestingConfig1);
 
-    const expectedTotalDeposit = new anchor.BN(8000);
+    console.log("\nBuyer 1 before claim:");
+    console.log("  Deposit:", vestingConfigAccountBefore1.vestingType.priceless.deposit.toString(), "lamports (10 SOL)");
+    console.log("  Share: 10/15 = 66.67%");
 
-    assert.ok(vestingConfigAccountBefore.vestingType !== undefined);
-    assert.ok(vestingConfigAccountBefore.vestingType.priceless !== undefined);
-    assert.ok(vestingConfigAccountBefore.vestingType.priceless.deposit.eq(expectedTotalDeposit));
-    assert.ok(vestingConfigAccountBefore.tokensClaimed.eq(new anchor.BN(0)));
-    assert.equal(vestingConfigAccountBefore.vestingPlan, null);
-
-    const buyerBaseAta = splToken.getAssociatedTokenAddressSync(
+    const buyerBaseAta1 = splToken.getAssociatedTokenAddressSync(
       baseMint,
       buyer.publicKey,
       false,
@@ -428,39 +599,80 @@ describe("XyberSale", () => {
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    const buyerBaseAccountInfoBefore = await provider.connection.getAccountInfo(buyerBaseAta);
-    const buyerBaseBalanceBefore = buyerBaseAccountInfoBefore
-      ? parseInt((await provider.connection.getTokenAccountBalance(buyerBaseAta)).value.amount)
+    const buyerBaseAccountInfoBefore1 = await provider.connection.getAccountInfo(buyerBaseAta1);
+    const buyerBaseBalanceBefore1 = buyerBaseAccountInfoBefore1
+      ? parseInt((await provider.connection.getTokenAccountBalance(buyerBaseAta1)).value.amount)
       : 0;
 
-    const { signature } = await sdk.claim({
+    const { signature: sig1 } = await sdk.claim({
       buyerKeypair: buyer,
       bucketName: bucketName,
       vestingPlanName: vestingPlanName,
     });
 
-    console.log("Claim tx:", signature);
-    console.log("Explorer:", getExplorerUrl(provider, signature));
+    const vestingConfigAccountAfter1 = await program.account.vestingConfig.fetch(vestingConfig1);
+    const buyerBaseBalanceAfter1 = await provider.connection.getTokenAccountBalance(buyerBaseAta1);
+    const claimedAmount1 = vestingConfigAccountAfter1.tokensClaimed;
 
-    const vestingConfigAccountAfter = await program.account.vestingConfig.fetch(vestingConfig);
-    const buyerBaseBalanceAfter = await provider.connection.getTokenAccountBalance(buyerBaseAta);
+    const expectedAllocation1 = new anchor.BN(333333333333333);
 
-    console.log("After claim:");
-    console.log("  Tokens claimed:", vestingConfigAccountAfter.tokensClaimed.toString());
-    console.log("  Vesting plan:", vestingConfigAccountAfter.vestingPlan);
-    console.log("  Buyer base balance:", buyerBaseBalanceAfter.value.amount);
+    assert.equal(vestingConfigAccountAfter1.vestingPlan, vestingPlanName);
+    assert.ok(claimedAmount1.eq(expectedAllocation1));
+    assert.equal(parseInt(buyerBaseBalanceAfter1.value.amount), buyerBaseBalanceBefore1 + parseInt(claimedAmount1.toString()));
 
-    const claimedAmount = vestingConfigAccountAfter.tokensClaimed.sub(vestingConfigAccountBefore.tokensClaimed);
+    console.log("Buyer 1 after claim:");
+    console.log("  Tx:", sig1);
+    console.log("  Explorer:", getExplorerUrl(provider, sig1));
+    console.log("  Expected allocation:", expectedAllocation1.toString(), "microtokens (333_333_333.333333 tokens = 66.67%)");
+    console.log("  Actual claimed:", claimedAmount1.toString(), "microtokens");
+    console.log("  ✓ Buyer 1 claimed successfully!");
 
-    const expectedAllocation = new anchor.BN(1000000);
+    // Buyer2 claim (5 SOL = 33.33%)
+    const [vestingConfig2] = sdk.txBuilder.getVestingConfigPda(bucketName, buyer2.publicKey);
+    const vestingConfigAccountBefore2 = await program.account.vestingConfig.fetch(vestingConfig2);
 
-    assert.equal(vestingConfigAccountAfter.vestingPlan, vestingPlanName);
-    assert.ok(vestingConfigAccountAfter.tokensClaimed.eq(expectedAllocation));
-    assert.ok(claimedAmount.eq(expectedAllocation));
-    assert.equal(parseInt(buyerBaseBalanceAfter.value.amount), buyerBaseBalanceBefore + parseInt(claimedAmount.toString()));
+    console.log("\nBuyer 2 before claim:");
+    console.log("  Deposit:", vestingConfigAccountBefore2.vestingType.priceless.deposit.toString(), "lamports (5 SOL)");
+    console.log("  Share: 5/15 = 33.33%");
 
-    console.log("Successfully claimed tokens at TGE!");
-    console.log("Claimed amount:", claimedAmount.toString());
+    const buyerBaseAta2 = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      buyer2.publicKey,
+      false,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    const buyerBaseAccountInfoBefore2 = await provider.connection.getAccountInfo(buyerBaseAta2);
+    const buyerBaseBalanceBefore2 = buyerBaseAccountInfoBefore2
+      ? parseInt((await provider.connection.getTokenAccountBalance(buyerBaseAta2)).value.amount)
+      : 0;
+
+    const { signature: sig2 } = await sdk.claim({
+      buyerKeypair: buyer2,
+      bucketName: bucketName,
+      vestingPlanName: vestingPlanName,
+    });
+
+    const vestingConfigAccountAfter2 = await program.account.vestingConfig.fetch(vestingConfig2);
+    const buyerBaseBalanceAfter2 = await provider.connection.getTokenAccountBalance(buyerBaseAta2);
+    const claimedAmount2 = vestingConfigAccountAfter2.tokensClaimed;
+
+    const expectedAllocation2 = new anchor.BN(166666666666666);
+
+    assert.equal(vestingConfigAccountAfter2.vestingPlan, vestingPlanName);
+    assert.ok(claimedAmount2.eq(expectedAllocation2));
+    assert.equal(parseInt(buyerBaseBalanceAfter2.value.amount), buyerBaseBalanceBefore2 + parseInt(claimedAmount2.toString()));
+
+    console.log("Buyer 2 after claim:");
+    console.log("  Tx:", sig2);
+    console.log("  Explorer:", getExplorerUrl(provider, sig2));
+    console.log("  Expected allocation:", expectedAllocation2.toString(), "microtokens (166_666_666.666666 tokens = 33.33%)");
+    console.log("  Actual claimed:", claimedAmount2.toString(), "microtokens");
+    console.log("  ✓ Buyer 2 claimed successfully!");
+
+    console.log("\n✓ Both buyers claimed with correct proportional allocation!");
+    console.log("  Total claimed:", claimedAmount1.add(claimedAmount2).toString(), "microtokens (499_999_999.999999 tokens)");
   });
 
   it("Should fail when trying to claim again (nothing left to claim)", async () => {
@@ -484,7 +696,7 @@ describe("XyberSale", () => {
 
     const [bucketPoolPda] = sdk.txBuilder.getBucketPoolPda();
     const bucketPoolAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+      usdtMint,
       bucketPoolPda,
       true,
       splToken.TOKEN_PROGRAM_ID
@@ -495,11 +707,12 @@ describe("XyberSale", () => {
 
     await sdk.withdrawAsset({
       multisigKeypair: multisig,
+      quoteMint: usdtMint,
       withdrawOwner: withdrawOwner.publicKey,
     });
 
     const withdrawAta = splToken.getAssociatedTokenAddressSync(
-      quoteMint,
+      usdtMint,
       withdrawOwner.publicKey,
       true,
       splToken.TOKEN_PROGRAM_ID
