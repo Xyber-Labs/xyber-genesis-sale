@@ -16,7 +16,8 @@ This document contains the complete deployment flow for the Xyber Sale program.
 
 ```bash
 anchor build
-anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json 
+anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json
+sleep 2
 anchor idl init --provider.cluster localnet --filepath target/idl/xyber_sale.json XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt
 ```
 
