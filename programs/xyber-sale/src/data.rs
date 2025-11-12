@@ -37,7 +37,6 @@ pub struct SaleConfig {
 #[account]
 #[derive(InitSpace)]
 pub struct QuoteConfig {
-    pub quote_mint: Pubkey,
     pub price: i64,
     pub expo: i32,
     pub update_allowed_at: i64,

@@ -2569,10 +2569,6 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "quote_mint",
-            "type": "pubkey"
-          },
-          {
             "name": "price",
             "type": "i64"
           },

@@ -2575,10 +2575,6 @@ export type XyberSale = {
         "kind": "struct",
         "fields": [
           {
-            "name": "quoteMint",
-            "type": "pubkey"
-          },
-          {
             "name": "price",
             "type": "i64"
           },

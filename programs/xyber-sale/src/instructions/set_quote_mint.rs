@@ -61,7 +61,6 @@ pub fn set_quote_mint(
     let quote_config = &mut ctx.accounts.quote_config;
     let clock = Clock::get()?;
 
-    quote_config.quote_mint = ctx.accounts.quote_mint.key();
     quote_config.price = price;
     quote_config.expo = expo;
     quote_config.update_allowed_at = clock.unix_timestamp + COOLDOWN_PERIOD;

@@ -160,7 +160,6 @@ describe("XyberSale", () => {
 
     const usdtQuoteConfigAccount = await program.account.quoteConfig.fetch(usdtQuoteConfig);
 
-    assert.deepEqual(usdtQuoteConfigAccount.quoteMint, usdtMint);
     assert.deepEqual(usdtQuoteConfigAccount.price.toString(), price.toString());
     assert.equal(usdtQuoteConfigAccount.expo, expo);
     assert.equal(usdtQuoteConfigAccount.isEnabled, true);
@@ -181,7 +180,6 @@ describe("XyberSale", () => {
 
     const usdcQuoteConfigAccount = await program.account.quoteConfig.fetch(usdcQuoteConfig);
 
-    assert.deepEqual(usdcQuoteConfigAccount.quoteMint, usdcMint);
     assert.deepEqual(usdcQuoteConfigAccount.price.toString(), price.toString());
     assert.equal(usdcQuoteConfigAccount.expo, expo);
     assert.equal(usdcQuoteConfigAccount.isEnabled, true);
