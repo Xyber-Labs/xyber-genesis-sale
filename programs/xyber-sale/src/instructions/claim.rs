@@ -17,10 +17,6 @@ use crate::{
 };
 
 pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan_name: String) -> Result<()> {
-    require!(
-        ctx.accounts.bucket_data.vesting_plan.contains(&vesting_plan_name),
-        CustomError::UnexpectedVestingPlan
-    );
     let bucket_data = &mut ctx.accounts.bucket_data;
     let vesting_config = &mut ctx.accounts.vesting_config;
     let vesting_plan_account = &ctx.accounts.vesting_plan;
