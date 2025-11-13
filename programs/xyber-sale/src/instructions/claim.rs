@@ -125,7 +125,12 @@ pub struct Claim<'info> {
         bump
     )]
     pub vesting_config: Box<Account<'info, VestingConfig>>,
-    #[account(mut, seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()], bump)]
+    #[account(
+        mut,
+        seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()],
+        bump,
+        constraint = bucket_data.vesting_plan.contains(&vesting_plan_name) @ CustomError::UnexpectedVestingPlan
+    )]
     pub bucket_data: Box<Account<'info, BucketData>>,
     #[account(
         mut,
