@@ -98,7 +98,12 @@ const XyberSaleSDK = {
         burntSupply: BN;
         vestingPlan: string[];
       };
-    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey; bucketBaseAta: anchor.web3.PublicKey }> {
+    }): Promise<{
+      signature: string;
+      config: anchor.web3.PublicKey;
+      bucket: anchor.web3.PublicKey;
+      bucketBaseAta: anchor.web3.PublicKey
+    }> {
       const { setupBucketTx, config, bucket, bucketBaseAta } = await txBuilder.setupBucketTx({
         admin: args.adminKeypair.publicKey,
         bucketName: args.bucketName,
@@ -116,7 +121,13 @@ const XyberSaleSDK = {
       buyerKeypair: anchor.web3.Keypair;
       round: any;
       paymentAmount: BN;
-    }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
+    }): Promise<{
+      signature: string;
+      config: anchor.web3.PublicKey;
+      roundConfig: anchor.web3.PublicKey;
+      vestingConfig: anchor.web3.PublicKey;
+      bucket: anchor.web3.PublicKey
+    }> {
       const { depositSolTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositSolTx({
         buyer: args.buyerKeypair.publicKey,
         round: args.round,
@@ -135,7 +146,13 @@ const XyberSaleSDK = {
       round: any;
       quoteMint: anchor.web3.PublicKey;
       paymentAmount: BN;
-    }): Promise<{ signature: string; config: anchor.web3.PublicKey; roundConfig: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
+    }): Promise<{
+      signature: string;
+      config: anchor.web3.PublicKey;
+      roundConfig: anchor.web3.PublicKey;
+      vestingConfig: anchor.web3.PublicKey;
+      bucket: anchor.web3.PublicKey
+    }> {
       const { depositAssetTx, config, roundConfig, vestingConfig, bucket } = await txBuilder.depositAssetTx({
         buyer: args.buyerKeypair.publicKey,
         round: args.round,
@@ -183,8 +200,18 @@ const XyberSaleSDK = {
       vestingPlan: string | null;
       tokensClaimed: BN;
       tokensBurnt: BN;
-    }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey }> {
-      const { setupDeterministicVestingTx, config, bucket, vestingConfig } = await txBuilder.setupDeterministicVestingTx({
+    }): Promise<{
+      signature: string;
+      config: anchor.web3.PublicKey;
+      bucket: anchor.web3.PublicKey;
+      vestingConfig: anchor.web3.PublicKey
+    }> {
+      const {
+        setupDeterministicVestingTx,
+        config,
+        bucket,
+        vestingConfig
+      } = await txBuilder.setupDeterministicVestingTx({
         admin: args.adminKeypair.publicKey,
         participant: args.participant,
         bucketName: args.bucketName,
@@ -205,7 +232,13 @@ const XyberSaleSDK = {
       buyerKeypair: anchor.web3.Keypair;
       bucketName: string;
       vestingPlanName: string;
-    }): Promise<{ signature: string; config: anchor.web3.PublicKey; vestingPlan: anchor.web3.PublicKey; vestingConfig: anchor.web3.PublicKey; bucket: anchor.web3.PublicKey }> {
+    }): Promise<{
+      signature: string;
+      config: anchor.web3.PublicKey;
+      vestingPlan: anchor.web3.PublicKey;
+      vestingConfig: anchor.web3.PublicKey;
+      bucket: anchor.web3.PublicKey
+    }> {
       const { claimTx, config, vestingPlan, vestingConfig, bucket } = await txBuilder.claimTx({
         buyer: args.buyerKeypair.publicKey,
         bucketName: args.bucketName,
@@ -325,6 +358,15 @@ const XyberSaleSDK = {
       withdrawUnsoldTokens,
       withdrawUnsoldTokensIx: txBuilder.withdrawUnsoldTokensIx.bind(txBuilder),
       withdrawUnsoldTokensTx: txBuilder.withdrawUnsoldTokensTx.bind(txBuilder),
+
+      getPda: txBuilder.getPda.bind(txBuilder),
+      getConfigPda: txBuilder.getConfigPda.bind(txBuilder),
+      getRoundConfigPda: txBuilder.getRoundConfigPda.bind(txBuilder),
+      getBucketPda: txBuilder.getBucketPda.bind(txBuilder),
+      getVestingConfigPda: txBuilder.getVestingConfigPda.bind(txBuilder),
+      getQuoteConfigPda: txBuilder.getQuoteConfigPda.bind(txBuilder),
+      getVestingPlanPda: txBuilder.getVestingPlanPda.bind(txBuilder),
+      getBucketPoolPda: txBuilder.getBucketPoolPda.bind(txBuilder),
     };
   },
 };
