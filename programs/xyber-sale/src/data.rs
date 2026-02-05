@@ -31,7 +31,7 @@ impl Round {
 pub struct SaleConfig {
     pub admin: Pubkey,
     pub base_mint: Pubkey,
-    pub multisig: Option<Pubkey>,
+    pub multisig: Pubkey,
 }
 
 #[account]

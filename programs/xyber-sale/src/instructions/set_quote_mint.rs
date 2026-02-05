@@ -14,7 +14,7 @@ const COOLDOWN_PERIOD: i64 = 24 * 60 * 60;
 
 #[derive(Accounts)]
 pub struct SetQuoteMint<'info> {
-    #[account(signer, mut, constraint = config.multisig == Some(multisig.key()) @ CustomError::InvalidAdmin)]
+    #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     pub multisig: Signer<'info>,
 
     #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]

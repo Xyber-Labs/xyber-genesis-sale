@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    #[account(signer, mut, constraint = config.multisig.is_some() && config.multisig == Some(admin.key()) || config.multisig.is_none() && admin.key() == DEPLOYER @ CustomError::InvalidAdmin)]
+    #[account(signer, mut, constraint = config.multisig != Pubkey::default() && config.multisig == admin.key() || config.multisig == Pubkey::default() && admin.key() == DEPLOYER @ CustomError::InvalidAdmin)]
     pub admin: Signer<'info>,
 
     #[account(
@@ -36,14 +36,12 @@ pub struct Initialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn initialize(
-    ctx: Context<Initialize>,
-    new_admin: Pubkey,
-    multisig: Pubkey,
-) -> Result<()> {
+pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, multisig: Pubkey) -> Result<()> {
+    require!(multisig != Pubkey::default(), CustomError::BadParams);
+    require!(new_admin != Pubkey::default(), CustomError::BadParams);
     let config = &mut ctx.accounts.config;
     config.admin = new_admin;
-    config.multisig = Some(multisig);
+    config.multisig = multisig;
     config.base_mint = ctx.accounts.base_mint.key();
 
     Ok(())

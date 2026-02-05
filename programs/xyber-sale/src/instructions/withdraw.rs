@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, system_program, system_program::Transfer};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+    token_interface::{Mint, TokenAccount, TokenInterface, transfer_checked, TransferChecked},
 };
 
 use crate::{
@@ -36,7 +36,7 @@ pub fn withdraw_sol(ctx: Context<WithdrawSol>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct WithdrawSol<'info> {
-    #[account(signer, mut, constraint = Some(multisig.key()) == config.multisig @ CustomError::InvalidAdmin)]
+    #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     multisig: Signer<'info>,
 
     #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
@@ -76,7 +76,7 @@ pub fn withdraw_asset(ctx: Context<WithdrawAsset>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct WithdrawAsset<'info> {
-    #[account(signer, mut, constraint = Some(multisig.key()) == config.multisig @ CustomError::InvalidAdmin)]
+    #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     multisig: Signer<'info>,
 
     #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
@@ -147,7 +147,7 @@ pub fn withdraw_unsold_tokens(
 #[derive(Accounts)]
 #[instruction(bucket_name: String, amount: u64)]
 pub struct WithdrawUnsold<'info> {
-    #[account(signer, mut, constraint = Some(multisig.key()) == config.multisig @ CustomError::InvalidAdmin)]
+    #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     multisig: Signer<'info>,
 
     #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
