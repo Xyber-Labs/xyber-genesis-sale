@@ -3,26 +3,24 @@ import * as splToken from "@solana/spl-token";
 import { Command } from "commander";
 import { getKeypairFromFile } from "@solana-developers/node-helpers";
 
-import { runWithSdk } from "./utils";
+import { getExplorerUrl, runWithSdk } from "./utils";
 
 async function parseCliArgs() {
   const cli = new Command();
   cli
     .requiredOption("--bucket-name <NAME>", "Bucket name")
-    .requiredOption("--amount <AMOUNT>", "Amount of base tokens to mint")
-    .option("--mint-authority <PATH>", "Path to mint authority keypair (default: ANCHOR_WALLET)")
+    .requiredOption("--amount <AMOUNT>", "Amount of base tokens to transfer")
+    .requiredOption("--from-authority <PATH>", "Path to token owner keypair (source of tokens)")
     .parse(process.argv);
 
   const options = cli.opts();
 
-  const mintAuthority = options.mintAuthority
-    ? await getKeypairFromFile(options.mintAuthority)
-    : null;
+  const fromAuthority = await getKeypairFromFile(options.fromAuthority);
 
   return {
     bucketName: options.bucketName,
     amount: options.amount,
-    mintAuthority,
+    fromAuthority,
   };
 }
 
@@ -31,13 +29,20 @@ async function main() {
 
   await runWithSdk(async ({ provider, sdk }) => {
     const payerKeypair = (provider.wallet as anchor.Wallet).payer;
-    const mintAuthority = options.mintAuthority || payerKeypair;
 
     const [config] = sdk.txBuilder.getConfigPda();
     const configAccount = await sdk.program.account.saleConfig.fetch(config);
     const baseMint = configAccount.baseMint;
 
     const [bucket] = sdk.txBuilder.getBucketPda(options.bucketName);
+
+    const sourceAta = splToken.getAssociatedTokenAddressSync(
+      baseMint,
+      options.fromAuthority.publicKey,
+      false,
+      splToken.TOKEN_PROGRAM_ID,
+      splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+    );
 
     const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
       baseMint,
@@ -47,25 +52,26 @@ async function main() {
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
-    const mintAmount = parseInt(options.amount);
-    const signature = await splToken.mintTo(
+    const transferAmount = BigInt(options.amount);
+    const signature = await splToken.transfer(
       provider.connection,
       payerKeypair,
-      baseMint,
+      sourceAta,
       bucketBaseAta,
-      mintAuthority,
-      mintAmount,
+      options.fromAuthority,
+      transferAmount,
       [],
-      null,
+      { commitment: "confirmed" },
       splToken.TOKEN_PROGRAM_ID
     );
 
     console.log("✅ Success!");
-    console.log("Transaction signature:", signature);
+    console.log("Transaction:", getExplorerUrl(provider, signature));
     console.log("Bucket:", bucket.toBase58());
     console.log("Base mint:", baseMint.toBase58());
+    console.log("Source ATA:", sourceAta.toBase58());
     console.log("Bucket Base ATA:", bucketBaseAta.toBase58());
-    console.log("Minted amount:", mintAmount);
+    console.log("Transferred amount:", transferAmount.toString());
 
     const balance = await provider.connection.getTokenAccountBalance(bucketBaseAta);
     console.log("Bucket base balance:", balance.value.amount);

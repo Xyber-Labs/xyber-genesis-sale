@@ -110,12 +110,13 @@ anchor run setup-bucket --provider.cluster localnet -- \
 
 **Note:** Bucket name must be uppercase to match round name (PUBLIC)
 
-### 9. Mint Base Tokens to Bucket
+### 9. Transfer Base Tokens to Bucket
 
-Mint base tokens to bucket for claim distribution:
+Transfer base tokens from authority's wallet to bucket for claim distribution:
 
 ```bash
-anchor run mint-to-bucket --provider.cluster localnet -- \
+anchor run transfer-to-bucket --provider.cluster localnet -- \
+  --from-authority ./keys/authority.json \
   --bucket-name PUBLIC \
   --amount 100000000000000
 ```
@@ -239,10 +240,11 @@ anchor run setup-deterministic-vesting --provider.cluster localnet -- \
   --vesting-plan vesting-24m
 ```
 
-### 4. Mint Base Tokens to Bucket
+### 4. Transfer Base Tokens to Bucket
 
 ```bash
-anchor run mint-to-bucket --provider.cluster localnet -- \
+anchor run transfer-to-bucket --provider.cluster localnet -- \
+  --from-authority ./keys/authority.json \
   --bucket-name team \
   --amount 10000000000000
 ```
