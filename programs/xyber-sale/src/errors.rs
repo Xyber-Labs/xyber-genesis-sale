@@ -30,4 +30,6 @@ pub enum CustomError {
     InsufficientBucketSupply,
     #[msg("Cooldown period not passed")]
     CooldownPeriodNotPassed,
+    #[msg("Bad params")]
+    BadParams,
 }
