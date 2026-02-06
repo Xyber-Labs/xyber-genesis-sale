@@ -1,0 +1,24 @@
+{
+  "name": "Xyber ICO",
+  "logo": "https://ib4jmsp5fz57wjy53pzc7bugecelivqezoclfyqbnhnnsc5cdvda.arweave.net/QHiWSf0ue_snHdvyL4aGIIi0VgTLhLLiAWna2QuiHUY",
+  "description": "Xyber Sale is a Solana program that manages the genesis distribution of $XYBER token — the native token powering onchain AI agents, apps and machines. The program handles deposits collection and token distribution at TGE with fair and transparent onchain rules",
+  "notification": "TGE date to be announced",
+  "sdk": "@xyber-labs/xyber-sale-sdk",
+  "project_url": "https://genesis.xyber.inc/",
+  "contacts": [
+    "email:security@xyber.inc",
+    "discord:channels/1352248408634687623/1352275383524790332"
+  ],
+  "policy": "https://xyber.inc/.well-known/security.txt",
+  "preferred_languages": [
+    "en",
+    "ru"
+  ],
+  "source_code": "https://github.com/Xyber-Labs/xyber-ico-solana",
+  "source_release": "v0.1.0",
+  "source_revision": "2b84e2bff4d5116d2eda48f82be6c8ffb462a24f",
+  "auditors": [],
+  "acknowledgements": [],
+  "expiry": "2026-12-31",
+  "version": "0.1.0"
+}
