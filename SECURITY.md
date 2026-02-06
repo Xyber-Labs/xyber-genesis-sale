@@ -7,7 +7,7 @@ implementations.
 
 **This policy is published at:**
 
-- **GitHub:** [SECURITY.md](https://github.com/Xyber-Labs/xyber-sale/security/policy)
+- **GitHub:** [SECURITY.md](https://github.com/Xyber-Labs/xyber-ico-solana/security/policy)
 - **Website:** [security.txt](https://xyber.inc/.well-known/security.txt) (RFC 9116)
 
 ## Reporting a Vulnerability
@@ -18,7 +18,7 @@ implementations.
 
 ### 1. GitHub Private Vulnerability Reporting (Recommended)
 
-[**Report a vulnerability**](https://github.com/Xyber-Labs/xyber-sale/security/advisories/new) — provide a helpful title
+[**Report a vulnerability**](https://github.com/Xyber-Labs/xyber-ico-solana/security/advisories/new) — provide a helpful title
 and detailed description of the problem.
 
 ### 2. Email Reporting
@@ -59,7 +59,7 @@ Xg7dpR5JwJTx/Z1Ct6YFIJLGnOmmrNegMzYE3pu2AQ==
 
 - [security.pub.asc](./security.pub.asc) in this repository
 - https://xyber.inc/security.pub.asc
-- https://raw.githubusercontent.com/Xyber-Labs/xyber-sale/master/security.pub.asc
+- https://raw.githubusercontent.com/Xyber-Labs/xyber-ico-solana/master/security.pub.asc
 - keys.openpgp.org (email verified): `gpg --keyserver keys.openpgp.org --recv-keys 87034BF0A24D1A22`
 
 ### 3. Discord
@@ -99,7 +99,7 @@ We commit to:
 
 **Security Audits:** In progress — reports will be published upon completion
 
-**Published Advisories:** https://github.com/Xyber-Labs/xyber-sale/security/advisories
+**Published Advisories:** https://github.com/Xyber-Labs/xyber-ico-solana/security/advisories
 
 ---
 

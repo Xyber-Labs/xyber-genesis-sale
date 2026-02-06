@@ -1,19 +1,19 @@
 # Xyber Security Contact Information (RFC 9116)
 # This file should be published at: https://xyber.inc/.well-known/security.txt
-# Source repository: https://github.com/Xyber-Labs/xyber-sale
+# Source repository: https://github.com/Xyber-Labs/xyber-ico-solana
 
 # Our security address
 Contact: mailto:security@xyber.inc
-Contact: https://github.com/Xyber-Labs/xyber-sale/security/advisories/new
+Contact: https://github.com/Xyber-Labs/xyber-ico-solana/security/advisories/new
 Contact: https://discord.com/channels/1352248408634687623/1352275383524790332
 
 # PGP key for encrypted vulnerability reports
 Encryption: https://xyber.inc/security.pub.asc
-Encryption: https://raw.githubusercontent.com/Xyber-Labs/xyber-sale/master/security.pub.asc
+Encryption: https://raw.githubusercontent.com/Xyber-Labs/xyber-ico-solana/master/security.pub.asc
 Encryption: openpgp4fpr:86B13B5B33BEE45A4FBFD22887034BF0A24D1A22
 
 # Our security policy
-Policy: https://github.com/Xyber-Labs/xyber-sale/security/policy
+Policy: https://github.com/Xyber-Labs/xyber-ico-solana/security/policy
 
 # Languages we understand
 Preferred-Languages: en, ru
@@ -25,4 +25,4 @@ Canonical: https://xyber.inc/.well-known/security.txt
 Expires: 2027-02-06T23:59:59.000Z
 
 # Acknowledgments for security researchers (coming soon)
-# Acknowledgments: https://github.com/Xyber-Labs/xyber-sale/security/acknowledgments
+# Acknowledgments: https://github.com/Xyber-Labs/xyber-ico-solana/security/acknowledgments
