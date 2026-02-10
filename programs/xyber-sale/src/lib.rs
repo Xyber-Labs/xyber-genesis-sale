@@ -8,7 +8,11 @@ mod errors;
 mod instructions;
 mod vesting_calculator;
 
+#[cfg(feature = "localnet")]
 declare_id!("XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt");
+
+#[cfg(not(feature = "localnet"))]
+declare_id!("xicod59noqHeMsTqBjrmHQBbqrzHhw1v92CTmguPWag");
 
 #[program]
 pub mod xyber_sale {

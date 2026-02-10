@@ -1,6 +1,7 @@
 import * as assert from "assert";
 import * as anchor from "@coral-xyz/anchor";
 import * as splToken from "@solana/spl-token";
+import { getKeypairFromFile } from "@solana-developers/node-helpers";
 
 import XyberSaleSDK from "@xyber-labs/xyber-sale-sdk";
 import { getExplorerUrl } from "../scripts/utils";
@@ -13,10 +14,10 @@ describe("XyberSale", () => {
   const program = anchor.workspace.XyberSale;
   const sdk = XyberSaleSDK.create(provider, program);
 
-  const deployerKeypair = (provider.wallet as any).payer as anchor.web3.Keypair;
-  const admin = anchor.web3.Keypair.generate();
-  const multisig = anchor.web3.Keypair.generate();
-  const baseMintKeypair = anchor.web3.Keypair.generate();
+  let deployerKeypair: anchor.web3.Keypair;
+  let admin: anchor.web3.Keypair;
+  let multisig: anchor.web3.Keypair;
+  let baseMintKeypair: anchor.web3.Keypair;
   const usdtMintKeypair = anchor.web3.Keypair.generate();
   const usdcMintKeypair = anchor.web3.Keypair.generate();
   const buyer = anchor.web3.Keypair.generate();
@@ -28,6 +29,11 @@ describe("XyberSale", () => {
   let usdcMint: anchor.web3.PublicKey;
 
   before(async () => {
+    deployerKeypair = await getKeypairFromFile("keys/admin.json");
+    admin = deployerKeypair;
+    multisig = await getKeypairFromFile("keys/multisig.json");
+    baseMintKeypair = await getKeypairFromFile("keys/base-mint.json");
+
     const adminAirdrop = await provider.connection.requestAirdrop(
       admin.publicKey,
       5 * anchor.web3.LAMPORTS_PER_SOL
