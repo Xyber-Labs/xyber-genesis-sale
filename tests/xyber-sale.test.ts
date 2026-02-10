@@ -1088,5 +1088,37 @@ describe("XyberSale", () => {
     console.log("Correctly rejected deposit asset into Deterministic bucket");
   });
 
+  // FIND-009: Computed bucket fields protection
+  it("Should not reset computed bucket fields without reset-allowed feature (FIND-009)", async () => {
+    const bucketName = "team";
+    const [bucketPda] = sdk.txBuilder.getBucketPda(bucketName);
+    const bucketBefore = await program.account.bucketData.fetch(bucketPda);
+
+    assert.ok(bucketBefore.registeredSupply.gt(new anchor.BN(0)));
+    assert.ok(bucketBefore.claimedSupply.gt(new anchor.BN(0)));
+
+    await sdk.setupBucket({
+      adminKeypair: admin,
+      bucketName: bucketName,
+      bucketData: {
+        vestingType: { deterministic: {} },
+        totalDeposit: new anchor.BN(0),
+        bucketSupply: bucketBefore.bucketSupply,
+        registeredSupply: new anchor.BN(0),
+        claimedSupply: new anchor.BN(0),
+        burntSupply: new anchor.BN(0),
+        vestingPlan: ["team-24m"],
+      },
+    });
+
+    const bucketAfter = await program.account.bucketData.fetch(bucketPda);
+
+    assert.ok(bucketAfter.registeredSupply.eq(bucketBefore.registeredSupply));
+    assert.ok(bucketAfter.claimedSupply.eq(bucketBefore.claimedSupply));
+    assert.ok(bucketAfter.totalDeposit.eq(bucketBefore.totalDeposit));
+    assert.ok(bucketAfter.burntSupply.eq(bucketBefore.burntSupply));
+
+    console.log("Computed fields preserved despite setupBucket call with zeros");
+  });
 
 });

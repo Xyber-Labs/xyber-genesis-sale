@@ -50,6 +50,15 @@ pub fn setup_bucket(
     _bucket_name: String,
     bucket_data: BucketData,
 ) -> Result<()> {
-    ctx.accounts.bucket.set_inner(bucket_data);
+    let bucket = &mut ctx.accounts.bucket;
+
+    if cfg!(feature = "reset-allowed") {
+        bucket.set_inner(bucket_data);
+        return Ok(());
+    }
+
+    bucket.vesting_type = bucket_data.vesting_type;
+    bucket.bucket_supply = bucket_data.bucket_supply;
+    bucket.vesting_plan = bucket_data.vesting_plan;
     Ok(())
 }
