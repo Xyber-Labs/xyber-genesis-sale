@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 use crate::{
     constants::SEED_ROOT,
-    data::{BucketData, SaleConfig, VestingConfig, VestingType},
+    data::{BucketData, BucketVestingType, SaleConfig, VestingConfig, VestingType},
     errors::CustomError,
 };
 
@@ -33,10 +33,7 @@ pub fn setup_deterministic_vesting(
     };
 
     let new_bucket_supply = bucket_data.registered_supply - old_allocation + new_allocation;
-    require!(
-        new_bucket_supply <= bucket_data.bucket_supply,
-        CustomError::BucketSupplyExceeded
-    );
+    require!(new_bucket_supply <= bucket_data.bucket_supply, CustomError::BucketSupplyExceeded);
     bucket_data.registered_supply = new_bucket_supply;
 
     vesting_config.vesting_type = Some(VestingType::Deterministic {
@@ -58,7 +55,12 @@ pub struct SetupDeterministicVesting<'info> {
     pub config: Box<Account<'info, SaleConfig>>,
     /// CHECK: Participant pubkey used only for PDA derivation
     pub participant: UncheckedAccount<'info>,
-    #[account(mut, seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()], bump)]
+    #[account(
+        mut,
+        seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()],
+        bump,
+        constraint = bucket_data.vesting_type == Some(BucketVestingType::Deterministic) @ CustomError::InvalidBucketVestingType
+    )]
     pub bucket_data: Box<Account<'info, BucketData>>,
     #[account(
         init_if_needed,

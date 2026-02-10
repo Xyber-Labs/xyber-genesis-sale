@@ -6,7 +6,10 @@ use anchor_spl::{
 
 use crate::{
     constants::{QUOTE_SEED, SALE_BUCKET_SEED, SEED_ROOT},
-    data::{BucketData, DepositEvent, QuoteConfig, Round, RoundConfig, SaleConfig, VestingConfig},
+    data::{
+        BucketData, BucketVestingType, DepositEvent, QuoteConfig, Round, RoundConfig, SaleConfig,
+        VestingConfig,
+    },
     errors::CustomError,
 };
 
@@ -58,7 +61,12 @@ pub struct DepositAsset<'info> {
     )]
     pub quote_pool_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    #[account(mut, seeds = [SEED_ROOT, b"BUCKET", round.as_bytes()], bump)]
+    #[account(
+        mut,
+        seeds = [SEED_ROOT, b"BUCKET", round.as_bytes()],
+        bump,
+        constraint = bucket_data.vesting_type == Some(BucketVestingType::Priceless) @ CustomError::InvalidBucketVestingType
+    )]
     pub bucket_data: Box<Account<'info, BucketData>>,
 
     pub system_program: Program<'info, System>,

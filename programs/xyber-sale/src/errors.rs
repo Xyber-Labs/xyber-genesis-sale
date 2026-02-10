@@ -28,4 +28,6 @@ pub enum CustomError {
     CooldownPeriodNotPassed,
     #[msg("Bad params")]
     BadParams,
+    #[msg("Invalid bucket vesting type")]
+    InvalidBucketVestingType,
 }

@@ -1033,4 +1033,60 @@ describe("XyberSale", () => {
     console.log(`Withdrawn: ${withdrawAmount.toNumber()} tokens`);
   });
 
+  // FIND-004: Bucket vesting type validation
+  it("Should reject operations with wrong bucket vesting type (FIND-004)", async () => {
+    await doAndCheckError(
+      sdk.setupDeterministicVesting({
+        adminKeypair: admin,
+        participant: teamMember.publicKey,
+        bucketName: "PUBLIC",
+        newAllocation: new anchor.BN(1000000),
+        vestingPlan: "PUBLIC",
+        tokensClaimed: new anchor.BN(0),
+        tokensBurnt: new anchor.BN(0),
+      }),
+      "Invalid bucket vesting type"
+    );
+
+    console.log("Correctly rejected setupDeterministicVesting on Priceless bucket");
+
+    await sdk.setupBucket({
+      adminKeypair: admin,
+      bucketName: "PUBLIC",
+      bucketData: {
+        vestingType: { deterministic: {} },
+        totalDeposit: new anchor.BN(0),
+        bucketSupply: new anchor.BN(500000000000000),
+        registeredSupply: new anchor.BN(0),
+        claimedSupply: new anchor.BN(0),
+        burntSupply: new anchor.BN(0),
+        vestingPlan: ["PUBLIC"],
+      },
+    });
+
+    await doAndCheckError(
+      sdk.depositSol({
+        buyerKeypair: buyer,
+        round: { public: {} },
+        paymentAmount: new anchor.BN(1_000_000_000),
+      }),
+      "Invalid bucket vesting type"
+    );
+
+    console.log("Correctly rejected deposit SOL into Deterministic bucket");
+
+    await doAndCheckError(
+      sdk.depositAsset({
+        buyerKeypair: buyer,
+        round: { public: {} },
+        quoteMint: usdtMint,
+        paymentAmount: new anchor.BN(1_000_000_000),
+      }),
+      "Invalid bucket vesting type"
+    );
+
+    console.log("Correctly rejected deposit asset into Deterministic bucket");
+  });
+
+
 });

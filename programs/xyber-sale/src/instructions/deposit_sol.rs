@@ -2,7 +2,9 @@ use anchor_lang::{prelude::*, system_program};
 
 use crate::{
     constants::{SALE_BUCKET_SEED, SEED_ROOT},
-    data::{BucketData, DepositEvent, Round, RoundConfig, SaleConfig, VestingConfig},
+    data::{
+        BucketData, BucketVestingType, DepositEvent, Round, RoundConfig, SaleConfig, VestingConfig,
+    },
     errors::CustomError,
 };
 
@@ -33,7 +35,12 @@ pub struct DepositSol<'info> {
     #[account(mut, seeds = [SEED_ROOT, b"BUCKET_POOL", SALE_BUCKET_SEED], bump)]
     pub bucket_pool: UncheckedAccount<'info>,
 
-    #[account(mut, seeds = [SEED_ROOT, b"BUCKET", round.as_bytes()], bump)]
+    #[account(
+        mut,
+        seeds = [SEED_ROOT, b"BUCKET", round.as_bytes()],
+        bump,
+        constraint = bucket_data.vesting_type == Some(BucketVestingType::Priceless) @ CustomError::InvalidBucketVestingType
+    )]
     pub bucket_data: Box<Account<'info, BucketData>>,
 
     pub system_program: Program<'info, System>,
