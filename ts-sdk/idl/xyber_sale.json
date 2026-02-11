@@ -8,6 +8,54 @@
   },
   "instructions": [
     {
+      "name": "accept_multisig",
+      "discriminator": [
+        194,
+        182,
+        76,
+        14,
+        208,
+        87,
+        150,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "new_multisig",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "claim",
       "discriminator": [
         62,
@@ -994,9 +1042,59 @@
         {
           "name": "new_admin",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "propose_multisig",
+      "discriminator": [
+        124,
+        209,
+        140,
+        224,
+        139,
+        177,
+        9,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "multisig",
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_multisig",
           "type": "pubkey"
         }
       ]
@@ -2450,6 +2548,11 @@
       "code": 6013,
       "name": "InvalidBucketVestingType",
       "msg": "Invalid bucket vesting type"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidPendingMultisig",
+      "msg": "Invalid pending multisig"
     }
   ],
   "types": [
@@ -2630,6 +2733,10 @@
           {
             "name": "multisig",
             "type": "pubkey"
+          },
+          {
+            "name": "pending_multisig",
+            "type": "pubkey"
           }
         ]
       }
@@ -2739,7 +2846,7 @@
   ],
   "constants": [
     {
-      "name": "BUCKET_CONFIG_SEED",
+      "name": "BUCKET_DATA_SEED",
       "type": "bytes",
       "value": "[66, 85, 67, 75, 69, 84]"
     },
@@ -2769,7 +2876,7 @@
       "value": "[82, 79, 85, 78, 68]"
     },
     {
-      "name": "SALE_BUCKET_CONFIG_SEED",
+      "name": "SALE_BUCKET_SEED",
       "type": "bytes",
       "value": "[83, 65, 76, 69]"
     },

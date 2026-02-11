@@ -27,13 +27,11 @@ const XyberSaleSDK = {
     async function initialize(args: {
       adminKeypair: anchor.web3.Keypair;
       newAdmin: anchor.web3.PublicKey;
-      multisig: anchor.web3.PublicKey;
       baseMint: anchor.web3.PublicKey;
     }): Promise<{ signature: string; config: anchor.web3.PublicKey; bucketPool: anchor.web3.PublicKey }> {
       const { initializeTx, config, bucketPool } = await txBuilder.initializeTx({
         admin: args.adminKeypair.publicKey,
         newAdmin: args.newAdmin,
-        multisig: args.multisig,
         baseMint: args.baseMint,
       });
 
@@ -42,6 +40,36 @@ const XyberSaleSDK = {
       }
       const signature = await provider.sendAndConfirm(initializeTx, [args.adminKeypair]);
       return { signature, config, bucketPool };
+    }
+
+    async function proposeMultisig(args: {
+      authorityKeypair: anchor.web3.Keypair;
+      newMultisig: anchor.web3.PublicKey;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey }> {
+      const { proposeMultisigTx, config } = await txBuilder.proposeMultisigTx({
+        authority: args.authorityKeypair.publicKey,
+        newMultisig: args.newMultisig,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(proposeMultisigTx, [args.authorityKeypair]);
+      return { signature, config };
+    }
+
+    async function acceptMultisig(args: {
+      newMultisigKeypair: anchor.web3.Keypair;
+    }): Promise<{ signature: string; config: anchor.web3.PublicKey }> {
+      const { acceptMultisigTx, config } = await txBuilder.acceptMultisigTx({
+        newMultisig: args.newMultisigKeypair.publicKey,
+      });
+
+      if (!provider.sendAndConfirm) {
+        throw new Error("Provider does not support sendAndConfirm");
+      }
+      const signature = await provider.sendAndConfirm(acceptMultisigTx, [args.newMultisigKeypair]);
+      return { signature, config };
     }
 
     async function setQuoteMint(args: {
@@ -314,6 +342,14 @@ const XyberSaleSDK = {
       initialize,
       initializeIx: txBuilder.initializeIx.bind(txBuilder),
       initializeTx: txBuilder.initializeTx.bind(txBuilder),
+
+      proposeMultisig,
+      proposeMultisigIx: txBuilder.proposeMultisigIx.bind(txBuilder),
+      proposeMultisigTx: txBuilder.proposeMultisigTx.bind(txBuilder),
+
+      acceptMultisig,
+      acceptMultisigIx: txBuilder.acceptMultisigIx.bind(txBuilder),
+      acceptMultisigTx: txBuilder.acceptMultisigTx.bind(txBuilder),
 
       setQuoteMint,
       setQuoteMintIx: txBuilder.setQuoteMintIx.bind(txBuilder),

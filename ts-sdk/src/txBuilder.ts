@@ -68,7 +68,6 @@ export class TxBuilder {
   async initializeIx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
-    multisig: web3.PublicKey;
     baseMint: web3.PublicKey;
   }): Promise<{
     initializeIx: web3.TransactionInstruction;
@@ -79,7 +78,7 @@ export class TxBuilder {
     const [bucketPool] = this.getBucketPoolPda();
 
     const initializeIx = await this.program.methods
-      .initialize(args.newAdmin, args.multisig)
+      .initialize(args.newAdmin)
       .accountsStrict({
         admin: args.admin,
         config: config,
@@ -95,7 +94,6 @@ export class TxBuilder {
   async initializeTx(args: {
     admin: web3.PublicKey;
     newAdmin: web3.PublicKey;
-    multisig: web3.PublicKey;
     baseMint: web3.PublicKey;
   }): Promise<{
     initializeTx: web3.Transaction;
@@ -105,6 +103,68 @@ export class TxBuilder {
     const { initializeIx, config, bucketPool } = await this.initializeIx(args);
     const initializeTx = new web3.Transaction().add(initializeIx);
     return { initializeTx, config, bucketPool };
+  }
+
+  async proposeMultisigIx(args: {
+    authority: web3.PublicKey;
+    newMultisig: web3.PublicKey;
+  }): Promise<{
+    proposeMultisigIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+
+    const proposeMultisigIx = await this.program.methods
+      .proposeMultisig(args.newMultisig)
+      .accountsStrict({
+        authority: args.authority,
+        config: config,
+      })
+      .instruction();
+
+    return { proposeMultisigIx, config };
+  }
+
+  async proposeMultisigTx(args: {
+    authority: web3.PublicKey;
+    newMultisig: web3.PublicKey;
+  }): Promise<{
+    proposeMultisigTx: web3.Transaction;
+    config: web3.PublicKey;
+  }> {
+    const { proposeMultisigIx, config } = await this.proposeMultisigIx(args);
+    const proposeMultisigTx = new web3.Transaction().add(proposeMultisigIx);
+    return { proposeMultisigTx, config };
+  }
+
+  async acceptMultisigIx(args: {
+    newMultisig: web3.PublicKey;
+  }): Promise<{
+    acceptMultisigIx: web3.TransactionInstruction;
+    config: web3.PublicKey;
+  }> {
+    const [config] = this.getConfigPda();
+
+    const acceptMultisigIx = await this.program.methods
+      .acceptMultisig()
+      .accountsStrict({
+        newMultisig: args.newMultisig,
+        config: config,
+      })
+      .instruction();
+
+    return { acceptMultisigIx, config };
+  }
+
+  async acceptMultisigTx(args: {
+    newMultisig: web3.PublicKey;
+  }): Promise<{
+    acceptMultisigTx: web3.Transaction;
+    config: web3.PublicKey;
+  }> {
+    const { acceptMultisigIx, config } = await this.acceptMultisigIx(args);
+    const acceptMultisigTx = new web3.Transaction().add(acceptMultisigIx);
+    return { acceptMultisigTx, config };
   }
 
   async setQuoteMintIx(args: {

@@ -40,12 +40,10 @@ pub struct Initialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, multisig: Pubkey) -> Result<()> {
-    require!(multisig != Pubkey::default(), CustomError::BadParams);
+pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey) -> Result<()> {
     require!(new_admin != Pubkey::default(), CustomError::BadParams);
     let config = &mut ctx.accounts.config;
     config.admin = new_admin;
-    config.multisig = multisig;
     config.base_mint = ctx.accounts.base_mint.key();
 
     Ok(())

@@ -105,7 +105,6 @@ describe("XyberSale", () => {
     const { signature, config, bucketPool } = await sdk.initialize({
       adminKeypair: deployerKeypair,
       newAdmin: admin.publicKey,
-      multisig: multisig.publicKey,
       baseMint: baseMint,
     });
 
@@ -117,12 +116,12 @@ describe("XyberSale", () => {
     const configAccount = await program.account.saleConfig.fetch(config);
 
     assert.deepEqual(configAccount.admin, admin.publicKey);
-    assert.deepEqual(configAccount.multisig, multisig.publicKey);
+    assert.deepEqual(configAccount.multisig, anchor.web3.PublicKey.default);
+    assert.deepEqual(configAccount.pendingMultisig, anchor.web3.PublicKey.default);
     assert.deepEqual(configAccount.baseMint, baseMint);
 
     console.log("Config initialized successfully!");
     console.log("Admin:", configAccount.admin.toBase58());
-    console.log("Multisig:", configAccount.multisig.toBase58());
     console.log("Base Mint:", configAccount.baseMint.toBase58());
   });
 
@@ -139,13 +138,96 @@ describe("XyberSale", () => {
       sdk.initialize({
         adminKeypair: attacker,
         newAdmin: attacker.publicKey,
-        multisig: attacker.publicKey,
         baseMint: baseMint,
       }),
       "Invalid admin account is provided"
     );
 
     console.log("Correctly rejected unauthorized initialization attempt");
+  });
+
+  it("Should propose multisig (DEPLOYER as authority)", async () => {
+    const { signature, config } = await sdk.proposeMultisig({
+      authorityKeypair: deployerKeypair,
+      newMultisig: multisig.publicKey,
+    });
+
+    console.log("Propose multisig tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+
+    const configAccount = await program.account.saleConfig.fetch(config);
+
+    assert.deepEqual(configAccount.pendingMultisig, multisig.publicKey);
+    assert.deepEqual(configAccount.multisig, anchor.web3.PublicKey.default);
+
+    console.log("Pending multisig set successfully!");
+  });
+
+  it("Should fail when non-pending-multisig tries to accept", async () => {
+    const attacker = anchor.web3.Keypair.generate();
+
+    const requestAirdropSignature = await provider.connection.requestAirdrop(
+      attacker.publicKey,
+      5 * anchor.web3.LAMPORTS_PER_SOL
+    );
+    await provider.connection.confirmTransaction(requestAirdropSignature);
+
+    await doAndCheckError(
+      sdk.acceptMultisig({
+        newMultisigKeypair: attacker,
+      }),
+      "Invalid pending multisig"
+    );
+
+    console.log("Correctly rejected accept from non-pending-multisig");
+  });
+
+  it("Should accept multisig", async () => {
+    const { signature, config } = await sdk.acceptMultisig({
+      newMultisigKeypair: multisig,
+    });
+
+    console.log("Accept multisig tx:", signature);
+    console.log("Explorer:", getExplorerUrl(provider, signature));
+
+    const configAccount = await program.account.saleConfig.fetch(config);
+
+    assert.deepEqual(configAccount.multisig, multisig.publicKey);
+    assert.deepEqual(configAccount.pendingMultisig, anchor.web3.PublicKey.default);
+
+    console.log("Multisig accepted successfully!");
+    console.log("Multisig:", configAccount.multisig.toBase58());
+  });
+
+  it("Should fail when non-multisig tries to propose", async () => {
+    const attacker = anchor.web3.Keypair.generate();
+
+    const requestAirdropSignature = await provider.connection.requestAirdrop(
+      attacker.publicKey,
+      5 * anchor.web3.LAMPORTS_PER_SOL
+    );
+    await provider.connection.confirmTransaction(requestAirdropSignature);
+
+    await doAndCheckError(
+      sdk.proposeMultisig({
+        authorityKeypair: attacker,
+        newMultisig: attacker.publicKey,
+      }),
+      "Invalid admin account is provided"
+    );
+
+    console.log("Correctly rejected propose from non-multisig");
+  });
+
+  it("Should fail to accept when no pending transfer", async () => {
+    await doAndCheckError(
+      sdk.acceptMultisig({
+        newMultisigKeypair: multisig,
+      }),
+      "Invalid pending multisig"
+    );
+
+    console.log("Correctly rejected accept when no pending transfer");
   });
 
   it("Should set quote mint configuration for USDT and USDC", async () => {

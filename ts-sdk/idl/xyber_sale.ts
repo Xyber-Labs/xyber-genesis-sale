@@ -14,6 +14,54 @@ export type XyberSale = {
   },
   "instructions": [
     {
+      "name": "acceptMultisig",
+      "discriminator": [
+        194,
+        182,
+        76,
+        14,
+        208,
+        87,
+        150,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "newMultisig",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "claim",
       "discriminator": [
         62,
@@ -1000,9 +1048,59 @@ export type XyberSale = {
         {
           "name": "newAdmin",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "proposeMultisig",
+      "discriminator": [
+        124,
+        209,
+        140,
+        224,
+        139,
+        177,
+        9,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
         },
         {
-          "name": "multisig",
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  82,
+                  79,
+                  79,
+                  84
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  67,
+                  79,
+                  78,
+                  70,
+                  73,
+                  71
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "newMultisig",
           "type": "pubkey"
         }
       ]
@@ -2456,6 +2554,11 @@ export type XyberSale = {
       "code": 6013,
       "name": "invalidBucketVestingType",
       "msg": "Invalid bucket vesting type"
+    },
+    {
+      "code": 6014,
+      "name": "invalidPendingMultisig",
+      "msg": "Invalid pending multisig"
     }
   ],
   "types": [
@@ -2636,6 +2739,10 @@ export type XyberSale = {
           {
             "name": "multisig",
             "type": "pubkey"
+          },
+          {
+            "name": "pendingMultisig",
+            "type": "pubkey"
           }
         ]
       }
@@ -2745,7 +2852,7 @@ export type XyberSale = {
   ],
   "constants": [
     {
-      "name": "bucketConfigSeed",
+      "name": "bucketDataSeed",
       "type": "bytes",
       "value": "[66, 85, 67, 75, 69, 84]"
     },
@@ -2775,7 +2882,7 @@ export type XyberSale = {
       "value": "[82, 79, 85, 78, 68]"
     },
     {
-      "name": "saleBucketConfigSeed",
+      "name": "saleBucketSeed",
       "type": "bytes",
       "value": "[83, 65, 76, 69]"
     },

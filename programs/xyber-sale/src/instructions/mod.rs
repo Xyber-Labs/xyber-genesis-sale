@@ -9,6 +9,7 @@ pub use setup_bucket::*;
 pub use setup_deterministic_vesting::*;
 pub use setup_round::*;
 pub use setup_vesting_plan::*;
+pub use transfer_multisig::*;
 pub use withdraw::*;
 
 use crate::data::{BucketData, VestingConfig, VestingType};
@@ -22,6 +23,7 @@ mod setup_bucket;
 mod setup_deterministic_vesting;
 mod setup_round;
 mod setup_vesting_plan;
+mod transfer_multisig;
 mod withdraw;
 
 pub(super) fn update_allocation(

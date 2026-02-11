@@ -18,8 +18,16 @@ declare_id!("xicod59noqHeMsTqBjrmHQBbqrzHhw1v92CTmguPWag");
 pub mod xyber_sale {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey, multisig: Pubkey) -> Result<()> {
-        instructions::initialize(ctx, new_admin, multisig)
+    pub fn initialize(ctx: Context<Initialize>, new_admin: Pubkey) -> Result<()> {
+        instructions::initialize(ctx, new_admin)
+    }
+
+    pub fn propose_multisig(ctx: Context<ProposeMultisig>, new_multisig: Pubkey) -> Result<()> {
+        instructions::propose_multisig(ctx, new_multisig)
+    }
+
+    pub fn accept_multisig(ctx: Context<AcceptMultisig>) -> Result<()> {
+        instructions::accept_multisig(ctx)
     }
 
     pub fn set_quote_mint(

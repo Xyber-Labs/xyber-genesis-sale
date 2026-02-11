@@ -12,10 +12,15 @@ This document contains the complete deployment flow for the Xyber Sale program.
 
 ## Deployment Steps
 
+```bash
+solana-test-validator --reset
+```
+
 ### 1. Deploy the Program
 
 ```bash
-anchor build
+anchor build -- --features localnet
+cp target/idl/xyber_sale.json target/types/xyber_sale.ts ts-sdk/idl/ && cd ts-sdk && yarn build && cd .. && yarn install --force
 anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json
 sleep 2
 anchor idl init --provider.cluster localnet --filepath target/idl/xyber_sale.json XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt
@@ -33,17 +38,32 @@ solana airdrop 100 $(solana address -k keys/participant.json) -u localhost
 ### 3. Create Token Mints
 
 ```bash
-spl-token create-token --decimals 6 keys/base-mint.json -u localhost
-spl-token create-token --decimals 6 keys/quote-mint.json -u localhost
+spl-token create-token --mint-authority keys/admin.json --fee-payer keys/admin.json --decimals 6 keys/base-mint.json -u localhost
+spl-token create-token --mint-authority keys/admin.json --fee-payer keys/admin.json --decimals 6 keys/quote-mint.json -u localhost
 ```
 
 ### 4. Initialize Sale Configuration
 
 ```bash
 anchor run initialize --provider.cluster localnet -- \
+  --authority-keypair ./keys/admin.json \
   --admin $(solana address -k keys/admin.json) \
-  --multisig $(solana address -k keys/multisig.json) \
   --base-mint $(solana address -k keys/base-mint.json)
+```
+
+### 4a. Propose Multisig
+
+```bash
+anchor run propose-multisig --provider.cluster localnet -- \
+  --authority-keypair ./keys/admin.json \
+  --new-multisig $(solana address -k keys/multisig.json)
+```
+
+### 4b. Accept Multisig
+
+```bash
+anchor run accept-multisig --provider.cluster localnet -- \
+  --new-multisig-keypair ./keys/multisig.json
 ```
 
 ### 5. Configure Quote Token (USDT, USDC, etc.)
@@ -60,6 +80,7 @@ anchor run set-quote-mint --provider.cluster localnet -- \
 ```
 
 **Price Format:**
+
 - `price` = SOL price in USD (e.g., 200 for $200/SOL)
 - `expo` = exponent (use 0 for simple prices)
 - Actual price = `price × 10^expo` (e.g., 200 × 10^0 = $200)
@@ -110,18 +131,34 @@ anchor run setup-bucket --provider.cluster localnet -- \
 
 **Note:** Bucket name must be uppercase to match round name (PUBLIC)
 
-### 9. Transfer Base Tokens to Bucket
+### 9. Mint Base Tokens to Admin
 
-Transfer base tokens from authority's wallet to bucket for claim distribution:
+Create a token account for admin and mint base tokens for distribution:
+
+```bash
+spl-token create-account $(solana address -k keys/base-mint.json) \
+  --owner $(solana address -k keys/admin.json) \
+  --fee-payer keys/admin.json \
+  -u localhost
+
+spl-token mint $(solana address -k keys/base-mint.json) 100000000000000 \
+  --mint-authority keys/admin.json \
+  --recipient-owner keys/admin.json \
+  -u localhost
+```
+
+### 10. Transfer Base Tokens to Bucket
+
+Transfer base tokens from admin's wallet to bucket for claim distribution:
 
 ```bash
 anchor run transfer-to-bucket --provider.cluster localnet -- \
-  --from-authority ./keys/authority.json \
+  --from-authority ./keys/admin.json \
   --bucket-name PUBLIC \
   --amount 100000000000000
 ```
 
-### 10. Deposit SOL to Purchase Tokens
+### 11. Deposit SOL to Purchase Tokens
 
 ```bash
 anchor run deposit-sol --provider.cluster localnet -- \
@@ -132,20 +169,20 @@ anchor run deposit-sol --provider.cluster localnet -- \
 
 **Note:** Payment amount is in lamports (1 SOL = 10^9 lamports)
 
-### 11. Mint Quote Tokens to Buyer (for SPL deposit)
+### 12. Mint Quote Tokens to Buyer (for SPL deposit)
 
 Create token account and mint quote tokens to buyer for testing SPL deposit:
 
 ```bash
 spl-token create-account $(solana address -k keys/quote-mint.json) \
   --owner $(solana address -k keys/buyer.json) \
-  --fee-payer ~/.config/solana/id.json \
+  --fee-payer keys/buyer.json \
   -u localhost
 
-spl-token mint $(solana address -k keys/quote-mint.json) 10000000 --recipient-owner keys/buyer.json -u localhost
+spl-token mint $(solana address -k keys/quote-mint.json) 10000000 --mint-authority keys/admin.json --recipient-owner keys/buyer.json -u localhost
 ```
 
-### 12. Deposit Tokens (SPL) to Purchase Tokens
+### 13. Deposit Tokens (SPL) to Purchase Tokens
 
 ```bash
 anchor run deposit-asset --provider.cluster localnet -- \
@@ -157,7 +194,7 @@ anchor run deposit-asset --provider.cluster localnet -- \
 
 **Note:** Payment amount is in token's smallest units (depends on token decimals)
 
-### 13. Claim Purchased Tokens
+### 14. Claim Purchased Tokens
 
 After TGE (Token Generation Event) or when vesting period starts, buyers can claim their tokens:
 
@@ -174,7 +211,7 @@ anchor run claim --provider.cluster localnet -- \
 
 These operations can only be performed by the multisig account to withdraw accumulated funds from the sale.
 
-### 14. Withdraw SOL from Bucket Pool
+### 15. Withdraw SOL from Bucket Pool
 
 Withdraw all accumulated SOL (except rent reserve) from the bucket pool:
 
@@ -186,7 +223,7 @@ anchor run withdraw-sol --provider.cluster localnet -- \
 
 **Note:** Automatically leaves rent-exempt minimum in bucket_pool.
 
-### 15. Withdraw Quote Tokens (Asset) from Bucket Pool
+### 16. Withdraw Quote Tokens (Asset) from Bucket Pool
 
 Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool:
 
@@ -244,7 +281,7 @@ anchor run setup-deterministic-vesting --provider.cluster localnet -- \
 
 ```bash
 anchor run transfer-to-bucket --provider.cluster localnet -- \
-  --from-authority ./keys/authority.json \
+  --from-authority ./keys/admin.json \
   --bucket-name team \
   --amount 10000000000000
 ```
@@ -291,13 +328,7 @@ anchor run withdraw-unsold-tokens --provider.cluster localnet -- \
 Run the complete test suite:
 
 ```bash
-anchor test
-```
-
-Run specific test file:
-
-```bash
-anchor test --skip-build --skip-deploy -- --grep "deposit"
+anchor test -- --features localnet
 ```
 
 ## Notes

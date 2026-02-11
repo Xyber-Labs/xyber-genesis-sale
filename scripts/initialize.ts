@@ -1,35 +1,37 @@
 import { web3 } from "@coral-xyz/anchor";
 import { Command } from "commander";
+import { getKeypairFromFile } from "@solana-developers/node-helpers";
 import { runWithSdk, getExplorerUrl } from "./utils";
 
-function parseCliArgs() {
+async function parseCliArgs() {
   const cli = new Command();
 
   cli
     .name("initialize")
     .description("Initialize XyberSale configuration")
+    .requiredOption("--authority-keypair <PATH>", "Path to authority keypair file (DEPLOYER or multisig)")
     .requiredOption("--admin <PUBKEY>", "New admin public key")
-    .requiredOption("--multisig <PUBKEY>", "Multisig public key")
     .requiredOption("--base-mint <PUBKEY>", "Base token mint address")
     .parse(process.argv);
 
   const options = cli.opts();
 
+  const authorityKeypair = await getKeypairFromFile(options.authorityKeypair);
+
   return {
+    authorityKeypair,
     admin: new web3.PublicKey(options.admin),
-    multisig: new web3.PublicKey(options.multisig),
     baseMint: new web3.PublicKey(options.baseMint),
   };
 }
 
 async function main() {
-  const options = parseCliArgs();
+  const options = await parseCliArgs();
 
   await runWithSdk(async ({ provider, sdk }) => {
     const { signature, config, bucketPool } = await sdk.initialize({
-      adminKeypair: (provider.wallet as any).payer,
+      adminKeypair: options.authorityKeypair,
       newAdmin: options.admin,
-      multisig: options.multisig,
       baseMint: options.baseMint,
     });
 

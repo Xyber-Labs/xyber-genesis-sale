@@ -30,4 +30,6 @@ pub enum CustomError {
     BadParams,
     #[msg("Invalid bucket vesting type")]
     InvalidBucketVestingType,
+    #[msg("Invalid pending multisig")]
+    InvalidPendingMultisig,
 }
