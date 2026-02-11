@@ -90,6 +90,46 @@ pub struct VestingPlan {
     pub periods: Vec<VestingPeriod>,
 }
 
+impl VestingPlan {
+    pub fn is_valid(&self) -> bool {
+        let periods = &self.periods;
+        if periods.len() > 24 || periods.is_empty() {
+            return false;
+        }
+
+        let mut prev_base: Option<u8> = None;
+        for (i, p) in periods.iter().enumerate() {
+            if p.claim_ratio + p.burn_ratio == 0.0 {
+                return false;
+            }
+            if p.base_period_index < prev_base {
+                return false;
+            }
+            if let Some(base_period) = p.base_period_index {
+                if prev_base.is_none() && base_period != 0 {
+                    return false;
+                }
+                if usize::from(base_period) >= i {
+                    return false;
+                }
+            }
+            prev_base = p.base_period_index;
+        }
+
+        let last_base = periods.last().expect("Expected to have one period").base_period_index;
+        let sum: f64 = periods
+            .iter()
+            .filter(|p| p.base_period_index == last_base)
+            .map(|p| p.claim_ratio + p.burn_ratio)
+            .sum();
+        if (sum - 1.0).abs() > 1e-6 {
+            return false;
+        }
+
+        true
+    }
+}
+
 #[event]
 pub struct DepositEvent {
     pub buyer: Pubkey,
@@ -104,4 +144,186 @@ pub struct ClaimEvent {
     pub vesting_plan: String,
     pub claim: u64,
     pub burn: u64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{VestingPeriod, VestingPlan};
+
+    fn period(base: Option<u8>) -> VestingPeriod {
+        VestingPeriod {
+            start_timestamp: 1_000_000,
+            claim_ratio: 0.5,
+            burn_ratio: 0.4,
+            base_period_index: base,
+        }
+    }
+
+    fn period_r(claim: f64, burn: f64, base: Option<u8>) -> VestingPeriod {
+        VestingPeriod {
+            start_timestamp: 1_000_000,
+            claim_ratio: claim,
+            burn_ratio: burn,
+            base_period_index: base,
+        }
+    }
+
+    fn plan(periods: Vec<VestingPeriod>) -> VestingPlan {
+        VestingPlan { periods }
+    }
+
+    #[test]
+    fn valid_single_period() {
+        let p = plan(vec![period_r(0.6, 0.4, None)]);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn valid_multiple_periods() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.5, 0.1, Some(0)),
+            period_r(0.2, 0.2, Some(0)),
+        ]);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn invalid_empty() {
+        let p = plan(vec![]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn invalid_exceeds_max_periods() {
+        let mut periods = vec![period(None)];
+        for _ in 0..24 {
+            periods.push(period(Some(0)));
+        }
+        assert_eq!(periods.len(), 25);
+        let p = plan(periods);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn valid_at_max_periods() {
+        let r = 1.0 / 23.0;
+        let mut periods = vec![period_r(0.3, 0.0, None)];
+        for _ in 0..23 {
+            periods.push(period_r(r, 0.0, Some(0)));
+        }
+        assert_eq!(periods.len(), 24);
+        let p = plan(periods);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn invalid_first_period_has_base() {
+        // base_period_index Some(0) at index 0 means base >= i, invalid
+        let p = plan(vec![period(Some(0)), period(Some(0))]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn valid_multiple_none_periods() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.3, 0.0, None),
+            period_r(0.2, 0.2, None),
+        ]);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn valid_none_then_some() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.3, 0.0, None),
+            period_r(0.6, 0.4, Some(0)),
+        ]);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn invalid_some_then_none() {
+        // Some(0) -> None breaks ascending order
+        let p = plan(vec![period(None), period(Some(0)), period(None)]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn invalid_base_period_equals_own_index() {
+        let p = plan(vec![period(None), period(Some(1))]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn invalid_base_period_greater_than_own_index() {
+        let p = plan(vec![period(None), period(Some(5))]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn valid_chain_of_references() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.5, 0.0, Some(0)),
+            period_r(0.5, 0.0, Some(1)),
+            period_r(0.6, 0.4, Some(2)),
+        ]);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn invalid_base_period_not_ascending() {
+        let p = plan(vec![
+            period(None),
+            period(Some(0)),
+            period(Some(1)),
+            period(Some(0)),
+        ]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn invalid_first_period_not_none() {
+        let p = plan(vec![period(Some(0)), period(Some(0))]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn invalid_some_skips_zero_after_none() {
+        let p = plan(vec![period(None), period(None), period(Some(1))]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn valid_last_period_ratio_sums_to_one() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.5, 0.0, Some(0)),
+            period_r(0.4, 0.1, Some(0)),
+        ]);
+        assert!(p.is_valid());
+    }
+
+    #[test]
+    fn invalid_last_period_ratio_not_one() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.3, 0.0, Some(0)),
+            period_r(0.3, 0.0, Some(0)),
+        ]);
+        assert!(!p.is_valid());
+    }
+
+    #[test]
+    fn invalid_zero_ratio_period() {
+        let p = plan(vec![
+            period_r(0.3, 0.0, None),
+            period_r(0.0, 0.0, Some(0)),
+            period_r(0.6, 0.4, Some(0)),
+        ]);
+        assert!(!p.is_valid());
+    }
 }

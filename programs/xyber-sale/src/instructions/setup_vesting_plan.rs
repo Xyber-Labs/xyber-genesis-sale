@@ -32,6 +32,7 @@ pub fn setup_vesting_plan(
     _vesting_plan_name: String,
     plan: VestingPlan,
 ) -> Result<()> {
+    require!(plan.is_valid(), CustomError::BadParams);
     ctx.accounts.vesting_plan.set_inner(plan);
     Ok(())
 }
