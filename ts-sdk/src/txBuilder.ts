@@ -1,17 +1,31 @@
 import { BN, Program, web3 } from "@coral-xyz/anchor";
 import * as splToken from "@solana/spl-token";
 import { XyberSale as XyberSaleIDL } from "../idl/xyber_sale";
-import { getConstant, getConstantRaw, parseRound } from "./utils";
+import { getConstant, parseRound } from "./utils";
 
 export class TxBuilder {
   private program: Program<XyberSaleIDL>;
   private seedRoot: Buffer;
+  private configSeed: Buffer;
   private saleBucketSeed: Buffer;
+  private bucketDataSeed: Buffer;
+  private bucketPoolSeed: Buffer;
+  private quoteSeed: Buffer;
+  private roundSeed: Buffer;
+  private vestingConfigSeed: Buffer;
+  private vestingPlanSeed: Buffer;
 
   constructor(program: Program<XyberSaleIDL>) {
     this.program = program;
     this.seedRoot = Buffer.from(getConstant("seedRoot", program.idl as any));
-    this.saleBucketSeed = Buffer.from(getConstantRaw("saleBucketSeed", program.idl as any));
+    this.configSeed = Buffer.from(getConstant("configSeed", program.idl as any));
+    this.saleBucketSeed = Buffer.from(getConstant("saleBucketSeed", program.idl as any));
+    this.bucketDataSeed = Buffer.from(getConstant("bucketDataSeed", program.idl as any));
+    this.bucketPoolSeed = Buffer.from(getConstant("bucketPoolSeed", program.idl as any));
+    this.quoteSeed = Buffer.from(getConstant("quoteSeed", program.idl as any));
+    this.roundSeed = Buffer.from(getConstant("roundSeed", program.idl as any));
+    this.vestingConfigSeed = Buffer.from(getConstant("vestingConfigSeed", program.idl as any));
+    this.vestingPlanSeed = Buffer.from(getConstant("vestingPlanSeed", program.idl as any));
   }
 
   getPda(seeds: (string | Buffer | web3.PublicKey)[]): [web3.PublicKey, number] {
@@ -35,20 +49,20 @@ export class TxBuilder {
   }
 
   getConfigPda(): [web3.PublicKey, number] {
-    return this.getPda(["CONFIG"]);
+    return this.getPda([this.configSeed]);
   }
 
   getRoundConfigPda(round: any): [web3.PublicKey, number] {
     const roundName = parseRound(round);
-    return this.getPda(["ROUND", Buffer.from(roundName)]);
+    return this.getPda([this.roundSeed, Buffer.from(roundName)]);
   }
 
   getBucketPda(bucketName: string): [web3.PublicKey, number] {
-    return this.getPda(["BUCKET", Buffer.from(bucketName)]);
+    return this.getPda([this.bucketDataSeed, Buffer.from(bucketName)]);
   }
 
   getVestingConfigPda(bucketName: string, buyer: web3.PublicKey): [web3.PublicKey, number] {
-    return this.getPda(["VESTING_CONFIG", Buffer.from(bucketName), buyer.toBuffer()]);
+    return this.getPda([this.vestingConfigSeed, Buffer.from(bucketName), buyer.toBuffer()]);
   }
 
   async initializeIx(args: {
@@ -314,8 +328,7 @@ export class TxBuilder {
   }
 
   getQuoteConfigPda(quoteMint: web3.PublicKey): [web3.PublicKey, number] {
-    const quoteSeed = Buffer.from(getConstantRaw("quoteSeed", this.program.idl as any));
-    return this.getPda([quoteSeed, quoteMint.toBuffer()]);
+    return this.getPda([this.quoteSeed, quoteMint.toBuffer()]);
   }
 
   async depositAssetIx(args: {
@@ -394,7 +407,7 @@ export class TxBuilder {
   }
 
   getVestingPlanPda(vestingPlanName: string): [web3.PublicKey, number] {
-    return this.getPda(["VESTING_PLAN", Buffer.from(vestingPlanName)]);
+    return this.getPda([this.vestingPlanSeed, Buffer.from(vestingPlanName)]);
   }
 
   async setupVestingPlanIx(args: {
@@ -582,7 +595,7 @@ export class TxBuilder {
 
   getBucketPoolPda(): [web3.PublicKey, number] {
     return web3.PublicKey.findProgramAddressSync(
-      [this.seedRoot, Buffer.from("BUCKET_POOL"), this.saleBucketSeed],
+      [this.seedRoot, this.bucketPoolSeed, this.saleBucketSeed],
       this.program.programId
     );
   }

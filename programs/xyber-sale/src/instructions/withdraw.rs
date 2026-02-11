@@ -5,7 +5,9 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{BUCKET_POOL_SEED, BUCKET_SEED, SALE_BUCKET_SEED, SEED_ROOT},
+    constants::{
+        BUCKET_DATA_SEED, BUCKET_POOL_SEED, CONFIG_SEED, SALE_BUCKET_SEED, SEED_ROOT,
+    },
     data::{BucketData, SaleConfig},
     errors::CustomError,
 };
@@ -21,7 +23,12 @@ pub fn withdraw_sol(ctx: Context<WithdrawSol>) -> Result<()> {
     require!(lamports_to_withdraw > 0, CustomError::InsufficientFunds);
 
     let bump = [ctx.bumps.bucket_pool];
-    let seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED, &bump[..]];
+    let seeds = [
+        SEED_ROOT,
+        BUCKET_POOL_SEED,
+        SALE_BUCKET_SEED,
+        &bump[..],
+    ];
     let binding = [&seeds[..]];
     let cpi_context = CpiContext::new_with_signer(
         ctx.accounts.system_program.to_account_info(),
@@ -39,7 +46,7 @@ pub struct WithdrawSol<'info> {
     #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     multisig: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     config: Box<Account<'info, SaleConfig>>,
 
     /// CHECK
@@ -59,7 +66,12 @@ pub fn withdraw_asset(ctx: Context<WithdrawAsset>) -> Result<()> {
 
     let asset_decimals = ctx.accounts.quote_mint.decimals;
     let bump = [ctx.bumps.bucket_pool];
-    let seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED, &bump[..]];
+    let seeds = [
+        SEED_ROOT,
+        BUCKET_POOL_SEED,
+        SALE_BUCKET_SEED,
+        &bump[..],
+    ];
     let binding = [&seeds[..]];
     let cpi = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
@@ -79,7 +91,7 @@ pub struct WithdrawAsset<'info> {
     #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     multisig: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     config: Box<Account<'info, SaleConfig>>,
 
     #[account(seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED], bump)]
@@ -129,7 +141,12 @@ pub fn withdraw_unsold_tokens(
 
     let base_decimals = ctx.accounts.base_mint.decimals;
     let bump = [ctx.bumps.bucket_data];
-    let seeds = [SEED_ROOT, BUCKET_SEED, _bucket_name.as_bytes(), &bump[..]];
+    let seeds = [
+        SEED_ROOT,
+        BUCKET_DATA_SEED,
+        _bucket_name.as_bytes(),
+        &bump[..],
+    ];
     let binding = [&seeds[..]];
     let cpi = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
@@ -150,10 +167,10 @@ pub struct WithdrawUnsold<'info> {
     #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     multisig: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     config: Box<Account<'info, SaleConfig>>,
 
-    #[account(mut, seeds = [SEED_ROOT, BUCKET_SEED, bucket_name.as_bytes()], bump)]
+    #[account(mut, seeds = [SEED_ROOT, BUCKET_DATA_SEED, bucket_name.as_bytes()], bump)]
     bucket_data: Box<Account<'info, BucketData>>,
 
     #[account(

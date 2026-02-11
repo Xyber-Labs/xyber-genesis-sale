@@ -7,7 +7,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::SEED_ROOT,
+    constants::{BUCKET_DATA_SEED, CONFIG_SEED, SEED_ROOT, VESTING_CONFIG_SEED, VESTING_PLAN_SEED},
     data::{
         BucketData, BucketVestingType, ClaimEvent, SaleConfig, VestingConfig, VestingPlan,
         VestingType,
@@ -55,7 +55,7 @@ pub fn claim(ctx: Context<Claim>, bucket_name: String, vesting_plan_name: String
 
     let seeds_on_bucket = [
         SEED_ROOT,
-        b"BUCKET",
+        BUCKET_DATA_SEED,
         bucket_name.as_bytes(),
         &[ctx.bumps.bucket_data] as &[u8],
     ];
@@ -108,22 +108,22 @@ pub struct Claim<'info> {
     #[account(signer, mut)]
     pub buyer: Signer<'info>,
     #[account(
-        seeds = [SEED_ROOT, b"CONFIG"],
+        seeds = [SEED_ROOT, CONFIG_SEED],
         bump
     )]
     pub config: Box<Account<'info, SaleConfig>>,
-    #[account(seeds = [SEED_ROOT, b"VESTING_PLAN", vesting_config.vesting_plan.as_ref().unwrap_or(&vesting_plan_name).as_bytes()], bump)]
+    #[account(seeds = [SEED_ROOT, VESTING_PLAN_SEED, vesting_config.vesting_plan.as_ref().unwrap_or(&vesting_plan_name).as_bytes()], bump)]
     pub vesting_plan: Box<Account<'info, VestingPlan>>,
 
     #[account(
         mut,
-        seeds = [SEED_ROOT, b"VESTING_CONFIG", bucket_name.as_bytes(), buyer.key().as_ref()],
+        seeds = [SEED_ROOT, VESTING_CONFIG_SEED, bucket_name.as_bytes(), buyer.key().as_ref()],
         bump
     )]
     pub vesting_config: Box<Account<'info, VestingConfig>>,
     #[account(
         mut,
-        seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()],
+        seeds = [SEED_ROOT, BUCKET_DATA_SEED, bucket_name.as_bytes()],
         bump,
         constraint = bucket_data.vesting_plan.contains(&vesting_plan_name) @ CustomError::UnexpectedVestingPlan
     )]

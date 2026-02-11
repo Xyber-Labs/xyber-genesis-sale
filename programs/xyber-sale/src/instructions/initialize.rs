@@ -2,7 +2,9 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 
 use crate::{
-    constants::{DEPLOYER, SALE_BUCKET_SEED, SEED_ROOT, XYBER_MINT},
+    constants::{
+        BUCKET_POOL_SEED, CONFIG_SEED, DEPLOYER, SALE_BUCKET_SEED, SEED_ROOT, XYBER_MINT,
+    },
     data::SaleConfig,
     errors::CustomError,
 };
@@ -16,7 +18,7 @@ pub struct Initialize<'info> {
         init_if_needed,
         payer = admin,
         space = 8 + SaleConfig::INIT_SPACE,
-        seeds = [SEED_ROOT, b"CONFIG"],
+        seeds = [SEED_ROOT, CONFIG_SEED],
         bump
     )]
     pub config: Box<Account<'info, SaleConfig>>,
@@ -29,7 +31,7 @@ pub struct Initialize<'info> {
         init_if_needed,
         payer = admin,
         space = 0,
-        seeds = [SEED_ROOT, b"BUCKET_POOL", SALE_BUCKET_SEED],
+        seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED],
         owner = System::id(),
         bump
     )]

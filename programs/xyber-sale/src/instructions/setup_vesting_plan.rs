@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, system_program::System};
 
 use crate::{
-    constants::SEED_ROOT,
+    constants::{CONFIG_SEED, SEED_ROOT, VESTING_PLAN_SEED},
     data::{SaleConfig, VestingPlan},
     errors::CustomError,
 };
@@ -12,14 +12,14 @@ pub struct SetupVestingPlan<'info> {
     #[account(signer, mut, constraint = admin.key() == config.admin @ CustomError::InvalidAdmin)]
     pub admin: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
 
     #[account(
         init_if_needed,
         payer = admin,
         space = 8 + VestingPlan::INIT_SPACE,
-        seeds = [SEED_ROOT, b"VESTING_PLAN", vesting_plan_name.as_bytes()],
+        seeds = [SEED_ROOT, VESTING_PLAN_SEED, vesting_plan_name.as_bytes()],
         bump
     )]
     pub vesting_plan: Box<Account<'info, VestingPlan>>,

@@ -4,16 +4,28 @@ use anchor_lang::prelude::*;
 pub const SEED_ROOT: &[u8] = b"ROOT";
 
 #[constant]
-pub const SALE_BUCKET_SEED: &[u8] = b"SALE";
+pub const CONFIG_SEED: &[u8] = b"CONFIG";
 
 #[constant]
-pub const BUCKET_SEED: &[u8] = b"BUCKET";
+pub const BUCKET_DATA_SEED: &[u8] = b"BUCKET";
 
 #[constant]
 pub const BUCKET_POOL_SEED: &[u8] = b"BUCKET_POOL";
 
 #[constant]
 pub const QUOTE_SEED: &[u8] = b"QUOTE";
+
+#[constant]
+pub const ROUND_SEED: &[u8] = b"ROUND";
+
+#[constant]
+pub const VESTING_CONFIG_SEED: &[u8] = b"VESTING_CONFIG";
+
+#[constant]
+pub const VESTING_PLAN_SEED: &[u8] = b"VESTING_PLAN";
+
+#[constant]
+pub const SALE_BUCKET_SEED: &[u8] = b"SALE";
 
 #[cfg(feature = "localnet")]
 #[constant]

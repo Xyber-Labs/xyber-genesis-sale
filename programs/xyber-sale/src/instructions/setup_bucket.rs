@@ -5,7 +5,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::SEED_ROOT,
+    constants::{BUCKET_DATA_SEED, CONFIG_SEED, SEED_ROOT},
     data::{BucketData, SaleConfig},
     errors::CustomError,
 };
@@ -16,14 +16,14 @@ pub struct SetupBucket<'info> {
     #[account(signer, mut, address = config.admin @ CustomError::InvalidAdmin)]
     pub admin: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
 
     #[account(
         init_if_needed,
         payer = admin,
         space = 8 + BucketData::INIT_SPACE,
-        seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()],
+        seeds = [SEED_ROOT, BUCKET_DATA_SEED, bucket_name.as_bytes()],
         bump
     )]
     pub bucket: Box<Account<'info, BucketData>>,

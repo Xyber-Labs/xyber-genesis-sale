@@ -5,7 +5,7 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{QUOTE_SEED, SALE_BUCKET_SEED, SEED_ROOT},
+    constants::{BUCKET_POOL_SEED, CONFIG_SEED, QUOTE_SEED, SALE_BUCKET_SEED, SEED_ROOT},
     data::{QuoteConfig, SaleConfig},
     errors::CustomError,
 };
@@ -17,7 +17,7 @@ pub struct SetQuoteMint<'info> {
     #[account(signer, mut, address = config.multisig @ CustomError::InvalidAdmin)]
     pub multisig: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
 
     pub quote_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -35,7 +35,7 @@ pub struct SetQuoteMint<'info> {
     pub quote_config: Box<Account<'info, QuoteConfig>>,
 
     /// CHECK: Bucket pool PDA
-    #[account(seeds = [SEED_ROOT, b"BUCKET_POOL", SALE_BUCKET_SEED], bump)]
+    #[account(seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED], bump)]
     pub bucket_pool: UncheckedAccount<'info>,
 
     #[account(

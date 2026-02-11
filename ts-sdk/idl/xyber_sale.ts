@@ -2394,68 +2394,68 @@ export type XyberSale = {
     },
     {
       "code": 6001,
-      "name": "invalidBackend",
-      "msg": "Invalid backend account is provided"
-    },
-    {
-      "code": 6002,
       "name": "invalidBaseMint",
       "msg": "Invalid base mint is provided"
     },
     {
-      "code": 6003,
+      "code": 6002,
       "name": "invalidQuoteMint",
       "msg": "Invalid quote mint is provided"
     },
     {
-      "code": 6004,
+      "code": 6003,
       "name": "bucketSupplyExceeded",
       "msg": "Bucket supply exceeded"
     },
     {
-      "code": 6005,
-      "name": "signatureExpired",
-      "msg": "Signature is expired"
-    },
-    {
-      "code": 6006,
+      "code": 6004,
       "name": "roundNotStarted",
       "msg": "Round is not started"
     },
     {
-      "code": 6007,
+      "code": 6005,
       "name": "roundFinished",
       "msg": "Round is finished"
     },
     {
-      "code": 6008,
+      "code": 6006,
       "name": "unexpectedVestingPlan",
       "msg": "Unexpected vesting plan for bucket"
     },
     {
-      "code": 6009,
+      "code": 6007,
       "name": "claimUnavailable",
       "msg": "Claim unavailable"
     },
     {
-      "code": 6010,
+      "code": 6008,
       "name": "allocationOverflowed",
       "msg": "Allocation overflowed"
     },
     {
-      "code": 6011,
+      "code": 6009,
       "name": "insufficientFunds",
       "msg": "Insufficient funds"
     },
     {
-      "code": 6012,
+      "code": 6010,
       "name": "insufficientBucketSupply",
       "msg": "Insufficient bucket supply"
     },
     {
-      "code": 6013,
+      "code": 6011,
       "name": "cooldownPeriodNotPassed",
       "msg": "Cooldown period not passed"
+    },
+    {
+      "code": 6012,
+      "name": "badParams",
+      "msg": "Bad params"
+    },
+    {
+      "code": 6013,
+      "name": "invalidBucketVestingType",
+      "msg": "Invalid bucket vesting type"
     }
   ],
   "types": [
@@ -2635,9 +2635,7 @@ export type XyberSale = {
           },
           {
             "name": "multisig",
-            "type": {
-              "option": "pubkey"
-            }
+            "type": "pubkey"
           }
         ]
       }
@@ -2747,19 +2745,24 @@ export type XyberSale = {
   ],
   "constants": [
     {
+      "name": "bucketConfigSeed",
+      "type": "bytes",
+      "value": "[66, 85, 67, 75, 69, 84]"
+    },
+    {
       "name": "bucketPoolSeed",
       "type": "bytes",
       "value": "[66, 85, 67, 75, 69, 84, 95, 80, 79, 79, 76]"
     },
     {
-      "name": "bucketSeed",
+      "name": "configSeed",
       "type": "bytes",
-      "value": "[66, 85, 67, 75, 69, 84]"
+      "value": "[67, 79, 78, 70, 73, 71]"
     },
     {
       "name": "deployer",
       "type": "pubkey",
-      "value": "BMBeWpWc16LQNtqw4JxjSWTf5E9mUBhhPzuTmaVFvxrf"
+      "value": "ANikp9qHf2CFyEdgvh9iuZRMw6eLaTaEbCKB8i1nbfNg"
     },
     {
       "name": "quoteSeed",
@@ -2767,7 +2770,12 @@ export type XyberSale = {
       "value": "[81, 85, 79, 84, 69]"
     },
     {
-      "name": "saleBucketSeed",
+      "name": "roundSeed",
+      "type": "bytes",
+      "value": "[82, 79, 85, 78, 68]"
+    },
+    {
+      "name": "saleBucketConfigSeed",
       "type": "bytes",
       "value": "[83, 65, 76, 69]"
     },
@@ -2775,6 +2783,21 @@ export type XyberSale = {
       "name": "seedRoot",
       "type": "bytes",
       "value": "[82, 79, 79, 84]"
+    },
+    {
+      "name": "vestingConfigSeed",
+      "type": "bytes",
+      "value": "[86, 69, 83, 84, 73, 78, 71, 95, 67, 79, 78, 70, 73, 71]"
+    },
+    {
+      "name": "vestingPlanSeed",
+      "type": "bytes",
+      "value": "[86, 69, 83, 84, 73, 78, 71, 95, 80, 76, 65, 78]"
+    },
+    {
+      "name": "xyberMint",
+      "type": "pubkey",
+      "value": "11111111111111111111111111111111"
     }
   ]
 };

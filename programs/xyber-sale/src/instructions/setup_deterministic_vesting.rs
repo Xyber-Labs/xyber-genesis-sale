@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    constants::SEED_ROOT,
+    constants::{BUCKET_DATA_SEED, CONFIG_SEED, SEED_ROOT, VESTING_CONFIG_SEED},
     data::{BucketData, BucketVestingType, SaleConfig, VestingConfig, VestingType},
     errors::CustomError,
 };
@@ -51,13 +51,13 @@ pub fn setup_deterministic_vesting(
 pub struct SetupDeterministicVesting<'info> {
     #[account(signer, mut, constraint = admin.key() == config.admin @ CustomError::InvalidAdmin)]
     pub admin: Signer<'info>,
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
     /// CHECK: Participant pubkey used only for PDA derivation
     pub participant: UncheckedAccount<'info>,
     #[account(
         mut,
-        seeds = [SEED_ROOT, b"BUCKET", bucket_name.as_bytes()],
+        seeds = [SEED_ROOT, BUCKET_DATA_SEED, bucket_name.as_bytes()],
         bump,
         constraint = bucket_data.vesting_type == Some(BucketVestingType::Deterministic) @ CustomError::InvalidBucketVestingType
     )]
@@ -66,7 +66,7 @@ pub struct SetupDeterministicVesting<'info> {
         init_if_needed,
         payer = admin,
         space = 8 + VestingConfig::INIT_SPACE,
-        seeds = [SEED_ROOT, b"VESTING_CONFIG", bucket_name.as_bytes(), participant.key().as_ref()],
+        seeds = [SEED_ROOT, VESTING_CONFIG_SEED, bucket_name.as_bytes(), participant.key().as_ref()],
         bump
     )]
     pub vesting_config: Box<Account<'info, VestingConfig>>,

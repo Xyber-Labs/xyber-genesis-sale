@@ -5,7 +5,10 @@ use anchor_spl::{
 };
 
 use crate::{
-    constants::{QUOTE_SEED, SALE_BUCKET_SEED, SEED_ROOT},
+    constants::{
+        BUCKET_DATA_SEED, BUCKET_POOL_SEED, CONFIG_SEED, QUOTE_SEED, ROUND_SEED,
+        SALE_BUCKET_SEED, SEED_ROOT, VESTING_CONFIG_SEED,
+    },
     data::{
         BucketData, BucketVestingType, DepositEvent, QuoteConfig, Round, RoundConfig, SaleConfig,
         VestingConfig,
@@ -21,7 +24,7 @@ pub struct DepositAsset<'info> {
     #[account(signer, mut)]
     pub buyer: Signer<'info>,
 
-    #[account(seeds = [SEED_ROOT, b"CONFIG"], bump)]
+    #[account(seeds = [SEED_ROOT, CONFIG_SEED], bump)]
     pub config: Box<Account<'info, SaleConfig>>,
 
     pub quote_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -33,12 +36,12 @@ pub struct DepositAsset<'info> {
         init_if_needed,
         payer = buyer,
         space = 8 + VestingConfig::INIT_SPACE,
-        seeds = [SEED_ROOT, b"VESTING_CONFIG", round.as_bytes(), buyer.key().as_ref()],
+        seeds = [SEED_ROOT, VESTING_CONFIG_SEED, round.as_bytes(), buyer.key().as_ref()],
         bump
     )]
     pub vesting_config: Box<Account<'info, VestingConfig>>,
 
-    #[account(seeds = [SEED_ROOT, b"ROUND", round.as_bytes()], bump)]
+    #[account(seeds = [SEED_ROOT, ROUND_SEED, round.as_bytes()], bump)]
     pub round_config: Box<Account<'info, RoundConfig>>,
 
     #[account(
@@ -50,7 +53,7 @@ pub struct DepositAsset<'info> {
     pub buyer_quote_ata: Box<InterfaceAccount<'info, TokenAccount>>,
 
     /// CHECK: Bucket pool PDA
-    #[account(mut, seeds = [SEED_ROOT, b"BUCKET_POOL", SALE_BUCKET_SEED], bump)]
+    #[account(mut, seeds = [SEED_ROOT, BUCKET_POOL_SEED, SALE_BUCKET_SEED], bump)]
     pub bucket_pool: UncheckedAccount<'info>,
 
     #[account(
@@ -63,7 +66,7 @@ pub struct DepositAsset<'info> {
 
     #[account(
         mut,
-        seeds = [SEED_ROOT, b"BUCKET", round.as_bytes()],
+        seeds = [SEED_ROOT, BUCKET_DATA_SEED, round.as_bytes()],
         bump,
         constraint = bucket_data.vesting_type == Some(BucketVestingType::Priceless) @ CustomError::InvalidBucketVestingType
     )]
