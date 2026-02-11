@@ -43,3 +43,7 @@ pub(super) fn update_allocation(
     }
     Ok(())
 }
+
+const MIN_EXPO: i32 = -12;
+const MAX_EXPO: i32 = 0;
+const MAX_PRICE: i64 = 1_000_000_000_000_000;

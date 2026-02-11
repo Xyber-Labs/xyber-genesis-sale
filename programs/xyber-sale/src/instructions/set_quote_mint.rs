@@ -10,6 +10,8 @@ use crate::{
     errors::CustomError,
 };
 
+use super::{MAX_EXPO, MAX_PRICE, MIN_EXPO};
+
 const COOLDOWN_PERIOD: i64 = 24 * 60 * 60;
 
 #[derive(Accounts)]
@@ -58,6 +60,8 @@ pub fn set_quote_mint(
     expo: i32,
     is_enabled: bool,
 ) -> Result<()> {
+    require!(price > 0 && price <= MAX_PRICE, CustomError::BadParams);
+    require!((MIN_EXPO..=MAX_EXPO).contains(&expo), CustomError::BadParams);
     let quote_config = &mut ctx.accounts.quote_config;
     let clock = Clock::get()?;
 
