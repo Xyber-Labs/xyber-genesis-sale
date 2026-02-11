@@ -34,6 +34,7 @@ pub fn setup_round(
     end_time: i64,
 ) -> Result<()> {
     let round_config = &mut ctx.accounts.round_config;
+    require!(start_time < end_time, CustomError::BadParams);
     round_config.start_time = start_time;
     round_config.end_time = end_time;
 
