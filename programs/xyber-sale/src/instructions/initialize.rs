@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::Mint;
 
 use crate::{
-    constants::{DEPLOYER, SALE_BUCKET_SEED, SEED_ROOT},
+    constants::{DEPLOYER, SALE_BUCKET_SEED, SEED_ROOT, XYBER_MINT},
     data::SaleConfig,
     errors::CustomError,
 };
@@ -20,6 +20,8 @@ pub struct Initialize<'info> {
         bump
     )]
     pub config: Box<Account<'info, SaleConfig>>,
+
+    #[account(constraint = XYBER_MINT == Pubkey::default() || base_mint.key() == XYBER_MINT @ CustomError::InvalidBaseMint)]
     pub base_mint: Box<InterfaceAccount<'info, Mint>>,
 
     /// CHECK

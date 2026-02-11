@@ -22,3 +22,11 @@ pub const DEPLOYER: Pubkey = pubkey!("ANikp9qHf2CFyEdgvh9iuZRMw6eLaTaEbCKB8i1nbf
 #[cfg(not(feature = "localnet"))]
 #[constant]
 pub const DEPLOYER: Pubkey = pubkey!("keeppCujRWx7HW8AgCL3F9CfaAM2hRKvWvNVo6iGToE");
+
+#[cfg(feature = "check-mint")]
+#[constant]
+pub const XYBER_MINT: Pubkey = pubkey!("xybERnaFYSEYwfmqcCT3k3X6EpBG1Kz5rCJwmrcyCCL");
+
+#[cfg(not(feature = "check-mint"))]
+#[constant]
+pub const XYBER_MINT: Pubkey = Pubkey::new_from_array([0u8; 32]);
