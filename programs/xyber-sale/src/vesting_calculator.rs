@@ -79,7 +79,7 @@ impl VestingCalculator {
             to_burn_sum += Self::mul_corrected(b, period.burn_ratio);
 
             if i == len - 1 {
-                if period.burn_ratio < period.claim_ratio {
+                if period.burn_ratio <= period.claim_ratio {
                     to_allocate_sum += self
                         .total_allocation
                         .saturating_sub(to_allocate_sum)
