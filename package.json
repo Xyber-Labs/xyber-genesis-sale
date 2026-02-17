@@ -8,6 +8,7 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
     "@solana/spl-token": "^0.4.14",
+    "@trezor/connect": "^9.7.1",
     "@xyber-labs/xyber-sale-sdk": "file:./ts-sdk",
     "bs58": "^6.0.0",
     "commander": "^14.0.1"

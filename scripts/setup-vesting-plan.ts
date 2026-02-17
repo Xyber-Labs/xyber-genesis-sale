@@ -1,8 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
+import { web3 } from "@coral-xyz/anchor";
 import { Command } from "commander";
 import { getKeypairFromFile } from "@solana-developers/node-helpers";
 
-import { runWithSdk, getExplorerUrl } from "./utils";
+import {
+  runWithSdk, getExplorerUrl, txToBase58,
+  trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose,
+} from "./utils";
 
 interface PeriodArgs {
   startTimestamp: string;
@@ -11,13 +15,14 @@ interface PeriodArgs {
   basePeriodIndex?: string;
 }
 
-async function parseCliArgs() {
+function parseCliArgs() {
   const cli = new Command();
 
   const periods: PeriodArgs[] = [];
 
   cli
-    .requiredOption("--admin-keypair <PATH>", "Path to admin keypair file")
+    .option("--admin-keypair <PATH>", "Path to admin keypair file")
+    .option("--admin <PUBKEY>", "Admin public key (for --base58 mode)")
     .requiredOption("--vesting-plan-name <NAME>", "Vesting plan name")
     .requiredOption(
       "--period <START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]>",
@@ -38,15 +43,17 @@ async function parseCliArgs() {
         return value;
       }
     )
+    .option("--base58", "Export transaction as base58 for Squads")
+    .option("--trezor", "Sign transaction with Trezor hardware wallet")
+    .option("--trezor-path <PATH>", "Trezor derivation path", "m/44'/501'/0'/0'")
+    .option("--skip-passphrase", "Skip Trezor passphrase prompt")
     .parse(process.argv);
-
-  const options = cli.opts();
 
   if (periods.length === 0) {
     throw new Error("At least one period must be specified");
   }
 
-  const adminKeypair = await getKeypairFromFile(options.adminKeypair);
+  const options = cli.opts();
 
   const plan = {
     periods: periods.map((p) => ({
@@ -57,21 +64,65 @@ async function parseCliArgs() {
     })),
   };
 
-  return {
-    adminKeypair,
-    vestingPlanName: options.vestingPlanName,
-    plan,
-  };
+  return { options, plan };
 }
 
 async function main() {
-  const options = await parseCliArgs();
+  const { options, plan } = parseCliArgs();
 
   await runWithSdk(async ({ provider, sdk }) => {
+    if (options.base58) {
+      if (!options.admin) {
+        console.error("--admin is required when using --base58");
+        process.exit(1);
+      }
+      const admin = new web3.PublicKey(options.admin);
+      const { setupVestingPlanTx } = await sdk.setupVestingPlanTx({
+        admin,
+        vestingPlanName: options.vestingPlanName,
+        plan,
+      });
+      const encoded = await txToBase58(setupVestingPlanTx, admin);
+      console.log(encoded);
+      return;
+    }
+
+    if (options.trezor) {
+      await trezorInit(!options.skipPassphrase);
+      const admin = await trezorGetPublicKey(options.trezorPath);
+      console.log("Trezor public key:", admin.toBase58());
+
+      const { setupVestingPlanTx, config, vestingPlan } = await sdk.setupVestingPlanTx({
+        admin,
+        vestingPlanName: options.vestingPlanName,
+        plan,
+      });
+
+      console.log("Signing with Trezor...");
+      const signature = await trezorSignAndSend(
+        provider, setupVestingPlanTx, admin, options.trezorPath,
+      );
+
+      console.log("✅ Success!");
+      console.log("Explorer:", getExplorerUrl(provider, signature));
+      console.log("Config PDA:", config.toBase58());
+      console.log("Vesting Plan PDA:", vestingPlan.toBase58());
+      console.log("Vesting Plan Name:", options.vestingPlanName);
+      console.log("Periods:", plan.periods.length);
+      await trezorDispose();
+      return;
+    }
+
+    if (!options.adminKeypair) {
+      console.error("--admin-keypair, --base58, or --trezor is required");
+      process.exit(1);
+    }
+
+    const adminKeypair = await getKeypairFromFile(options.adminKeypair);
     const { signature, config, vestingPlan } = await sdk.setupVestingPlan({
-      adminKeypair: options.adminKeypair,
+      adminKeypair,
       vestingPlanName: options.vestingPlanName,
-      plan: options.plan,
+      plan,
     });
 
     console.log("✅ Success!");
@@ -79,7 +130,7 @@ async function main() {
     console.log("Config PDA:", config.toBase58());
     console.log("Vesting Plan PDA:", vestingPlan.toBase58());
     console.log("Vesting Plan Name:", options.vestingPlanName);
-    console.log("Periods:", options.plan.periods.length);
+    console.log("Periods:", plan.periods.length);
   });
 }
 

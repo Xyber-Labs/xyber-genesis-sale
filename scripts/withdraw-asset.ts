@@ -1,45 +1,95 @@
+import { web3 } from "@coral-xyz/anchor";
 import { Command } from "commander";
 import { PublicKey } from "@solana/web3.js";
 import { getKeypairFromFile } from "@solana-developers/node-helpers";
-import { runWithSdk, getExplorerUrl } from "./utils";
 
-async function parseCliArgs() {
+import {
+  runWithSdk, getExplorerUrl, txToBase58,
+  trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose,
+} from "./utils";
+
+function parseCliArgs() {
   const cli = new Command();
   cli
-    .requiredOption("--multisig-keypair <PATH>", "Path to multisig keypair file")
+    .option("--multisig-keypair <PATH>", "Path to multisig keypair file")
+    .option("--multisig <PUBKEY>", "Multisig public key (for --base58 mode)")
     .requiredOption("--quote-mint <PUBKEY>", "Quote token mint address (USDT, USDC, etc.)")
     .requiredOption("--withdraw-owner <PUBKEY>", "Owner of the withdraw ATA")
+    .option("--base58", "Export transaction as base58 for Squads")
+    .option("--trezor", "Sign transaction with Trezor hardware wallet")
+    .option("--trezor-path <PATH>", "Trezor derivation path", "m/44'/501'/0'/0'")
+    .option("--skip-passphrase", "Skip Trezor passphrase prompt")
     .parse();
 
-  const opts = cli.opts();
-
-  const multisigKeypair = await getKeypairFromFile(opts.multisigKeypair);
-  const quoteMint = new PublicKey(opts.quoteMint);
-  const withdrawOwner = new PublicKey(opts.withdrawOwner);
-
-  return {
-    multisigKeypair,
-    quoteMint,
-    withdrawOwner,
-  };
+  return cli.opts();
 }
 
 async function main() {
-  const options = await parseCliArgs();
+  const options = parseCliArgs();
+  const quoteMint = new PublicKey(options.quoteMint);
+  const withdrawOwner = new PublicKey(options.withdrawOwner);
 
   await runWithSdk(async ({ provider, sdk }) => {
+    if (options.base58) {
+      if (!options.multisig) {
+        console.error("--multisig is required when using --base58");
+        process.exit(1);
+      }
+      const multisig = new web3.PublicKey(options.multisig);
+      const { withdrawAssetTx } = await sdk.withdrawAssetTx({
+        multisig,
+        quoteMint,
+        withdrawOwner,
+      });
+      const encoded = await txToBase58(withdrawAssetTx, multisig);
+      console.log(encoded);
+      return;
+    }
+
+    if (options.trezor) {
+      await trezorInit(!options.skipPassphrase);
+      const multisig = await trezorGetPublicKey(options.trezorPath);
+      console.log("Trezor public key:", multisig.toBase58());
+
+      const { withdrawAssetTx, config, bucketPool } = await sdk.withdrawAssetTx({
+        multisig,
+        quoteMint,
+        withdrawOwner,
+      });
+
+      console.log("Signing with Trezor...");
+      const signature = await trezorSignAndSend(
+        provider, withdrawAssetTx, multisig, options.trezorPath,
+      );
+
+      console.log("✅ Quote tokens withdrawn successfully!");
+      console.log("Explorer:", getExplorerUrl(provider, signature));
+      console.log("Config PDA:", config.toBase58());
+      console.log("Bucket Pool PDA:", bucketPool.toBase58());
+      console.log("Quote Mint:", quoteMint.toBase58());
+      console.log("Withdraw Owner:", withdrawOwner.toBase58());
+      await trezorDispose();
+      return;
+    }
+
+    if (!options.multisigKeypair) {
+      console.error("--multisig-keypair, --base58, or --trezor is required");
+      process.exit(1);
+    }
+
+    const multisigKeypair = await getKeypairFromFile(options.multisigKeypair);
     const { signature, config, bucketPool } = await sdk.withdrawAsset({
-      multisigKeypair: options.multisigKeypair,
-      quoteMint: options.quoteMint,
-      withdrawOwner: options.withdrawOwner,
+      multisigKeypair,
+      quoteMint,
+      withdrawOwner,
     });
 
     console.log("✅ Quote tokens withdrawn successfully!");
     console.log("Explorer:", getExplorerUrl(provider, signature));
     console.log("Config PDA:", config.toBase58());
     console.log("Bucket Pool PDA:", bucketPool.toBase58());
-    console.log("Quote Mint:", options.quoteMint.toBase58());
-    console.log("Withdraw Owner:", options.withdrawOwner.toBase58());
+    console.log("Quote Mint:", quoteMint.toBase58());
+    console.log("Withdraw Owner:", withdrawOwner.toBase58());
   });
 }
 

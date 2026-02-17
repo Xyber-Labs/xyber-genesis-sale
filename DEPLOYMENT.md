@@ -19,7 +19,7 @@ solana-test-validator --reset
 ### 1. Deploy the Program
 
 ```bash
-anchor build -- --features localnet
+anchor build -- --features localnet,reset-allowed
 cp target/idl/xyber_sale.json target/types/xyber_sale.ts ts-sdk/idl/ && cd ts-sdk && yarn build && cd .. && yarn install --force
 anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json
 sleep 2
@@ -33,6 +33,7 @@ solana airdrop 100 $(solana address -k keys/admin.json) -u localhost
 solana airdrop 100 $(solana address -k keys/buyer.json) -u localhost
 solana airdrop 100 $(solana address -k keys/multisig.json) -u localhost
 solana airdrop 100 $(solana address -k keys/participant.json) -u localhost
+solana airdrop 100 8wLChQAmWJy7ESQHSnZ5ZEhQGSoACfC6PNKpsFDVdex -u localhost
 ```
 
 ### 3. Create Token Mints
@@ -47,7 +48,7 @@ spl-token create-token --mint-authority keys/admin.json --fee-payer keys/admin.j
 ```bash
 anchor run initialize --provider.cluster localnet -- \
   --authority-keypair ./keys/admin.json \
-  --admin $(solana address -k keys/admin.json) \
+  --admin 8wLChQAmWJy7ESQHSnZ5ZEhQGSoACfC6PNKpsFDVdex \
   --base-mint $(solana address -k keys/base-mint.json)
 ```
 
@@ -91,7 +92,7 @@ anchor run set-quote-mint --provider.cluster localnet -- \
 
 ```bash
 anchor run setup-round --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
+  --trezor --skip-passphrase \
   --start-time $(date +%s) \
   --end-time $(date -d "+30 days" +%s)
 ```
@@ -104,9 +105,9 @@ For **public sale** (100% unlock at TGE):
 TGE_DATE=$(date +%s)
 
 anchor run setup-vesting-plan --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
+  --trezor --skip-passphrase \
   --vesting-plan-name public \
-  --period ${TGE_DATE},1.0,0.0
+  --period $(date +%s),1.0,0.0
 ```
 
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
@@ -122,7 +123,7 @@ For **public sale** (priceless):
 
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
+  --trezor --skip-passphrase \
   --bucket-name PUBLIC \
   --bucket-supply 100000000000000 \
   --vesting-type priceless \
@@ -137,13 +138,13 @@ Create a token account for admin and mint base tokens for distribution:
 
 ```bash
 spl-token create-account $(solana address -k keys/base-mint.json) \
-  --owner $(solana address -k keys/admin.json) \
-  --fee-payer keys/admin.json \
+  --owner $(solana address -k keys/multisig.json) \
+  --fee-payer keys/multisig.json \
   -u localhost
 
 spl-token mint $(solana address -k keys/base-mint.json) 100000000000000 \
   --mint-authority keys/admin.json \
-  --recipient-owner keys/admin.json \
+  --recipient-owner keys/multisig.json \
   -u localhost
 ```
 
@@ -153,7 +154,7 @@ Transfer base tokens from admin's wallet to bucket for claim distribution:
 
 ```bash
 anchor run transfer-to-bucket --provider.cluster localnet -- \
-  --from-authority ./keys/admin.json \
+  --from-authority-keypair ./keys/multisig.json \
   --bucket-name PUBLIC \
   --amount 100000000000000
 ```
@@ -245,7 +246,7 @@ advisors, partners, etc.).
 
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
+  --trezor --skip-passphrase \
   --bucket-name team \
   --bucket-supply 10000000000000 \
   --vesting-type deterministic \
@@ -258,7 +259,7 @@ Create a vesting plan with 24 equal monthly unlocks (0% TGE):
 
 ```bash
 anchor run setup-24m-vesting-plan --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
+  --trezor --skip-passphrase \
   --vesting-plan-name vesting-24m
 ```
 
@@ -270,7 +271,7 @@ Assign fixed allocation to a participant:
 
 ```bash
 anchor run setup-deterministic-vesting --provider.cluster localnet -- \
-  --admin-keypair ./keys/admin.json \
+  --trezor --skip-passphrase \
   --participant $(solana address -k keys/participant.json) \
   --bucket-name team \
   --new-allocation 50000000000 \
@@ -281,7 +282,7 @@ anchor run setup-deterministic-vesting --provider.cluster localnet -- \
 
 ```bash
 anchor run transfer-to-bucket --provider.cluster localnet -- \
-  --from-authority ./keys/admin.json \
+  --from-authority-keypair ./keys/multisig.json \
   --bucket-name team \
   --amount 10000000000000
 ```
