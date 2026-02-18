@@ -1,6 +1,6 @@
 {
   "name": "@xyber-labs/xyber-sale-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "TypeScript SDK for XyberSale - Solana token sale platform",
   "main": "dist/src/xyber-sale.js",
   "types": "dist/src/xyber-sale.d.ts",

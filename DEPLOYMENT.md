@@ -46,25 +46,25 @@ spl-token create-token --mint-authority keys/admin.json --fee-payer keys/admin.j
 ### 4. Initialize Sale Configuration
 
 ```bash
-anchor run initialize --provider.cluster localnet -- \
-  --authority-keypair ./keys/admin.json \
+anchor run initialize --provider.wallet mainnet/keeper.json --provider.cluster mainnet -- \
+  --authority-keypair keys/deployer.json \
   --admin 8wLChQAmWJy7ESQHSnZ5ZEhQGSoACfC6PNKpsFDVdex \
-  --base-mint $(solana address -k keys/base-mint.json)
+  --base-mint BjudgcBdfhaRk54nMYdM2dJ2AvMUFaJuUPVm9x7jGp9d
 ```
 
 ### 4a. Propose Multisig
 
 ```bash
-anchor run propose-multisig --provider.cluster localnet -- \
+anchor run propose-multisig --provider.cluster mainnet -- \
   --authority-keypair ./keys/admin.json \
-  --new-multisig $(solana address -k keys/multisig.json)
+  --new-multisig ySdMgXww2coTrgD5Y9d595mAF2MrSzZY9unPTftgdkP
 ```
 
 ### 4b. Accept Multisig
 
 ```bash
-anchor run accept-multisig --provider.cluster localnet -- \
-  --new-multisig-keypair ./keys/multisig.json
+anchor run accept-multisig --provider.cluster mainnet -- \
+  --new-multisig ySdMgXww2coTrgD5Y9d595mAF2MrSzZY9unPTftgdkP --base58
 ```
 
 ### 5. Configure Quote Token (USDT, USDC, etc.)
@@ -91,7 +91,7 @@ anchor run set-quote-mint --provider.cluster localnet -- \
 ### 6. Setup Sale Round
 
 ```bash
-anchor run setup-round --provider.cluster localnet -- \
+anchor run setup-round --provider.cluster mainnet -- \
   --trezor --skip-passphrase \
   --start-time $(date +%s) \
   --end-time $(date -d "+30 days" +%s)
@@ -104,10 +104,10 @@ For **public sale** (100% unlock at TGE):
 ```bash
 TGE_DATE=$(date +%s)
 
-anchor run setup-vesting-plan --provider.cluster localnet -- \
+anchor run setup-vesting-plan --provider.cluster mainnet -- \
   --trezor --skip-passphrase \
   --vesting-plan-name public \
-  --period $(date +%s),1.0,0.0
+  --period $(date -d "19:47" +%s),1.0,0.0
 ```
 
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
@@ -122,10 +122,10 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 For **public sale** (priceless):
 
 ```bash
-anchor run setup-bucket --provider.cluster localnet -- \
+anchor run setup-bucket --provider.cluster mainnet -- \
   --trezor --skip-passphrase \
   --bucket-name PUBLIC \
-  --bucket-supply 100000000000000 \
+  --bucket-supply 1000000000 \
   --vesting-type priceless \
   --vesting-plan public
 ```
@@ -153,10 +153,10 @@ spl-token mint $(solana address -k keys/base-mint.json) 100000000000000 \
 Transfer base tokens from admin's wallet to bucket for claim distribution:
 
 ```bash
-anchor run transfer-to-bucket --provider.cluster localnet -- \
-  --from-authority-keypair ./keys/multisig.json \
+anchor run transfer-to-bucket --provider.cluster mainnet -- \
+  --from-authority-keypair ./mainnet/authority.json \
   --bucket-name PUBLIC \
-  --amount 100000000000000
+  --amount 1000000000
 ```
 
 ### 11. Deposit SOL to Purchase Tokens
