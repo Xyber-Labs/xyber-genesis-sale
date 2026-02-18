@@ -41,9 +41,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -91,9 +89,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -120,9 +116,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -161,9 +155,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -207,9 +199,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -403,9 +393,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -435,9 +423,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -468,9 +454,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -513,9 +497,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -603,9 +585,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -704,9 +684,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -782,9 +760,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -812,9 +788,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -857,9 +831,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -890,9 +862,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -934,9 +904,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1006,9 +974,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1042,9 +1008,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1116,9 +1080,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1171,9 +1133,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1204,9 +1164,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1236,9 +1194,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1381,9 +1337,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1411,9 +1365,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1550,9 +1502,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1583,9 +1533,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1617,9 +1565,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1710,9 +1656,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1740,9 +1684,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1814,9 +1756,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1844,9 +1784,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1921,9 +1859,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -1950,9 +1886,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -2147,9 +2081,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -2180,9 +2112,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -2252,9 +2182,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -2282,9 +2210,7 @@ export type XyberSale = {
                   82,
                   79,
                   79,
-                  84,
-                  45,
-                  48
+                  84
                 ]
               },
               {
@@ -2963,7 +2889,7 @@ export type XyberSale = {
     {
       "name": "seedRoot",
       "type": "bytes",
-      "value": "[82, 79, 79, 84, 45, 48]"
+      "value": "[82, 79, 79, 84]"
     },
     {
       "name": "vestingConfigSeed",

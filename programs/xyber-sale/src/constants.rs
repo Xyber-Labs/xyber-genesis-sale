@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[constant]
-pub const SEED_ROOT: &[u8] = b"ROOT-0";
+pub const SEED_ROOT: &[u8] = b"ROOT";
 
 #[constant]
 pub const CONFIG_SEED: &[u8] = b"CONFIG";
