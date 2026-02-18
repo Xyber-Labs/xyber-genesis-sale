@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/xyber_sale.json`.
  */
 export type XyberSale = {
-  "address": "XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt",
+  "address": "xicod59noqHeMsTqBjrmHQBbqrzHhw1v92CTmguPWag",
   "metadata": {
     "name": "xyberSale",
     "version": "0.1.0",
@@ -2869,7 +2869,7 @@ export type XyberSale = {
     {
       "name": "deployer",
       "type": "pubkey",
-      "value": "ANikp9qHf2CFyEdgvh9iuZRMw6eLaTaEbCKB8i1nbfNg"
+      "value": "keeppCujRWx7HW8AgCL3F9CfaAM2hRKvWvNVo6iGToE"
     },
     {
       "name": "quoteSeed",
@@ -2904,7 +2904,7 @@ export type XyberSale = {
     {
       "name": "xyberMint",
       "type": "pubkey",
-      "value": "11111111111111111111111111111111"
+      "value": "xybERnaFYSEYwfmqcCT3k3X6EpBG1Kz5rCJwmrcyCCL"
     }
   ]
 };
