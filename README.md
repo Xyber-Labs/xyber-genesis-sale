@@ -1,164 +1,80 @@
-# Xyber Sale Solana Program
+# Xyber Genesis Sale
 
-A Solana-based token sale platform built with Anchor framework.
+![Genesis Sale Banner](https://bllr7j4hheacwbuvpg6igium2rshx6nwnlzax5atngwtc6qcsdma.arweave.net/Ctcfp4c5ACsGlXm8gyKM1GR7-bZq8gv0E2mtMXoCkNg)
 
-## Features
 
-- **Configuration Management**: Initialize and manage sale configuration with admin, backend, and multisig roles
-- **Round Management**: Setup and configure sale rounds with price and start/end times
-- **Vesting Plan Management**: Create vesting plans with periods defining claim/burn ratios and timestamps
-- **Bucket Management**: Create and configure token distribution buckets with supply tracking and vesting plans
-- **SOL Deposits**: Accept native SOL deposits with price-based token allocation
-- **SPL Token Deposits**: Accept SPL token deposits with price-based token allocation
-- **Vesting Management**: Track user allocations with vesting configuration
-- **Token Claiming**: Claim purchased tokens according to vesting schedule with automatic burn support
-- **Withdraw SOL**: Withdraw accumulated native SOL from bucket pool (multisig only)
-- **Withdraw Assets**: Withdraw accumulated quote tokens from bucket pool (multisig only)
-- **Withdraw Unsold Tokens**: Withdraw unsold base tokens from buckets (multisig only)
-- **TypeScript SDK**: Full-featured SDK for interacting with the program
-- **Test Suite**: Comprehensive test coverage
+<p align="center">
+  <a href="https://explorer.solana.com/address/xicod59noqHeMsTqBjrmHQBbqrzHhw1v92CTmguPWag/idl"><img src="https://img.shields.io/badge/Solana-Mainnet-brightgreen?logo=solana" alt="Solana Mainnet"></a>
+  <a href="https://www.anchor-lang.com/"><img src="https://img.shields.io/badge/Anchor-0.31.1-blue?logo=anchor" alt="Anchor"></a>
+  <a href="https://www.npmjs.com/package/@xyber-labs/xyber-sale-sdk"><img src="https://img.shields.io/npm/v/@xyber-labs/xyber-sale-sdk?logo=npm" alt="npm"></a>
+  <a href="https://github.com/RichardLitt/standard-readme"><img src="https://img.shields.io/badge/readme%20style-standard-brightgreen.svg" alt="standard-readme compliant"></a>
+</p>
 
-## Quick Start
 
-### Prerequisites
+---
 
-- Node.js and Yarn
-- Solana CLI tools
-- Anchor framework
 
-## Contract Management Scripts
 
-### Initialize Config
+Solana program for conducting the Xyber Genesis Sale of $XYBER — the native token powering onchain AI agents, apps and machines. The program manages the full lifecycle of the token sale, including initialization, round configuration, bucket-based token allocation, SOL and quote asset deposits, deterministic and priceless vesting schedules, token claiming, and fund withdrawals by the admin.
 
-Initialize the sale configuration with admin, backend, multisig, and token mints.
+The TypeScript SDK (`@xyber-labs/xyber-sale-sdk`) mirrors every instruction with a three-level API (`methodIx` / `methodTx` / `method`). Anchor CLI scripts wrap each operation for deployment and administration — see [Usage](#usage) for details.
+
+## Dependencies
+
+Install [Solana toolchain](https://solana.com/docs/intro/installation):
 
 ```bash
-anchor run initialize -- \
-  --admin 9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin \
-  --backend 2ZvJkKkGvfZvLcvPMdW8gMVvNbNXfPr3KJQ8vJ7K6kTe \
-  --multisig 3XyZWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin \
-  --base-mint 4ABcDEfG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin \
-  --quote-mint 5CDeFGhI816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin
+curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
 ```
 
-### Setup Round
-
-Configure the sale round with price and start/end times.
+Switch to Anchor 0.31.1:
 
 ```bash
-anchor run setup-round -- \
-  --admin-keypair ./keys/admin.json \
-  --price 10000 \
-  --start-time 1704067200 \
-  --end-time 1704153600
+avm use 0.31.1
 ```
 
-### Setup Vesting Plan
+- Solana CLI 2.0+
+- Anchor CLI 0.31.1
+- Node.js 18+
+- [Squads](https://squads.so/) multisig for mainnet program authority
 
-Create a vesting plan with periods defining claim/burn ratios and release schedule.
+## Install
 
 ```bash
-anchor run setup-vesting-plan -- \
-  --admin-keypair ./keys/admin.json \
-  --vesting-plan-name public \
-  --period 1699000000,0.65,0.0 \
-  --period 1699003600,0.35,0.0,0
+npm install @xyber-labs/xyber-sale-sdk
 ```
 
-Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
+## Usage
 
-### Setup Bucket
+### Localnet
 
-Create and configure a token distribution bucket with supply tracking and vesting plan.
+For developers and auditors — build, deploy and test the program against a local Solana validator. See [LOCAL_FLOW.md](LOCAL_FLOW.md) for the full setup, deployment and test flow.
 
-```bash
-anchor run setup-bucket -- \
-  --admin-keypair ./keys/admin.json \
-  --bucket-name public \
-  --bucket-supply 1000000 \
-  --vesting-plan public
-```
+### Mainnet
 
-### Deposit SOL
+For the operations team — program deployment, on-chain verification and sale configuration on Solana mainnet. Requires Squads multisig and Trezor hardware wallet. See [MAINNET_FLOW.md](MAINNET_FLOW.md) for the complete production deployment guide.
 
-Deposit native SOL to purchase tokens in a specific round at specific price.
+## API
 
-```bash
-anchor run deposit-sol -- \
-  --buyer-keypair ./keys/buyer.json \
-  --backend-keypair ./keys/backend.json \
-  --round public \
-  --sol-price 250000000000000000000 \
-  --base-allocation 6250000000 \
-  --expiration 1704067800
-```
+The on-chain program exposes 14 instructions:
 
-### Deposit Asset (SPL Tokens)
+| Instruction | Description | Access |
+|-------------|-------------|--------|
+| `initialize` | Initialize sale configuration with admin authority and base token mint | Admin |
+| `propose_multisig` | Propose a new multisig authority | Admin |
+| `accept_multisig` | Accept pending multisig authority change | Pending Multisig |
+| `set_quote_mint` | Configure accepted quote tokens with SOL-equivalent pricing | Multisig |
+| `setup_round` | Configure the public sale round with start and end times | Admin |
+| `setup_bucket` | Create token distribution buckets with supply and vesting type | Admin |
+| `setup_vesting_plan` | Create vesting schedules with claim/burn ratios per period | Admin |
+| `setup_deterministic_vesting` | Assign fixed token allocations to participants | Admin |
+| `deposit_sol` | Deposit native SOL into the sale round | Public |
+| `deposit_asset` | Deposit quote tokens (USDT, USDC) into the sale round | Public |
+| `claim` | Claim vested tokens according to the vesting schedule | Public |
+| `withdraw_sol` | Withdraw collected SOL from the bucket pool | Multisig |
+| `withdraw_asset` | Withdraw collected quote tokens from the bucket pool | Multisig |
+| `withdraw_unsold_tokens` | Withdraw unsold base tokens from deterministic buckets | Multisig |
 
-Deposit SPL tokens (quote mint) to purchase tokens in a specific round.
+## Maintainers
 
-```bash
-anchor run deposit-asset -- \
-  --buyer-keypair ./keys/buyer.json \
-  --backend-keypair ./keys/backend.json \
-  --round public \
-  --base-allocation 100000000 \
-  --expiration 1704067800
-```
-
-### Claim Tokens
-
-Claim purchased tokens according to the vesting schedule. Tokens are released based on the vesting plan configuration.
-
-```bash
-anchor run claim -- \
-  --buyer-keypair ./keys/buyer.json \
-  --bucket-name public \
-  --vesting-plan public
-```
-
-Tokens will be:
-- **Claimed**: Transferred to buyer's token account
-- **Burned**: Automatically burned if configured in the vesting plan
-
-Multiple claims can be made as new vesting periods unlock, until all tokens are distributed.
-
-### Withdraw SOL (Multisig Only)
-
-Withdraw all accumulated SOL from the bucket pool, leaving only the rent-exempt minimum.
-
-```bash
-anchor run withdraw-sol -- \
-  --multisig-keypair ./keys/multisig.json \
-  --address-to-withdraw-to YOUR_WALLET_ADDRESS
-```
-
-### Withdraw Asset (Multisig Only)
-
-Withdraw all accumulated quote tokens (USDT/USDC) from the bucket pool.
-
-```bash
-anchor run withdraw-asset -- \
-  --multisig-keypair ./keys/multisig.json \
-  --withdraw-owner YOUR_WALLET_ADDRESS
-```
-
-### Withdraw Unsold Tokens (Multisig Only)
-
-Withdraw unsold base tokens from a specific bucket. Amount cannot exceed available unsold supply.
-
-```bash
-anchor run withdraw-unsold-tokens -- \
-  --multisig-keypair ./keys/multisig.json \
-  --bucket-name public \
-  --amount 50000000 \
-  --withdraw-owner YOUR_WALLET_ADDRESS
-```
-
-## Program Architecture
-
-- **SaleConfig**: Configuration account with admin, backend, multisig roles and token mints
-- **RoundConfig**: Round configuration with price and start/end times
-- **VestingPlan**: Vesting plan with periods defining claim/burn ratios and release schedule
-- **BucketData**: Token distribution bucket with supply tracking and vesting plan
-- **VestingConfig**: User vesting configuration with allocation tracking
+[@XyKeeper](https://github.com/XyKeeper) [`PGP: 19A3D3B094F4AD25`](https://keys.openpgp.org/vks/v1/by-fingerprint/3D98A0A1465491FAFC2047F719A3D3B094F4AD25)

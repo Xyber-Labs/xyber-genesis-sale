@@ -93,8 +93,8 @@ anchor run set-quote-mint --provider.cluster localnet -- \
 ```bash
 anchor run setup-round --provider.cluster mainnet -- \
   --trezor --skip-passphrase \
-  --start-time $(date +%s) \
-  --end-time $(date -d "+30 days" +%s)
+  --start-time $(date -d "2026-02-23 10:00UTC" +%s) \
+  --end-time $(date -d "2026-02-23 10:00UTC + 48hours" +%s)
 ```
 
 ### 7. Setup Vesting Plan
@@ -122,10 +122,10 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 For **public sale** (priceless):
 
 ```bash
-anchor run setup-bucket --provider.cluster mainnet -- \
+anchor run setup-bucket --provider.cluster mainnet  -- \
   --trezor --skip-passphrase \
   --bucket-name PUBLIC \
-  --bucket-supply 1000000000 \
+  --bucket-supply 500000000000000 \
   --vesting-type priceless \
   --vesting-plan public
 ```
