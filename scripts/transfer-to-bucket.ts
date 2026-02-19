@@ -4,10 +4,8 @@ import * as splToken from "@solana/spl-token";
 import { Command } from "commander";
 import { getKeypairFromFile } from "@solana-developers/node-helpers";
 
-import {
-  getExplorerUrl, runWithSdk, txToBase58,
-  trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose,
-} from "./utils";
+import { getExplorerUrl, runWithSdk, txToBase58 } from "./utils";
+import { trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose } from "@xyber-labs/trezor-utils";
 
 function parseCliArgs() {
   const cli = new Command();
@@ -53,7 +51,7 @@ async function resolveAccounts(
   const [bucket] = sdk.txBuilder.getBucketPda(bucketName);
 
   const sourceAta = splToken.getAssociatedTokenAddressSync(
-    baseMint, owner, false,
+    baseMint, owner, true,
     splToken.TOKEN_PROGRAM_ID, splToken.ASSOCIATED_TOKEN_PROGRAM_ID,
   );
   const bucketBaseAta = splToken.getAssociatedTokenAddressSync(
@@ -84,7 +82,7 @@ async function main() {
     }
 
     if (options.trezor) {
-      await trezorInit(!options.skipPassphrase);
+      await trezorInit("XyberSale", !options.skipPassphrase);
       const owner = await trezorGetPublicKey(options.trezorPath);
       console.log("Trezor public key:", owner.toBase58());
 
@@ -93,7 +91,7 @@ async function main() {
       const tx = buildTransferTx(sourceAta, bucketBaseAta, owner, transferAmount);
 
       console.log("Signing with Trezor...");
-      const signature = await trezorSignAndSend(provider, tx, owner, options.trezorPath);
+      const signature = await trezorSignAndSend(provider.connection, tx, owner, options.trezorPath);
 
       console.log("✅ Success!");
       console.log("Transaction:", getExplorerUrl(provider, signature));

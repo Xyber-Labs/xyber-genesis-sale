@@ -721,7 +721,7 @@ export class TxBuilder {
     const withdrawAta = splToken.getAssociatedTokenAddressSync(
       args.quoteMint,
       args.withdrawOwner,
-      false,
+      true,
       splToken.TOKEN_PROGRAM_ID,
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );
@@ -785,7 +785,7 @@ export class TxBuilder {
     const withdrawAta = splToken.getAssociatedTokenAddressSync(
       baseMint,
       args.withdrawOwner,
-      false,
+      true,
       splToken.TOKEN_PROGRAM_ID,
       splToken.ASSOCIATED_TOKEN_PROGRAM_ID
     );

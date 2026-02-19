@@ -3,10 +3,8 @@ import { web3 } from "@coral-xyz/anchor";
 import { Command } from "commander";
 import { getKeypairFromFile } from "@solana-developers/node-helpers";
 
-import {
-  runWithSdk, getExplorerUrl, txToBase58,
-  trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose,
-} from "./utils";
+import { runWithSdk, getExplorerUrl, txToBase58 } from "./utils";
+import { trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose } from "@xyber-labs/trezor-utils";
 
 function parseCliArgs() {
   const cli = new Command();
@@ -50,7 +48,7 @@ async function main() {
     }
 
     if (options.trezor) {
-      await trezorInit(!options.skipPassphrase);
+      await trezorInit("XyberSale", !options.skipPassphrase);
       const admin = await trezorGetPublicKey(options.trezorPath);
       console.log("Trezor public key:", admin.toBase58());
 
@@ -63,7 +61,7 @@ async function main() {
 
       console.log("Signing with Trezor...");
       const signature = await trezorSignAndSend(
-        provider, setupRoundTx, admin, options.trezorPath,
+        provider.connection, setupRoundTx, admin, options.trezorPath,
       );
 
       console.log("✅ Success!");
