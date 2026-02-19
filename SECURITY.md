@@ -97,7 +97,7 @@ We commit to:
 
 **Bug Bounty Program:** Coming soon
 
-**Security Audits:** In progress — reports will be published upon completion
+**Security Audits:** [Halborn — Xyber Sale Solana Program](https://www.halborn.com/audits/xyber/xyber-sale-solana-program-c09ec9)
 
 **Published Advisories:** https://github.com/Xyber-Labs/xyber-ico-solana/security/advisories
 
