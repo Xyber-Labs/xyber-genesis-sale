@@ -2904,7 +2904,7 @@ export type XyberSale = {
     {
       "name": "xyberMint",
       "type": "pubkey",
-      "value": "11111111111111111111111111111111"
+      "value": "xybERnaFYSEYwfmqcCT3k3X6EpBG1Kz5rCJwmrcyCCL"
     }
   ]
 };
