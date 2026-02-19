@@ -871,7 +871,7 @@
     "@solana/rpc-types" "2.3.0"
     "@solana/transaction-messages" "2.3.0"
 
-"@solana/web3.js@^1.32.0", "@solana/web3.js@^1.69.0", "@solana/web3.js@^1.98.4":
+"@solana/web3.js@^1.32.0", "@solana/web3.js@^1.69.0", "@solana/web3.js@^1.95.8", "@solana/web3.js@^1.98.4":
   version "1.98.4"
   resolved "https://registry.npmjs.org/@solana/web3.js/-/web3.js-1.98.4.tgz"
   integrity sha512-vv9lfnvjUsRiq//+j5pBdXig0IQdtzA0BRZ3bXEP4KaIyF1CcaydWqgyzQgfZMNIsWNWmG+AUHwPy4AHOD6gpw==
@@ -1261,8 +1261,16 @@
     "@xrplf/isomorphic" "^1.0.1"
     ripple-keypairs "^2.0.0"
 
+"@xyber-labs/trezor-utils@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@xyber-labs/trezor-utils/-/trezor-utils-0.1.0.tgz#48dd5503c2f22d30e36a5256b738c4e0ec8be0ea"
+  integrity sha512-w9rkYbOD/x4q8Ngj0wh6fWFjlT1Crcf5ODZAn68xcel8EHF2ffzc7mg/7kTOR5SgpQsUQgAad6qUZblqLawHkw==
+  dependencies:
+    "@solana/web3.js" "^1.95.8"
+    "@trezor/connect" "^9.7.1"
+
 "@xyber-labs/xyber-sale-sdk@file:./ts-sdk":
-  version "0.1.3"
+  version "1.0.1"
   dependencies:
     "@coral-xyz/anchor" "^0.31.1"
     "@solana/spl-token" "^0.4.13"

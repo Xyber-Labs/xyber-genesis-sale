@@ -4,10 +4,8 @@ import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { getKeypairFromFile } from "@solana-developers/node-helpers";
 
-import {
-  runWithSdk, getExplorerUrl, txToBase58,
-  trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose,
-} from "./utils";
+import { runWithSdk, getExplorerUrl, txToBase58 } from "./utils";
+import { trezorInit, trezorGetPublicKey, trezorSignAndSend, trezorDispose } from "@xyber-labs/trezor-utils";
 
 function parseCliArgs() {
   const cli = new Command();
@@ -50,7 +48,7 @@ async function main() {
     }
 
     if (options.trezor) {
-      await trezorInit(!options.skipPassphrase);
+      await trezorInit("XyberSale", !options.skipPassphrase);
       const multisig = await trezorGetPublicKey(options.trezorPath);
       console.log("Trezor public key:", multisig.toBase58());
 
@@ -63,7 +61,7 @@ async function main() {
 
       console.log("Signing with Trezor...");
       const signature = await trezorSignAndSend(
-        provider, withdrawUnsoldTokensTx, multisig, options.trezorPath,
+        provider.connection, withdrawUnsoldTokensTx, multisig, options.trezorPath,
       );
 
       console.log("✅ Unsold tokens withdrawn successfully!");
