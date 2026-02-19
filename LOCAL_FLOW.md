@@ -16,17 +16,7 @@ This document contains the complete deployment flow for the Xyber Sale program.
 solana-test-validator --reset
 ```
 
-### 1. Deploy the Program
-
-```bash
-anchor build -- --features localnet,reset-allowed
-cp target/idl/xyber_sale.json target/types/xyber_sale.ts ts-sdk/idl/ && cd ts-sdk && yarn build && cd .. && yarn install --force
-anchor deploy --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json
-sleep 2
-anchor idl init --provider.cluster localnet --filepath target/idl/xyber_sale.json XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt
-```
-
-### 2. Airdrop SOL to Admin and Buyer
+### 1. Airdrop SOL to Admin and Buyer
 
 ```bash
 solana airdrop 100 $(solana address -k keys/admin.json) -u localhost
@@ -34,6 +24,16 @@ solana airdrop 100 $(solana address -k keys/buyer.json) -u localhost
 solana airdrop 100 $(solana address -k keys/multisig.json) -u localhost
 solana airdrop 100 $(solana address -k keys/participant.json) -u localhost
 solana airdrop 100 8wLChQAmWJy7ESQHSnZ5ZEhQGSoACfC6PNKpsFDVdex -u localhost
+```
+
+### 2. Deploy the Program
+
+```bash
+anchor build -- --features localnet,reset-allowed
+cp target/idl/xyber_sale.json target/types/xyber_sale.ts ts-sdk/idl/ && cd ts-sdk && yarn build && cd .. && yarn install --force
+anchor deploy --provider.wallet keys/admin.json --provider.cluster localnet --program-name xyber-sale --program-keypair keys/xyber_sale-keypair.json
+sleep 2
+anchor idl init --provider.wallet keys/admin.json --provider.cluster localnet --filepath target/idl/xyber_sale.json XYBGKPCgL6Twhdjo6LFt9niCgyxnbxN3tacXypc6SSt
 ```
 
 ### 3. Create Token Mints
@@ -46,25 +46,25 @@ spl-token create-token --mint-authority keys/admin.json --fee-payer keys/admin.j
 ### 4. Initialize Sale Configuration
 
 ```bash
-anchor run initialize --provider.wallet mainnet/keeper.json --provider.cluster mainnet -- \
-  --authority-keypair keys/deployer.json \
-  --admin 8wLChQAmWJy7ESQHSnZ5ZEhQGSoACfC6PNKpsFDVdex \
-  --base-mint BjudgcBdfhaRk54nMYdM2dJ2AvMUFaJuUPVm9x7jGp9d
+anchor run initialize --provider.wallet keys/admin.json --provider.cluster localnet -- \
+  --authority-keypair keys/admin.json \
+  --admin $(solana address -k keys/admin.json) \
+  --base-mint $(solana address -k keys/base-mint.json)
 ```
 
 ### 4a. Propose Multisig
 
 ```bash
-anchor run propose-multisig --provider.cluster mainnet -- \
+anchor run propose-multisig --provider.cluster localnet -- \
   --authority-keypair ./keys/admin.json \
-  --new-multisig ySdMgXww2coTrgD5Y9d595mAF2MrSzZY9unPTftgdkP
+  --new-multisig $(solana address -k keys/multisig.json) 
 ```
 
 ### 4b. Accept Multisig
 
 ```bash
-anchor run accept-multisig --provider.cluster mainnet -- \
-  --new-multisig ySdMgXww2coTrgD5Y9d595mAF2MrSzZY9unPTftgdkP --base58
+anchor run accept-multisig -- --provider.cluster localnet -- \
+  --new-multisig-keypair keys/multisig.json
 ```
 
 ### 5. Configure Quote Token (USDT, USDC, etc.)
@@ -91,10 +91,10 @@ anchor run set-quote-mint --provider.cluster localnet -- \
 ### 6. Setup Sale Round
 
 ```bash
-anchor run setup-round --provider.cluster mainnet -- \
-  --trezor --skip-passphrase \
-  --start-time $(date -d "2026-02-23 10:00UTC" +%s) \
-  --end-time $(date -d "2026-02-23 10:00UTC + 48hours" +%s)
+anchor run setup-round --provider.cluster localnet -- \
+  --admin-keypair keys/admin.json \
+  --start-time $(date +%s) \
+  --end-time $(date -d "+15sec" +%s)
 ```
 
 ### 7. Setup Vesting Plan
@@ -102,12 +102,10 @@ anchor run setup-round --provider.cluster mainnet -- \
 For **public sale** (100% unlock at TGE):
 
 ```bash
-TGE_DATE=$(date +%s)
-
-anchor run setup-vesting-plan --provider.cluster mainnet -- \
-  --trezor --skip-passphrase \
+anchor run setup-vesting-plan --provider.cluster localnet -- \
+  --admin-keypair keys/admin.json \
   --vesting-plan-name public \
-  --period $(date -d "19:47" +%s),1.0,0.0
+  --period $(date -d "+30sec" +%s),1.0,0.0
 ```
 
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
@@ -122,8 +120,8 @@ Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
 For **public sale** (priceless):
 
 ```bash
-anchor run setup-bucket --provider.cluster mainnet  -- \
-  --trezor --skip-passphrase \
+anchor run setup-bucket --provider.cluster localnet  -- \
+  --admin-keypair keys/admin.json \
   --bucket-name PUBLIC \
   --bucket-supply 500000000000000 \
   --vesting-type priceless \
@@ -153,10 +151,10 @@ spl-token mint $(solana address -k keys/base-mint.json) 100000000000000 \
 Transfer base tokens from admin's wallet to bucket for claim distribution:
 
 ```bash
-anchor run transfer-to-bucket --provider.cluster mainnet -- \
-  --from-authority-keypair ./mainnet/authority.json \
+anchor run transfer-to-bucket --provider.cluster localnet -- \
+  --from-authority-keypair keys/multisig.json \
   --bucket-name PUBLIC \
-  --amount 1000000000
+  --amount 500000000000000
 ```
 
 ### 11. Deposit SOL to Purchase Tokens
@@ -246,7 +244,7 @@ advisors, partners, etc.).
 
 ```bash
 anchor run setup-bucket --provider.cluster localnet -- \
-  --trezor --skip-passphrase \
+  --admin-keypair keys/admin.json \
   --bucket-name team \
   --bucket-supply 10000000000000 \
   --vesting-type deterministic \
@@ -259,7 +257,7 @@ Create a vesting plan with 24 equal monthly unlocks (0% TGE):
 
 ```bash
 anchor run setup-24m-vesting-plan --provider.cluster localnet -- \
-  --trezor --skip-passphrase \
+  --admin-keypair keys/admin.json \
   --vesting-plan-name vesting-24m
 ```
 
@@ -271,7 +269,7 @@ Assign fixed allocation to a participant:
 
 ```bash
 anchor run setup-deterministic-vesting --provider.cluster localnet -- \
-  --trezor --skip-passphrase \
+  --admin-keypair keys/admin.json \
   --participant $(solana address -k keys/participant.json) \
   --bucket-name team \
   --new-allocation 50000000000 \
