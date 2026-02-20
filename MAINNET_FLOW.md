@@ -81,12 +81,21 @@ to sign and execute on-chain.
 Configure quote tokens (USDT, USDC) with SOL-equivalent pricing:
 
 ```bash
-anchor run set-quote-mint --provider.cluster ${CLUSTER} -- \
-  --trezor --skip-passphrase \
-  --quote-mint <QUOTE_MINT_ADDRESS> \
-  --price 200 \
-  --expo 0 \
-  --is-enabled true
+anchor run set-quote-mint --provider.cluster mainnet -- \
+    --multisig ySdMgXww2coTrgD5Y9d595mAF2MrSzZY9unPTftgdkP \
+    --base58 \
+    --quote-mint Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB \
+    --price 8322 \
+    --expo -2 \
+    --is-enabled true
+
+anchor run set-quote-mint --provider.cluster mainnet -- \
+    --multisig ySdMgXww2coTrgD5Y9d595mAF2MrSzZY9unPTftgdkP \
+    --base58 \
+    --quote-mint EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v \
+    --price 8322 \
+    --expo -2 \
+    --is-enabled true
 ```
 
 **Note:** Prices can only be updated once per 24 hours (cooldown protection).

@@ -75,8 +75,8 @@ Configure quote token that will be accepted for payment with its price in SOL:
 anchor run set-quote-mint --provider.cluster localnet -- \
   --multisig-keypair ./keys/multisig.json \
   --quote-mint $(solana address -k keys/quote-mint.json) \
-  --price 200 \
-  --expo 0 \
+  --price 8322 \
+  --expo -2 \
   --is-enabled true
 ```
 
@@ -94,7 +94,7 @@ anchor run set-quote-mint --provider.cluster localnet -- \
 anchor run setup-round --provider.cluster localnet -- \
   --admin-keypair keys/admin.json \
   --start-time $(date +%s) \
-  --end-time $(date -d "+15sec" +%s)
+  --end-time $(date -d "+180sec" +%s)
 ```
 
 ### 7. Setup Vesting Plan
@@ -105,7 +105,7 @@ For **public sale** (100% unlock at TGE):
 anchor run setup-vesting-plan --provider.cluster localnet -- \
   --admin-keypair keys/admin.json \
   --vesting-plan-name public \
-  --period $(date -d "+30sec" +%s),1.0,0.0
+  --period $(date -d "+240sec" +%s),1.0,0.0
 ```
 
 Format: `--period START_TIME,CLAIM_RATIO,BURN_RATIO[,BASE_PERIOD_INDEX]`
